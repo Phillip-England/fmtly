@@ -5,76 +5,45 @@ import (
 	"testing"
 )
 
-func FormShell(title string, children ...string) string {
+func Doc(head string, body string) string {
 	return `
-		<form fmt="FormShell">
-		    <div>
-		        <h2>` + title + `</h2>
-		    </div>
-		    <ul>
-		        ` + strings.Join(children, "") + `
-		    </ul>
-		</form>
+		<html>
+			` + head + `
+			` + body + `
+		</html>
 	`
 }
 
-func NavItem(href string, text string) string {
-	return `
-		<li fmt="NavItem">
-		    <a href="` + href + `">` + text + `</a>
-		</li>
-	`
+func Root(children ...string) string {
+	return Doc(`
+		<head>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<script src="/static/js/index.js"></script>
+			<link rel='stylesheet' href="/static/css/output.css"></link>
+		</head>
+	`, `
+		<body>
+			<div id='root'>`+strings.Join(children, "")+`</div>
+		</body>
+	`)
 }
 
-func LoginForm() string {
-	return FormShell("Login", NavItem("/", "Home"), NavItem("/", "Home"), NavItem("/", "Home"))
-}
+func TestMain(t *testing.T) {
+	// mux, gCtx := vbf.VeryBestFramework()
 
-type Customer struct {
-	Name string
-}
+	// vbf.HandleFavicon(mux)
+	// vbf.HandleStaticFiles(mux)
 
-func CustomerList(customerSlice []Customer) string {
-	var loop1Slice []string
-	for i := 0; i < len(customerSlice); i++ {
-		currentCustomer := customerSlice[i]
-		loop1Slice = append(loop1Slice, `
-			<li>
-				<p>`+currentCustomer.Name+`</p>
-			</li>
-		`)
-	}
-	return `
-		<ul fmt"CustomerList">
-			` + strings.Join(loop1Slice, "\n") + `
-		</ul>
-	`
-}
+	// vbf.AddRoute("GET /", mux, gCtx, func(w http.ResponseWriter, r *http.Request) {
+	// 	vbf.WriteHTML(w, Root())
+	// }, vbf.MwLogger)
 
-func TestMain(m *testing.M) {
+	// err := vbf.Serve(mux, "8080")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	targetDir := "./components"
-	compStr, err := ExtractCompStr(targetDir)
-	if err != nil {
-		panic(err)
-	}
-	comps, err := ExtractFmtlyComponents(compStr)
-	if err != nil {
-		panic(err)
-	}
-	SetFmtlyTemplateStatementDetails(comps)
-	CreateFmtlyGoOutputTemplates(comps)
-	SetFmtlyGoOutputName(comps)
-	err = SortFmtlyTemplateStatements(comps)
-	if err != nil {
-		panic(err)
-	}
-	err = WriteOutStatementParams(comps)
-	if err != nil {
-		panic(err)
-	}
-	err = WriteFuncBodyForTemplates(comps)
-	if err != nil {
-		panic(err)
-	}
+
+
+
 }
