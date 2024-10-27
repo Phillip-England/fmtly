@@ -1,49 +1,39 @@
 package fmtly
 
 import (
-	"strings"
+	"fmt"
 	"testing"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
-func Doc(head string, body string) string {
-	return `
-		<html>
-			` + head + `
-			` + body + `
-		</html>
-	`
-}
-
-func Root(children ...string) string {
-	return Doc(`
-		<head>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<script src="/static/js/index.js"></script>
-			<link rel='stylesheet' href="/static/css/output.css"></link>
-		</head>
-	`, `
-		<body>
-			<div id='root'>`+strings.Join(children, "")+`</div>
-		</body>
-	`)
-}
-
 func TestMain(t *testing.T) {
-	// mux, gCtx := vbf.VeryBestFramework()
 
-	// vbf.HandleFavicon(mux)
-	// vbf.HandleStaticFiles(mux)
+	fStr, err := readDirToStr("./components")
+	if err != nil {
+		panic(err)
+	}
 
-	// vbf.AddRoute("GET /", mux, gCtx, func(w http.ResponseWriter, r *http.Request) {
-	// 	vbf.WriteHTML(w, Root())
-	// }, vbf.MwLogger)
+	doc, err := getDoc(fStr)
+	if err != nil {
+		panic(err)
+	}
 
-	// err := vbf.Serve(mux, "8080")
-	// if err != nil {
-	// 	panic(err)
-	// }
+	var comps []*HTMLComponent
+	doc.Find("define").Each(func(i int, s *goquery.Selection) {
+		compStr, err := s.Parent().Html()
+		if err != nil {
+			panic(err)
+		}
+		comp, err := NewHTMLComponent(compStr, s)
+		if err != nil {
+			panic(err)
+		}
+		comps = append(comps, comp)
+	})
 
-
-
+	for _, comp := range comps {
+		fmt.Println(comp)
+	}
 
 }

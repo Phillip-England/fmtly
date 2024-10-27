@@ -1,16 +1,9 @@
-<define fmt="CustomerList" tag="ul">
-    <h1>{{ listTitle }}</h1>
-    <for in="customers" type="[]*Customer">
+<define name="CustomerList" tag="ul">
+    <for in="customers" type="[]*Customer" tag="li">
         <p>{{ customer.Name }}</p>
-        <for in="customer.Friends">
+        <for in="customer.Friends" tag="div">
             <p>{{ friend.Name }}</p>
             <p>{{ friend.Age }}</p>
         </for>
-        <if condition="isSubExpired">
-            <p>Customer subscription is not expired</p>
-        </if>
-        <if condition="!isSubExpired">
-            <p>Customer subscription is expired</p>
-        </if>
     </for>
 </define>

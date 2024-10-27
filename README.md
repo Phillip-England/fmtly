@@ -2,27 +2,33 @@
 
 Take HTML files and convert them into easy-to-use Go functions.
 
-## Order of Operations
+## Templating Syntax
 
-Here, I outline a Component which includes all of the current `fmtly` features.
-This should give you a solid overview of how fmtly works.
+Components are server-rendered using familiar directives.
+This is a complete list of all the templating directives.
 
-Take the following component:
+### For
 ```html
 <define fmt="CustomerList" tag="ul">
-    <h1>{{ listTitle }}</h1>
-    <for in="customers" type="[]*Customer">
+    <for in="customers" type="[]*Customer" tag="li">
         <p>{{ customer.Name }}</p>
-        <for in="customer.Friends">
+        <for in="customer.Friends" tag="div">
             <p>{{ friend.Name }}</p>
             <p>{{ friend.Age }}</p>
         </for>
-        <if condition='isSubExpired'>
-            <p>Customer subscription is not expired</p>
-        </if>
-        <if condition="!isSubExpired">
-            <p>Customer subscription is expired</p>
-        </if>
     </for>
+</define>
+```
+
+
+### If
+```html
+<define fmt="LightBulb">
+    <if condition="isOn">
+        <p>light turned on!</p>
+        <else>
+            <p>light turned off!</p>
+        </else>
+    </if>
 </define>
 ```
