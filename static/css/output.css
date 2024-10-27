@@ -553,3 +553,16 @@ video {
 [hidden] {
   display: none;
 }
+
+.size-1 {
+  width: 0.25rem;
+  height: 0.25rem;
+}
+
+.\[firstFor\:lastFor\+len\(\"\<\/for\>\"\)\] {
+  first-for: lastFor+len("</for>");
+}
+
+.\[firstFor\:lastFor\] {
+  first-for: lastFor;
+}

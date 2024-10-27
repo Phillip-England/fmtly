@@ -1,7 +1,6 @@
 package fmtly
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
@@ -19,21 +18,17 @@ func TestMain(t *testing.T) {
 		panic(err)
 	}
 
-	var comps []*HTMLComponent
+	var comps []*HtmlComponent
 	doc.Find("define").Each(func(i int, s *goquery.Selection) {
 		compStr, err := s.Parent().Html()
 		if err != nil {
 			panic(err)
 		}
-		comp, err := NewHTMLComponent(compStr, s)
+		comp, err := NewHtmlComponent(compStr, s)
 		if err != nil {
 			panic(err)
 		}
 		comps = append(comps, comp)
 	})
-
-	for _, comp := range comps {
-		fmt.Println(comp)
-	}
 
 }
