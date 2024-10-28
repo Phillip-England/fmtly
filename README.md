@@ -10,7 +10,7 @@ Components are expected to follow certain convensions on formatting.
 This ensures the output code is consistent across codebases.
 It also ensures any output code is formatted consistently as well.
 
-1. All fmtly tags (<fmt>, <if>, <for>, ect) must be on their own line.
+1. All fmtly tags (`<fmt>`, `<if>`, `<for>`, ect) must be on their own line.
 2. Tags have requied attributes, as listed in their documentation.
 
 ## Fmtly Tags
