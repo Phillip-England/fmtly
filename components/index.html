@@ -1,4 +1,4 @@
-<define name="CustomerList" tag="ul">
+<fmt name="CustomerList" tag="ul">
     <for in="customers" type="[]*Customer" tag="li">
         <p>{{ customer.Name }}</p>
         <for in="customer.Friends" tag="div">
@@ -6,4 +6,4 @@
             <p>{{ friend.Age }}</p>
         </for>
     </for>
-</define>
+</fmt>
