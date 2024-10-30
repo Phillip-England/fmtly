@@ -6,7 +6,7 @@ import (
 
 func main() {
 
-	_, err := transpile.CompToGo("./components", "./output.go")
+	_, err := transpile.ExtractComps("./components")
 	if err != nil {
 		panic(err)
 	}
