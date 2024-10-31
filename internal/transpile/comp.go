@@ -46,6 +46,11 @@ func NewFmtComp(compStr string) (*Comp, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = comp.WriteForOutput()
+	if err != nil {
+		return nil, err
+	}
+
 	return comp, nil
 }
 
@@ -163,5 +168,9 @@ func (comp *Comp) setElseTags() error {
 			}
 		}
 	}
+	return nil
+}
+
+func (comp *Comp) WriteForOutput() error {
 	return nil
 }
