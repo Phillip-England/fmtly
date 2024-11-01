@@ -1,12 +1,10 @@
 package main
 
-import (
-	"fmtly/internal/transpile"
-)
+import "fmtly/internal/tokenize"
 
 func main() {
 
-	_, err := transpile.ExtractComps("./components")
+	err := tokenize.Components("./components")
 	if err != nil {
 		panic(err)
 	}
