@@ -1,10 +1,12 @@
 package main
 
-import "fmtly/internal/tokenize"
+import (
+	"fmtly/internal/comp"
+)
 
 func main() {
 
-	err := tokenize.Components("./components")
+	_, err := comp.ReadDir("./components")
 	if err != nil {
 		panic(err)
 	}

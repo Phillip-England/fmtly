@@ -1,8 +1,8 @@
 <fmt name="CustomerList" tag="ul">
     <h2>{{ title }}</h2>
-    <for in="customers" type="[]*Customer" tag="li">
+    <for in="customers" as="customer" type="[]*Customer" tag="li">
         <p>{{ customer.Name }}</p>
-        <for in="customer.Friends" tag="div">
+        <for in="customer.Friends" tag="div" as="friend" type="[]*Friend">
             <p>{{ friend.Name }}</p>
             <p>{{ friend.Age }}</p>
         </for>
