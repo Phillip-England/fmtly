@@ -6,26 +6,44 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
 
-	var fmtTags []*tag.Fmt
-	filepath.Walk("./components", func(path string, info fs.FileInfo, err error) error {
+	var fmtTags []*tag.FmtTag
+	err := filepath.Walk("./components", func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
 		f, err := os.ReadFile(path)
 		if err != nil {
-			panic(err)
+			return err
 		}
-		ft, err := tag.NewFmtTagFromStr(string(f))
+		fStr := string(f)
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(fStr))
 		if err != nil {
-			panic(err)
+			return err
 		}
-		fmtTags = append(fmtTags, ft)
+		var potErr error
+		potErr = nil
+		doc.Find("fmt").Each(func(i int, s *goquery.Selection) {
+			ft, err := tag.NewFmtTagFromSelection(s)
+			if err != nil {
+				potErr = err
+				return
+			}
+			fmtTags = append(fmtTags, ft)
+		})
+		if potErr != nil {
+			return potErr
+		}
 		return nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 }
 
