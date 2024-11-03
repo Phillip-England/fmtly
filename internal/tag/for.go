@@ -1,4 +1,4 @@
-package tags
+package tag
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type For struct {
+type ForTag struct {
 	Selection   *goquery.Selection
 	Html        string
 	AttrStr     string
@@ -20,8 +20,8 @@ type For struct {
 	TagAttr     string
 }
 
-func NewForFromSelection(selection *goquery.Selection) (*For, error) {
-	t := &For{
+func NewForTagFromSelection(selection *goquery.Selection) (*ForTag, error) {
+	t := &ForTag{
 		Selection: selection,
 	}
 	if err := t.setHtml(); err != nil {
@@ -45,7 +45,7 @@ func NewForFromSelection(selection *goquery.Selection) (*For, error) {
 	return t, nil
 }
 
-func (t *For) setHtml() error {
+func (t *ForTag) setHtml() error {
 	htmlStr, err := goquery.OuterHtml(t.Selection)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (t *For) setHtml() error {
 	return nil
 }
 
-func (t *For) setAttrStr() error {
+func (t *ForTag) setAttrStr() error {
 	attrStr := ""
 	for i, node := range t.Selection.Nodes {
 		if i == 0 {
@@ -74,7 +74,7 @@ func (t *For) setAttrStr() error {
 	return nil
 }
 
-func (t *For) setAttrs() error {
+func (t *ForTag) setAttrs() error {
 	inAttr, exists := t.Selection.Attr("in")
 	if !exists {
 		return fmt.Errorf("<for> is missing 'in' attribute:\n\n%s", t.Html)
@@ -98,7 +98,7 @@ func (t *For) setAttrs() error {
 	return nil
 }
 
-func (t *For) setHtmlOutput() error {
+func (t *ForTag) setHtmlOutput() error {
 	htmlBody, err := t.Selection.Html()
 	if err != nil {
 		return err
@@ -107,7 +107,7 @@ func (t *For) setHtmlOutput() error {
 	return nil
 }
 
-func (t *For) setParamOutput() error {
+func (t *ForTag) setParamOutput() error {
 	if strings.Contains(t.InAttr, ".") {
 		return nil
 	}
@@ -115,7 +115,7 @@ func (t *For) setParamOutput() error {
 	return nil
 }
 
-func (t *For) wrapHtmlOutputInGo() error {
+func (t *ForTag) wrapHtmlOutputInGo() error {
 	out := fmt.Sprintf(parsley.GetTick() + " + collectStr(" + t.InAttr + " , func(i int, " + t.AsAttr + " " + t.TypeAttr + ") string { return `" + t.HtmlOutput + "` }) + " + parsley.GetTick())
 	t.HtmlOutput = out
 	return nil

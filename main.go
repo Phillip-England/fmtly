@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmtly/internal/tags"
+	"fmtly/internal/tag"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	var fmtTags []*tags.Fmt
+	var fmtTags []*tag.Fmt
 	filepath.Walk("./components", func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
@@ -19,7 +19,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		ft, err := tags.NewFmtFromStr(string(f))
+		ft, err := tag.NewFmtTagFromStr(string(f))
 		if err != nil {
 			panic(err)
 		}
@@ -48,11 +48,3 @@ func ifElse(cond bool, ifTrue string, ifFalse string) string {
 // result = parsley.CollectStr(names, func(i int, name string) string {
 // 	return fmt.Sprintf("<li>%s</li>", name)
 // })
-
-// <if condition="isLoggedIn" tag="div">
-//     <p>logged in</p>
-//     <else>
-//         <p>not logged in</p>
-//     </else>
-// </if>
-//

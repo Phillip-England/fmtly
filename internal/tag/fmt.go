@@ -1,4 +1,4 @@
-package tags
+package tag
 
 import (
 	"fmt"
@@ -16,7 +16,8 @@ type Fmt struct {
 	AttrStr     string
 	NameAttr    string
 	TagAttr     string
-	Fors        []*For
+	ForTags     []*ForTag
+	IfTags      []*IfTag
 	StrProps    []*Prop
 	ForProps    []*Prop
 }
@@ -26,7 +27,7 @@ type Prop struct {
 	Value string
 }
 
-func NewFmtFromStr(s string) (*Fmt, error) {
+func NewFmtTagFromStr(s string) (*Fmt, error) {
 	t := &Fmt{}
 	if err := t.setSelection(s); err != nil {
 		return nil, err
@@ -38,6 +39,12 @@ func NewFmtFromStr(s string) (*Fmt, error) {
 		return nil, err
 	}
 	if err := t.setForTagsHtmlOutput(); err != nil {
+		return nil, err
+	}
+	if err := t.setIfTags(); err != nil {
+		return nil, err
+	}
+	if err := t.setIfTagsHtmlOutput(); err != nil {
 		return nil, err
 	}
 	if err := t.setAttrStr(); err != nil {
@@ -85,16 +92,44 @@ func (t *Fmt) setHtml() error {
 	return nil
 }
 
-func (t *Fmt) setForTags() error {
+func (t *Fmt) setIfTags() error {
 	var potErr error
 	potErr = nil
-	t.Selection.Find("for").Each(func(i int, s *goquery.Selection) {
-		forTag, err := NewForFromSelection(s)
+	t.Selection.Find("if").Each(func(i int, s *goquery.Selection) {
+		ifTag, err := NewIfTagFromSelection(s)
 		if err != nil {
 			potErr = err
 			return
 		}
-		t.Fors = append(t.Fors, forTag)
+		t.IfTags = append(t.IfTags, ifTag)
+	})
+	if potErr != nil {
+		return potErr
+	}
+	return nil
+}
+
+func (t *Fmt) setIfTagsHtmlOutput() error {
+	for _, ft := range t.IfTags {
+		fmt.Println(ft.Html)
+		if strings.Contains(t.HtmlOutput, ft.Html) {
+			fmt.Println("hit")
+			t.HtmlOutput = strings.Replace(t.HtmlOutput, ft.Html, ft.HtmlOutput, 1)
+		}
+	}
+	return nil
+}
+
+func (t *Fmt) setForTags() error {
+	var potErr error
+	potErr = nil
+	t.Selection.Find("for").Each(func(i int, s *goquery.Selection) {
+		forTag, err := NewForTagFromSelection(s)
+		if err != nil {
+			potErr = err
+			return
+		}
+		t.ForTags = append(t.ForTags, forTag)
 	})
 	if potErr != nil {
 		return potErr
@@ -103,7 +138,7 @@ func (t *Fmt) setForTags() error {
 }
 
 func (t *Fmt) setForTagsHtmlOutput() error {
-	for _, ft := range t.Fors {
+	for _, ft := range t.ForTags {
 		if strings.Contains(t.HtmlOutput, ft.Html) {
 			t.HtmlOutput = strings.Replace(t.HtmlOutput, ft.Html, ft.HtmlOutput, 1)
 		}
@@ -192,7 +227,7 @@ func (t *Fmt) setParamOutput() error {
 	for _, prop := range t.StrProps {
 		out = out + prop.Value + " string, "
 	}
-	for _, forTag := range t.Fors {
+	for _, forTag := range t.ForTags {
 		inAttr := forTag.InAttr
 		if strings.Contains(inAttr, ".") {
 			continue
@@ -232,6 +267,5 @@ func (t *Fmt) setHtmlOutputProps() error {
 
 func (t *Fmt) wrapHtmlOutput() error {
 	t.HtmlOutput = fmt.Sprintf("func " + t.NameAttr + "(" + t.ParamOutput + ") string { return `" + t.HtmlOutput + "` }")
-	fmt.Println(t.HtmlOutput)
 	return nil
 }

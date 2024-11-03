@@ -8,6 +8,9 @@
         </for>
     </for>
     <if condition="isLoggedIn" tag="div">
+        <for in="animals" as="animal" tag="div" type="string">
+            <p>{{ animal.Name }}</p>
+        </for>
         <p>logged in</p>
         <else>
             <p>not logged in</p>
