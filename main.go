@@ -27,19 +27,9 @@ func main() {
 		return nil
 	})
 
-	CollectStr(customers, func(i int, customer []*Customer) string {
-		return `
-			<li in="customers" as="customer" type="[]*Customer" tag="li"><p>{{ customer.Name }}</p>` +
-			CollectStr(customer.Friends, func(i int, friend []*Friend) string {
-				return `
-						<div in="customer.Friends" tag="div" as="friend" type="[]*Friend"><p>{{ friend.Name }}</p><p>{{ friend.Age }}</p></div>`
-			}) +
-			`</li>`
-	})
-
 }
 
-func CollectStr[T any](slice []T, mapper func(i int, t T) string) string {
+func collectStr[T any](slice []T, mapper func(i int, t T) string) string {
 	var builder strings.Builder
 	for i, t := range slice {
 		builder.WriteString(mapper(i, t))
@@ -47,7 +37,22 @@ func CollectStr[T any](slice []T, mapper func(i int, t T) string) string {
 	return builder.String()
 }
 
+func ifElse(cond bool, ifTrue string, ifFalse string) string {
+	if cond {
+		return ifTrue
+	}
+	return ifFalse
+}
+
 // names := []string{"Alice", "Bob", "Charlie"}
 // result = parsley.CollectStr(names, func(i int, name string) string {
 // 	return fmt.Sprintf("<li>%s</li>", name)
 // })
+
+// <if condition="isLoggedIn" tag="div">
+//     <p>logged in</p>
+//     <else>
+//         <p>not logged in</p>
+//     </else>
+// </if>
+//

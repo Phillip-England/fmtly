@@ -3,19 +3,21 @@ package tags
 import (
 	"fmt"
 	"fmtly/internal/parsley"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type For struct {
-	Selection  *goquery.Selection
-	Html       string
-	AttrStr    string
-	HtmlOutput string
-	InAttr     string
-	AsAttr     string
-	TypeAttr   string
-	TagAttr    string
+	Selection   *goquery.Selection
+	Html        string
+	AttrStr     string
+	HtmlOutput  string
+	ParamOutput string
+	InAttr      string
+	AsAttr      string
+	TypeAttr    string
+	TagAttr     string
 }
 
 func NewForFromSelection(selection *goquery.Selection) (*For, error) {
@@ -32,6 +34,9 @@ func NewForFromSelection(selection *goquery.Selection) (*For, error) {
 		return nil, err
 	}
 	if err := t.setHtmlOutput(); err != nil {
+		return nil, err
+	}
+	if err := t.setParamOutput(); err != nil {
 		return nil, err
 	}
 	if err := t.wrapHtmlOutputInGo(); err != nil {
@@ -55,11 +60,16 @@ func (t *For) setAttrStr() error {
 	for i, node := range t.Selection.Nodes {
 		if i == 0 {
 			for _, attr := range node.Attr {
+				if parsley.EqualsOneof(attr.Key, "in", "as", "tag", "type") {
+					continue
+				}
 				attrStr += fmt.Sprintf("%s=\"%s\" ", attr.Key, attr.Val)
 			}
 		}
 	}
-	attrStr = attrStr[:len(attrStr)-1]
+	if len(attrStr) != 0 {
+		attrStr = attrStr[:len(attrStr)-1]
+	}
 	t.AttrStr = attrStr
 	return nil
 }
@@ -75,7 +85,7 @@ func (t *For) setAttrs() error {
 	}
 	typeAttr, exists := t.Selection.Attr("type")
 	if !exists {
-		return fmt.Errorf("<for> is missing 'type' attribute:\n\n%s", t.Html)
+		typeAttr = "any"
 	}
 	tagAttr, exists := t.Selection.Attr("tag")
 	if !exists {
@@ -97,8 +107,16 @@ func (t *For) setHtmlOutput() error {
 	return nil
 }
 
+func (t *For) setParamOutput() error {
+	if strings.Contains(t.InAttr, ".") {
+		return nil
+	}
+	t.ParamOutput = t.InAttr
+	return nil
+}
+
 func (t *For) wrapHtmlOutputInGo() error {
-	out := fmt.Sprintf(parsley.GetTick() + " + CollectStr(" + t.InAttr + ", func(i int, " + t.AsAttr + " " + t.TypeAttr + ") string { return `" + t.HtmlOutput + "` }) + " + parsley.GetTick())
+	out := fmt.Sprintf(parsley.GetTick() + " + collectStr(" + t.InAttr + " , func(i int, " + t.AsAttr + " " + t.TypeAttr + ") string { return `" + t.HtmlOutput + "` }) + " + parsley.GetTick())
 	t.HtmlOutput = out
 	return nil
 }

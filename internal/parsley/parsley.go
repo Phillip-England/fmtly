@@ -189,9 +189,9 @@ func FlattenStr(str string) string {
 	return strings.Join(flat, "")
 }
 
-func Log(message string) error {
+func Log(message string, path string) error {
 	// Open the file in write-only mode, creating/truncating it each time
-	file, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open log file: %w", err)
 	}
