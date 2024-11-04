@@ -44,6 +44,7 @@ func (t *FmtTag) setAttrs() error {
 	return nil
 }
 
-func (t *FmtTag) Html() string  { return t.Info.Html }
-func (t *FmtTag) Name() string  { return t.Info.Name }
-func (t *FmtTag) Scopes() []Tag { return t.Info.Scopes }
+func (t *FmtTag) Html() string          { return t.Info.Html }
+func (t *FmtTag) Name() string          { return t.Info.Name }
+func (t *FmtTag) Scopes() []Tag         { return t.Info.Scopes }
+func (t *FmtTag) ParentTagName() string { return goquery.NodeName(t.Info.Selection.Parent()) }

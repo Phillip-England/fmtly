@@ -14,6 +14,7 @@ type Tag interface {
 	Html() string
 	Name() string
 	Scopes() []Tag
+	ParentTagName() string
 }
 
 func NewTagFromSelection(s *goquery.Selection) (Tag, error) {

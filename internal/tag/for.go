@@ -56,6 +56,7 @@ func (t *ForTag) setAttrs() error {
 	return nil
 }
 
-func (t *ForTag) Html() string  { return t.Info.Html }
-func (t *ForTag) Name() string  { return t.Info.Name }
-func (t *ForTag) Scopes() []Tag { return t.Info.Scopes }
+func (t *ForTag) Html() string          { return t.Info.Html }
+func (t *ForTag) Name() string          { return t.Info.Name }
+func (t *ForTag) Scopes() []Tag         { return t.Info.Scopes }
+func (t *ForTag) ParentTagName() string { return goquery.NodeName(t.Info.Selection.Parent()) }
