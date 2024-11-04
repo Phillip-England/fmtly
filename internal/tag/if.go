@@ -14,7 +14,7 @@ type IfTag struct {
 }
 
 func NewIfTagFromSelection(s *goquery.Selection) (*IfTag, error) {
-	info, err := NewTagInfoFromSelection(s, "condition", "tag")
+	info, err := NewTagInfoFromSelection(s, "if", []string{"condition", "tag"})
 	if err != nil {
 		return nil, err
 	}
@@ -43,3 +43,7 @@ func (t *IfTag) setAttrs() error {
 	t.TagAttr = tagAttr
 	return nil
 }
+
+func (t *IfTag) Html() string  { return t.Info.Html }
+func (t *IfTag) Name() string  { return t.Info.Name }
+func (t *IfTag) Scopes() []Tag { return t.Info.Scopes }

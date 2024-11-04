@@ -14,7 +14,7 @@ type FmtTag struct {
 }
 
 func NewFmtTagFromSelection(selection *goquery.Selection) (*FmtTag, error) {
-	info, err := NewTagInfoFromSelection(selection, "name", "tag")
+	info, err := NewTagInfoFromSelection(selection, "fmt", []string{"name", "tag"})
 	if err != nil {
 		return nil, err
 	}
@@ -43,3 +43,7 @@ func (t *FmtTag) setAttrs() error {
 	t.TagAttr = tagAttr
 	return nil
 }
+
+func (t *FmtTag) Html() string  { return t.Info.Html }
+func (t *FmtTag) Name() string  { return t.Info.Name }
+func (t *FmtTag) Scopes() []Tag { return t.Info.Scopes }

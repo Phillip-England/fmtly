@@ -16,7 +16,7 @@ type ForTag struct {
 }
 
 func NewForTagFromSelection(selection *goquery.Selection) (*ForTag, error) {
-	info, err := NewTagInfoFromSelection(selection, "in", "as", "tag", "")
+	info, err := NewTagInfoFromSelection(selection, "for", []string{"in", "as", "tag", "type"})
 	if err != nil {
 		return nil, err
 	}
@@ -55,3 +55,7 @@ func (t *ForTag) setAttrs() error {
 	t.TagAttr = tagAttr
 	return nil
 }
+
+func (t *ForTag) Html() string  { return t.Info.Html }
+func (t *ForTag) Name() string  { return t.Info.Name }
+func (t *ForTag) Scopes() []Tag { return t.Info.Scopes }

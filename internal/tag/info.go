@@ -9,40 +9,41 @@ import (
 )
 
 type TagInfo struct {
+	Name      string
 	Selection *goquery.Selection
 	Html      string
 	AttrStr   string
+	Scopes    []Tag
 }
 
-func NewTagInfoFromSelection(s *goquery.Selection, specialAttrs ...string) (*TagInfo, error) {
-	in := &TagInfo{
+func NewTagInfoFromSelection(s *goquery.Selection, name string, setAttrs []string) (*TagInfo, error) {
+	info := &TagInfo{
 		Selection: s,
+		Name:      name,
 	}
-	err := fungi.ProcessErrFuncs(
-		in.setHtml,
-	)
-	if err != nil {
+	if err := fungi.Process(
+		func() error { return info.setHtml() },
+		func() error { return info.setAttrStr(setAttrs...) },
+		func() error { return info.setScopes() },
+	); err != nil {
 		return nil, err
 	}
-	if err := in.setAttrStr(specialAttrs...); err != nil {
-		return nil, err
-	}
-	return in, nil
+	return info, nil
 }
 
-func (in *TagInfo) setHtml() error {
-	htmlStr, err := goquery.OuterHtml(in.Selection)
+func (info *TagInfo) setHtml() error {
+	htmlStr, err := goquery.OuterHtml(info.Selection)
 	if err != nil {
 		return err
 	}
 	flatHtml := parsley.FlattenStr(htmlStr)
-	in.Html = flatHtml
+	info.Html = flatHtml
 	return nil
 }
 
-func (in *TagInfo) setAttrStr(filterAttrs ...string) error {
+func (info *TagInfo) setAttrStr(filterAttrs ...string) error {
 	attrStr := ""
-	for i, node := range in.Selection.Nodes {
+	for i, node := range info.Selection.Nodes {
 		if i == 0 {
 			for _, attr := range node.Attr {
 				if parsley.EqualsOneof(attr.Key, filterAttrs...) {
@@ -55,6 +56,15 @@ func (in *TagInfo) setAttrStr(filterAttrs ...string) error {
 	if len(attrStr) != 0 {
 		attrStr = attrStr[:len(attrStr)-1]
 	}
-	in.AttrStr = attrStr
+	info.AttrStr = attrStr
+	return nil
+}
+
+func (info *TagInfo) setScopes() error {
+	tags, err := NewTagsFromSelection(info.Selection)
+	if err != nil {
+		return err
+	}
+	info.Scopes = tags
 	return nil
 }

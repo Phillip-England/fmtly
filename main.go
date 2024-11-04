@@ -1,48 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"fmtly/internal/tag"
-	"io/fs"
-	"os"
-	"path/filepath"
 	"strings"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
 
-	var fmtTags []*tag.FmtTag
-	err := filepath.Walk("./components", func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		f, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		fStr := string(f)
-		doc, err := goquery.NewDocumentFromReader(strings.NewReader(fStr))
-		if err != nil {
-			return err
-		}
-		var potErr error
-		potErr = nil
-		doc.Find("fmt").Each(func(i int, s *goquery.Selection) {
-			ft, err := tag.NewFmtTagFromSelection(s)
-			if err != nil {
-				potErr = err
-				return
-			}
-			fmtTags = append(fmtTags, ft)
-		})
-		if potErr != nil {
-			return potErr
-		}
-		return nil
-	})
+	fmtTags, err := tag.NewFmtTagsFromDir("./components.go")
 	if err != nil {
 		panic(err)
+	}
+
+	for _, t := range fmtTags {
+		for _, sc := range t.Scopes() {
+			fmt.Println(sc.Name())
+		}
 	}
 
 }
