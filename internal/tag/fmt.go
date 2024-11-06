@@ -2,49 +2,91 @@ package tag
 
 import (
 	"fmt"
-	"fmtly/internal/fungi"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type FmtTag struct {
-	Info     *TagInfo
-	NameAttr string
-	TagAttr  string
+	TagInfo  *TagInfo
+	GoOutput *GoOutput
 }
 
 func NewFmtTagFromSelection(selection *goquery.Selection) (*FmtTag, error) {
-	info, err := NewTagInfoFromSelection(selection, "fmt", []string{"name", "tag"})
+	info, err := NewTagInfoFromSelection(selection, []string{"name", "tag"})
 	if err != nil {
 		return nil, err
 	}
 	t := &FmtTag{
-		Info: info,
+		TagInfo: info,
 	}
-	err = fungi.ProcessErrFuncs(
-		t.setAttrs,
-	)
+	out, err := NewOutputFromTag(t)
 	if err != nil {
 		return nil, err
 	}
+	t.GoOutput = out
 	return t, nil
 }
 
-func (t *FmtTag) setAttrs() error {
-	nameAttr, exists := t.Info.Selection.Attr("name")
-	if !exists {
-		return fmt.Errorf("<fmt> is missing 'name' attribute:\n\n%s", t.Info.Html)
+func NewFmtTagsFromDir(dir string) ([]Tag, error) {
+	var fmtTags []Tag
+	err := filepath.Walk("./components", func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		f, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		fStr := string(f)
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(fStr))
+		if err != nil {
+			return err
+		}
+		var potErr error
+		potErr = nil
+		doc.Find("fmt").Each(func(i int, s *goquery.Selection) {
+			ft, err := NewTagFromSelection(s)
+			if err != nil {
+				potErr = err
+				return
+			}
+			innerFmt := s.Find("fmt")
+			if innerFmt.Length() > 0 {
+				return
+			}
+			fmtTags = append(fmtTags, ft)
+		})
+		if potErr != nil {
+			return potErr
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
-	tagAttr, exists := t.Info.Selection.Attr("tag")
-	if !exists {
-		return fmt.Errorf("<fmt> is missing 'tag' attribute:\n\n%s", t.Info.Html)
-	}
-	t.NameAttr = nameAttr
-	t.TagAttr = tagAttr
-	return nil
+	return fmtTags, nil
 }
 
-func (t *FmtTag) Html() string          { return t.Info.Html }
-func (t *FmtTag) Name() string          { return t.Info.Name }
-func (t *FmtTag) Scopes() []Tag         { return t.Info.Scopes }
-func (t *FmtTag) ParentTagName() string { return goquery.NodeName(t.Info.Selection.Parent()) }
+func (t *FmtTag) Info() *TagInfo { return t.TagInfo }
+func (t *FmtTag) Out() string    { return t.GoOutput.Html }
+
+func (t *FmtTag) MakeGoOutput() (string, error) {
+	attrTag, _ := t.Info().Selection.Attr("tag")
+	htmlStr, err := t.Info().Selection.Html()
+	if err != nil {
+		return "", err
+	}
+	var out string
+	if t.Info().AttrStr == "" {
+		out = fmt.Sprintf("<%s>%s</%s>", attrTag, htmlStr, attrTag)
+	} else {
+		out = fmt.Sprintf("<%s %s>%s</%s>", attrTag, t.Info().AttrStr, htmlStr, attrTag)
+
+	}
+	finalOut := fmt.Sprintf("func NAME(PARAMS) string {\n\treturn `%s`\n}", out)
+	return finalOut, nil
+}

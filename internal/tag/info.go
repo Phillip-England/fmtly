@@ -14,19 +14,17 @@ type TagInfo struct {
 	Html      string
 	AttrStr   string
 	Tags      []Tag
-	Scopes    []Tag
 }
 
-func NewTagInfoFromSelection(s *goquery.Selection, name string, setAttrs []string) (*TagInfo, error) {
+func NewTagInfoFromSelection(s *goquery.Selection, setAttrs []string) (*TagInfo, error) {
 	info := &TagInfo{
 		Selection: s,
-		Name:      name,
+		Name:      goquery.NodeName(s),
 	}
 	if err := fungi.Process(
 		func() error { return info.setHtml() },
 		func() error { return info.setAttrStr(setAttrs...) },
 		func() error { return info.setTags() },
-		func() error { return info.setScopes() },
 	); err != nil {
 		return nil, err
 	}
@@ -68,15 +66,5 @@ func (info *TagInfo) setTags() error {
 		return err
 	}
 	info.Tags = tags
-	return nil
-}
-
-func (info *TagInfo) setScopes() error {
-	for _, tag := range info.Tags {
-		parentTagName := tag.ParentTagName()
-		if parentTagName == goquery.NodeName(info.Selection) {
-			info.Scopes = append(info.Scopes, tag)
-		}
-	}
 	return nil
 }

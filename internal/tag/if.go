@@ -2,49 +2,67 @@ package tag
 
 import (
 	"fmt"
-	"fmtly/internal/fungi"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type IfTag struct {
-	Info          *TagInfo
-	ConditionAttr string
-	TagAttr       string
+	TagInfo  *TagInfo
+	GoOutput *GoOutput
 }
 
 func NewIfTagFromSelection(s *goquery.Selection) (*IfTag, error) {
-	info, err := NewTagInfoFromSelection(s, "if", []string{"condition", "tag"})
+	info, err := NewTagInfoFromSelection(s, []string{"condition", "tag"})
 	if err != nil {
 		return nil, err
 	}
 	t := &IfTag{
-		Info: info,
+		TagInfo: info,
 	}
-	err = fungi.ProcessErrFuncs(
-		t.setAttrs,
-	)
+	out, err := NewOutputFromTag(t)
 	if err != nil {
 		return nil, err
 	}
+	t.GoOutput = out
 	return t, nil
 }
 
-func (t *IfTag) setAttrs() error {
-	conditionAttr, exists := t.Info.Selection.Attr("condition")
-	if !exists {
-		return fmt.Errorf("<if> is missing 'condition' attribute:\n\n%s", t.Info.Html)
-	}
-	tagAttr, exists := t.Info.Selection.Attr("tag")
-	if !exists {
-		return fmt.Errorf("<if> is missing 'tag' attribute:\n\n%s", t.Info.Html)
-	}
-	t.ConditionAttr = conditionAttr
-	t.TagAttr = tagAttr
-	return nil
-}
+func (t *IfTag) Info() *TagInfo { return t.TagInfo }
+func (t *IfTag) Out() string    { return t.GoOutput.Html }
 
-func (t *IfTag) Html() string          { return t.Info.Html }
-func (t *IfTag) Name() string          { return t.Info.Name }
-func (t *IfTag) Scopes() []Tag         { return t.Info.Scopes }
-func (t *IfTag) ParentTagName() string { return goquery.NodeName(t.Info.Selection.Parent()) }
+func (t *IfTag) MakeGoOutput() (string, error) {
+
+	attrTag, _ := t.Info().Selection.Attr("tag")
+	attrCondition, _ := t.Info().Selection.Attr("condition")
+
+	elseSelection := t.Info().Selection.Find("else")
+	elseHtml, err := elseSelection.Html()
+	if err != nil {
+		return "", err
+	}
+	var elseOut string
+	if t.Info().AttrStr == "" {
+		elseOut = fmt.Sprintf("<%s>%s</%s>", attrTag, elseHtml, attrTag)
+	} else {
+		elseOut = fmt.Sprintf("<%s %s>%s</%s>", attrTag, t.Info().AttrStr, elseHtml, attrTag)
+
+	}
+
+	selectionCopy := t.Info().Selection.Clone()
+	selectionCopy.Find("else").Remove()
+	htmlStr, err := selectionCopy.Html()
+	if err != nil {
+		return "", err
+	}
+	var ifOut string
+	if t.Info().AttrStr == "" {
+		ifOut = fmt.Sprintf("<%s>%s</%s>", attrTag, htmlStr, attrTag)
+	} else {
+		ifOut = fmt.Sprintf("<%s %s>%s</%s>", attrTag, t.Info().AttrStr, htmlStr, attrTag)
+
+	}
+
+	finalOut := fmt.Sprintf("` + If(%s, `%s`, `%s`) + `", attrCondition, ifOut, elseOut)
+
+	return finalOut, nil
+}

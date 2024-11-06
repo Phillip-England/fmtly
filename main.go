@@ -1,22 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"fmtly/internal/tag"
 	"strings"
 )
 
 func main() {
 
-	fmtTags, err := tag.NewFmtTagsFromDir("./components.go")
+	_, err := tag.NewFmtTagsFromDir("./components.go")
 	if err != nil {
 		panic(err)
-	}
-
-	for _, t := range fmtTags {
-		for _, sc := range t.Scopes() {
-			fmt.Println(sc.Name())
-		}
 	}
 
 }

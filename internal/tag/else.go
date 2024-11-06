@@ -5,21 +5,26 @@ import (
 )
 
 type ElseTag struct {
-	Info *TagInfo
+	TagInfo  *TagInfo
+	GoOutput *GoOutput
 }
 
 func NewElseTagFromSelection(s *goquery.Selection) (*ElseTag, error) {
-	info, err := NewTagInfoFromSelection(s, "else", []string{})
+	info, err := NewTagInfoFromSelection(s, []string{})
 	if err != nil {
 		return nil, err
 	}
 	t := &ElseTag{
-		Info: info,
+		TagInfo: info,
 	}
+	out, err := NewOutputFromTag(t)
+	if err != nil {
+		return nil, err
+	}
+	t.GoOutput = out
 	return t, nil
 }
 
-func (t *ElseTag) Html() string          { return t.Info.Html }
-func (t *ElseTag) Name() string          { return t.Info.Name }
-func (t *ElseTag) Scopes() []Tag         { return t.Info.Scopes }
-func (t *ElseTag) ParentTagName() string { return goquery.NodeName(t.Info.Selection.Parent()) }
+func (t *ElseTag) Info() *TagInfo                { return t.TagInfo }
+func (t *ElseTag) MakeGoOutput() (string, error) { return "", nil }
+func (t *ElseTag) Out() string                   { return t.GoOutput.Html }

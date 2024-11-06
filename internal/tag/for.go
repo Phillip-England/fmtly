@@ -2,61 +2,53 @@ package tag
 
 import (
 	"fmt"
-	"fmtly/internal/fungi"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type ForTag struct {
-	Info     *TagInfo
-	InAttr   string
-	AsAttr   string
-	TypeAttr string
-	TagAttr  string
+	TagInfo  *TagInfo
+	GoOutput *GoOutput
+	ElseTag  *ElseTag
 }
 
 func NewForTagFromSelection(selection *goquery.Selection) (*ForTag, error) {
-	info, err := NewTagInfoFromSelection(selection, "for", []string{"in", "as", "tag", "type"})
+	info, err := NewTagInfoFromSelection(selection, []string{"in", "as", "tag", "type"})
+	if err != nil {
+		return nil, err
+	}
+	elseSelection := info.Selection.Find("else")
+	elseTag, err := NewElseTagFromSelection(elseSelection)
 	if err != nil {
 		return nil, err
 	}
 	t := &ForTag{
-		Info: info,
+		TagInfo: info,
+		ElseTag: elseTag,
 	}
-	err = fungi.ProcessErrFuncs(
-		t.setAttrs,
-	)
+	out, err := NewOutputFromTag(t)
 	if err != nil {
 		return nil, err
 	}
+	t.GoOutput = out
 	return t, nil
 }
 
-func (t *ForTag) setAttrs() error {
-	inAttr, exists := t.Info.Selection.Attr("in")
-	if !exists {
-		return fmt.Errorf("<for> is missing 'in' attribute:\n\n%s", t.Info.Html)
-	}
-	asAttr, exists := t.Info.Selection.Attr("as")
-	if !exists {
-		return fmt.Errorf("<for> is missing 'as' attribute:\n\n%s", t.Info.Html)
-	}
-	typeAttr, exists := t.Info.Selection.Attr("type")
-	if !exists {
-		typeAttr = "any"
-	}
-	tagAttr, exists := t.Info.Selection.Attr("tag")
-	if !exists {
-		return fmt.Errorf("<for> is missing 'tag' attribute:\n\n%s", t.Info.Html)
-	}
-	t.InAttr = inAttr
-	t.AsAttr = asAttr
-	t.TypeAttr = typeAttr
-	t.TagAttr = tagAttr
-	return nil
-}
+func (t *ForTag) Info() *TagInfo { return t.TagInfo }
+func (t *ForTag) Out() string    { return t.GoOutput.Html }
 
-func (t *ForTag) Html() string          { return t.Info.Html }
-func (t *ForTag) Name() string          { return t.Info.Name }
-func (t *ForTag) Scopes() []Tag         { return t.Info.Scopes }
-func (t *ForTag) ParentTagName() string { return goquery.NodeName(t.Info.Selection.Parent()) }
+func (t *ForTag) MakeGoOutput() (string, error) {
+	attrTag, _ := t.Info().Selection.Attr("tag")
+	htmlStr, err := t.Info().Selection.Html()
+	if err != nil {
+		return "", err
+	}
+	var out string
+	if t.Info().AttrStr == "" {
+		out = fmt.Sprintf("<%s>%s</%s>", attrTag, htmlStr, attrTag)
+	} else {
+		out = fmt.Sprintf("<%s %s>%s</%s>", attrTag, t.Info().AttrStr, htmlStr, attrTag)
+
+	}
+	return out, nil
+}

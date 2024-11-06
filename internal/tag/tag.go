@@ -2,19 +2,15 @@ package tag
 
 import (
 	"fmt"
-	"io/fs"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Tag interface {
-	Html() string
-	Name() string
-	Scopes() []Tag
-	ParentTagName() string
+	Info() *TagInfo
+	MakeGoOutput() (string, error)
+	Out() string
 }
 
 func NewTagFromSelection(s *goquery.Selection) (Tag, error) {
@@ -50,7 +46,7 @@ func NewTagFromSelection(s *goquery.Selection) (Tag, error) {
 }
 
 func NewTagsFromSelection(selection *goquery.Selection) ([]Tag, error) {
-	tagNames := []string{"for", "if", "else", "fmt"}
+	tagNames := []string{"for", "if", "fmt"}
 	tags := make([]Tag, 0)
 	for _, name := range tagNames {
 		var potErr error
@@ -69,38 +65,15 @@ func NewTagsFromSelection(selection *goquery.Selection) ([]Tag, error) {
 	return tags, nil
 }
 
-func NewFmtTagsFromDir(dir string) ([]Tag, error) {
-	var fmtTags []Tag
-	err := filepath.Walk("./components", func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		f, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		fStr := string(f)
-		doc, err := goquery.NewDocumentFromReader(strings.NewReader(fStr))
-		if err != nil {
-			return err
-		}
-		var potErr error
-		potErr = nil
-		doc.Find("fmt").Each(func(i int, s *goquery.Selection) {
-			ft, err := NewTagFromSelection(s)
-			if err != nil {
-				potErr = err
-				return
-			}
-			fmtTags = append(fmtTags, ft)
-		})
-		if potErr != nil {
-			return potErr
-		}
-		return nil
-	})
+func NewTagsFromHtmlStr(s string) ([]Tag, error) {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(s))
 	if err != nil {
 		return nil, err
 	}
-	return fmtTags, nil
+	children := doc.Find("body").Children()
+	tags, err := NewTagsFromSelection(children)
+	if err != nil {
+		return nil, err
+	}
+	return tags, nil
 }
