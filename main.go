@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -14,6 +15,16 @@ import (
 )
 
 func main() {
+
+	err := emptyFile("./components.go")
+	if err != nil {
+		panic(err)
+	}
+
+	err = appendFile("./components.go", "package main\n\n")
+	if err != nil {
+		panic(err)
+	}
 
 	str, err := dirToStr("./components")
 	if err != nil {
@@ -67,13 +78,13 @@ func main() {
 			panic(err)
 		}
 
+		err = formatOutput("./components.go")
+		if err != nil {
+			panic(err)
+		}
+
 		fmtTags[i] = tag
 
-	}
-
-	err = appendFile("./components.go", "package main\n\n")
-	if err != nil {
-		panic(err)
 	}
 
 	err = appendFile("./components.go", parsley.JoinLines(fmtTags))
@@ -81,6 +92,15 @@ func main() {
 		panic(err)
 	}
 
+}
+
+func emptyFile(path string) error {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	return nil
 }
 
 func dirToStr(dir string) (string, error) {
@@ -358,6 +378,24 @@ func makeFmtTagParamStr(fmtTag string, props []string) (string, error) {
 		if strings.Contains(sq, ".") {
 			continue
 		}
+		// filtering out duplicates
+		if strings.Contains(paramStr, sq+" string, ") {
+			continue
+		}
+		// filtering out <for>'s with type="string"
+		shouldContinue := false
+		s.Find("*[directive='for']").Each(func(i int, s *goquery.Selection) {
+			asAttr, _ := s.Attr("as")
+			typeAttr, _ := s.Attr("type")
+			if typeAttr == "string" {
+				if asAttr == sq {
+					shouldContinue = true
+				}
+			}
+		})
+		if shouldContinue {
+			continue
+		}
 		paramStr += sq + " string, "
 	}
 	s.Find("*[directive='for']").Each(func(i int, s *goquery.Selection) {
@@ -498,6 +536,22 @@ func appendFile(filename, content string) error {
 	_, err = file.WriteString(content)
 	if err != nil {
 		return fmt.Errorf("failed to write to file: %w", err)
+	}
+
+	return nil
+}
+
+func formatOutput(path string) error {
+	// Check if gofmt is installed
+	if _, err := exec.LookPath("gofmt"); err != nil {
+		fmt.Println("Warning: <fmt> components cannot be formatted due to 'gofmt' not being installed. Please install it to enable formatting.")
+		return nil
+	}
+
+	// Run gofmt if installed
+	cmd := exec.Command("gofmt", "-w", path)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to format file %s: %w", path, err)
 	}
 
 	return nil

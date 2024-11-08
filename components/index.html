@@ -1,5 +1,3 @@
-<go> import ( "github.com/PuerkitoBio/goquery" ) </go>
-
 <fmt name="CustomerList" tag="ul" class="p-4 bg-black">
     <h2>{{ title }}</h2>
     <for in="customers" as="customer" tag="li" type="*Customer">
@@ -11,7 +9,7 @@
     </for>
     <if condition="isLoggedIn" tag="div">
         <for in="animals" as="animal" tag="div" type="string">
-            <p>{{ animal.Name }}</p>
+            <p>{{ animal }}</p>
         </for>
         <p>logged in</p>
         <else>
