@@ -1,4 +1,4 @@
-module fmtly
+module tagly
 
 go 1.23.2
 

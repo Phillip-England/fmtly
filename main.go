@@ -20,59 +20,54 @@ func main() {
 		panic(err)
 	}
 
-	fmtDirs, err := fmtDirectivesFromStr(str)
+	fmtTags, err := fmtTagsFromStr(str)
 	if err != nil {
 		panic(err)
 	}
 
-	for i, dir := range fmtDirs {
+	for i, tag := range fmtTags {
 
-		dir, err := renameFmtDirective(dir)
+		tag, err = renameFmtTag(tag)
 		if err != nil {
 			panic(err)
 		}
 
-		dir, err = renameDirectivesBySelectors(dir, "for", "if")
+		tag, err = renameTagsBySelector(tag, "for", "if")
 		if err != nil {
 			panic(err)
 		}
 
-		dir, err = setDirectivesDepth(dir, "for")
+		tag, err = setTagDepthByDirectiveAttrs(tag, "for", "if")
 		if err != nil {
 			panic(err)
 		}
 
-		dir, err = setDirectivesDepth(dir, "if")
+		props, err := extractFmtTagProps(tag)
 		if err != nil {
 			panic(err)
 		}
 
-		props, err := extractProps(dir)
+		paramStr, err := makeFmtTagParamStr(tag, props)
 		if err != nil {
 			panic(err)
 		}
 
-		paramStr, err := makeParamStr(dir, props)
+		tag, err = outputFmtTagProps(tag, props)
 		if err != nil {
 			panic(err)
 		}
 
-		dir, err = outputProps(dir, props)
+		tag, err = outputInnerTags(tag)
 		if err != nil {
 			panic(err)
 		}
 
-		dir, err = outputDirectives(dir)
+		tag, err = wrapFmtTagInGoFunc(tag, paramStr)
 		if err != nil {
 			panic(err)
 		}
 
-		dir, err = wrapFmtDirectiveInFunc(dir, paramStr)
-		if err != nil {
-			panic(err)
-		}
-
-		fmtDirs[i] = dir
+		fmtTags[i] = tag
 
 	}
 
@@ -81,7 +76,7 @@ func main() {
 		panic(err)
 	}
 
-	err = appendFile("./components.go", parsley.JoinLines(fmtDirs))
+	err = appendFile("./components.go", parsley.JoinLines(fmtTags))
 	if err != nil {
 		panic(err)
 	}
@@ -108,8 +103,8 @@ func dirToStr(dir string) (string, error) {
 	return out, nil
 }
 
-func fmtDirectivesFromStr(str string) ([]string, error) {
-	comps := make([]string, 0)
+func fmtTagsFromStr(str string) ([]string, error) {
+	fmtTags := make([]string, 0)
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(str))
 	if err != nil {
 		panic(err)
@@ -117,21 +112,21 @@ func fmtDirectivesFromStr(str string) ([]string, error) {
 	var potErr error
 	potErr = nil
 	doc.Find("fmt").Each(func(i int, s *goquery.Selection) {
-		compStr, err := goquery.OuterHtml(s)
+		fmtTagStr, err := goquery.OuterHtml(s)
 		if err != nil {
 			potErr = err
 			return
 		}
-		comps = append(comps, compStr)
+		fmtTags = append(fmtTags, fmtTagStr)
 	})
 	if potErr != nil {
 		return nil, potErr
 	}
-	return comps, nil
+	return fmtTags, nil
 }
 
-func renameFmtDirective(fmtDirs string) (string, error) {
-	s, err := gqpp.NewSelectionFromHtmlStr(fmtDirs)
+func renameFmtTag(fmtTags string) (string, error) {
+	s, err := gqpp.NewSelectionFromHtmlStr(fmtTags)
 	if err != nil {
 		return "", err
 	}
@@ -148,9 +143,9 @@ func renameFmtDirective(fmtDirs string) (string, error) {
 	return htmlStr, nil
 }
 
-func renameDirectivesBySelectors(fmtDir string, selectors ...string) (string, error) {
+func renameTagsBySelector(fmtTag string, selectors ...string) (string, error) {
 	for _, selector := range selectors {
-		s, err := gqpp.NewSelectionFromHtmlStr(fmtDir)
+		s, err := gqpp.NewSelectionFromHtmlStr(fmtTag)
 		if err != nil {
 			return "", err
 		}
@@ -174,47 +169,50 @@ func renameDirectivesBySelectors(fmtDir string, selectors ...string) (string, er
 				potErr = err
 				return
 			}
-			fmtDir = strings.Replace(fmtDir, tagHtml, newTagHtml, 1)
+			fmtTag = strings.Replace(fmtTag, tagHtml, newTagHtml, 1)
 		})
 		if potErr != nil {
 			return "", potErr
 		}
 	}
-	return fmtDir, nil
+	return fmtTag, nil
 }
 
-func setDirectivesDepth(fmtDir string, targetDirectiveName string) (string, error) {
-	s, err := gqpp.NewSelectionFromHtmlStr(fmtDir)
-	if err != nil {
-		return "", err
-	}
-	s.Find("*[directive='" + targetDirectiveName + "']").Each(func(i int, s *goquery.Selection) {
-		directiveCount := 0
-		gqpp.ClimbTreeUntil(s, func(parent *goquery.Selection) bool {
-			dirAttr, _ := parent.Attr("directive")
-			if dirAttr == "fmt" {
-				return true
-			}
-			if dirAttr == "for" {
-				directiveCount++
-			}
-			if dirAttr == "if" {
-				directiveCount++
-			}
-			return false
+func setTagDepthByDirectiveAttrs(fmtTag string, targetDirectiveNames ...string) (string, error) {
+	for _, targetDirectiveName := range targetDirectiveNames {
+		s, err := gqpp.NewSelectionFromHtmlStr(fmtTag)
+		if err != nil {
+			return "", err
+		}
+
+		s.Find("*[directive='" + targetDirectiveName + "']").Each(func(i int, s *goquery.Selection) {
+			directiveCount := 0
+			gqpp.ClimbTreeUntil(s, func(parent *goquery.Selection) bool {
+				dirAttr, _ := parent.Attr("directive")
+				if dirAttr == "fmt" {
+					return true
+				}
+				if dirAttr == "for" || dirAttr == "if" {
+					directiveCount++
+				}
+				return false
+			})
+
+			s.SetAttr("depth", fmt.Sprintf("%d", directiveCount))
 		})
 
-		s.SetAttr("depth", fmt.Sprintf("%d", directiveCount))
-	})
-	htmlStr, err := gqpp.GetHtmlFromSelection(s)
-	if err != nil {
-		return "", err
+		// Update fmtDir with the modified HTML
+		htmlStr, err := gqpp.GetHtmlFromSelection(s)
+		if err != nil {
+			return "", err
+		}
+		fmtTag = htmlStr
 	}
-	return htmlStr, nil
+	return fmtTag, nil
 }
 
-func getFmtDirectiveMaxDepth(fmtDir string) (int, error) {
-	s, err := gqpp.NewSelectionFromHtmlStr(fmtDir)
+func getFmtTagMaxDepth(fmtTag string) (int, error) {
+	s, err := gqpp.NewSelectionFromHtmlStr(fmtTag)
 	if err != nil {
 		return -1, err
 	}
@@ -238,9 +236,9 @@ func getFmtDirectiveMaxDepth(fmtDir string) (int, error) {
 	return depthHeight, nil
 }
 
-func getInnerDirectives(fmtDir string) ([]string, error) {
-	dirs := make([]string, 0)
-	s, err := gqpp.NewSelectionFromHtmlStr(fmtDir)
+func getInnerTags(fmtTag string) ([]string, error) {
+	tags := make([]string, 0)
+	s, err := gqpp.NewSelectionFromHtmlStr(fmtTag)
 	if err != nil {
 		return nil, err
 	}
@@ -254,16 +252,16 @@ func getInnerDirectives(fmtDir string) ([]string, error) {
 				potErr = err
 				return
 			}
-			dirs = append(dirs, htmlStr)
+			tags = append(tags, htmlStr)
 		})
 		if potErr != nil {
 			return nil, potErr
 		}
 	}
-	return dirs, nil
+	return tags, nil
 }
 
-func sortInnerDirectivesByDepth(dirs []string, maxDepth int) ([]string, error) {
+func sortInnerTagsByDepth(tags []string, maxDepth int) ([]string, error) {
 	out := make([]string, 0)
 	currentDepth := maxDepth
 	for {
@@ -271,8 +269,8 @@ func sortInnerDirectivesByDepth(dirs []string, maxDepth int) ([]string, error) {
 			break
 		}
 		foundTagAtDepth := false
-		for _, dir := range dirs {
-			d, _, err := gqpp.AttrFromStr(dir, "depth")
+		for _, tag := range tags {
+			d, _, err := gqpp.AttrFromStr(tag, "depth")
 			if err != nil {
 				return nil, err
 			}
@@ -280,9 +278,9 @@ func sortInnerDirectivesByDepth(dirs []string, maxDepth int) ([]string, error) {
 			if err != nil {
 				return nil, err
 			}
-			if !parsley.SliceContains(out, dir) && dInt == currentDepth {
+			if !parsley.SliceContains(out, tag) && dInt == currentDepth {
 				foundTagAtDepth = true
-				out = append(out, dir)
+				out = append(out, tag)
 			}
 		}
 		if foundTagAtDepth {
@@ -293,23 +291,23 @@ func sortInnerDirectivesByDepth(dirs []string, maxDepth int) ([]string, error) {
 	return out, nil
 }
 
-func getInnerDirectivesByDepth(fmtDir string) ([]string, error) {
-	dirs, err := getInnerDirectives(fmtDir)
+func getInnerDirectivesByDepth(fmtTag string) ([]string, error) {
+	tags, err := getInnerTags(fmtTag)
 	if err != nil {
 		return nil, err
 	}
-	maxDepth, err := getFmtDirectiveMaxDepth(fmtDir)
+	maxDepth, err := getFmtTagMaxDepth(fmtTag)
 	if err != nil {
 		return nil, err
 	}
-	sorted, err := sortInnerDirectivesByDepth(dirs, maxDepth)
+	sorted, err := sortInnerTagsByDepth(tags, maxDepth)
 	if err != nil {
 		return nil, err
 	}
 	return sorted, nil
 }
 
-func extractProps(fmtTag string) ([]string, error) {
+func extractFmtTagProps(fmtTag string) ([]string, error) {
 	props := make([]string, 0)
 	inProp := false
 	prop := ""
@@ -336,7 +334,7 @@ func extractProps(fmtTag string) ([]string, error) {
 	return props, nil
 }
 
-func outputProps(fmtTag string, props []string) (string, error) {
+func outputFmtTagProps(fmtTag string, props []string) (string, error) {
 	for _, prop := range props {
 		out := strings.Replace(prop, "{{", "", 1)
 		out = strings.Replace(out, "}}", "", 1)
@@ -347,8 +345,8 @@ func outputProps(fmtTag string, props []string) (string, error) {
 	return fmtTag, nil
 }
 
-func makeParamStr(fmtDir string, props []string) (string, error) {
-	s, err := gqpp.NewSelectionFromHtmlStr(fmtDir)
+func makeFmtTagParamStr(fmtTag string, props []string) (string, error) {
+	s, err := gqpp.NewSelectionFromHtmlStr(fmtTag)
 	if err != nil {
 		return "", err
 	}
@@ -377,46 +375,46 @@ func makeParamStr(fmtDir string, props []string) (string, error) {
 	return paramStr, nil
 }
 
-func outputDirectives(fmtDir string) (string, error) {
-	innerDirs, err := getInnerDirectivesByDepth(fmtDir)
+func outputInnerTags(fmtTag string) (string, error) {
+	innerDirs, err := getInnerDirectivesByDepth(fmtTag)
 	if err != nil {
 		panic(err)
 	}
 	foundDir := false
 	for _, dir := range innerDirs {
-		if strings.Contains(fmtDir, dir) {
+		if strings.Contains(fmtTag, dir) {
 			dirType, _, err := gqpp.AttrFromStr(dir, "directive")
 			if err != nil {
 				return "", err
 			}
 			if dirType == "for" {
 				foundDir = true
-				out, err := outputForDirective(dir)
+				out, err := outputForTags(dir)
 				if err != nil {
 					return "", err
 				}
-				fmtDir = strings.Replace(fmtDir, dir, out, 1)
+				fmtTag = strings.Replace(fmtTag, dir, out, 1)
 				break
 			}
 			if dirType == "if" {
 				foundDir = true
-				out, err := outputIfDirective(dir)
+				out, err := outputIfTags(dir)
 				if err != nil {
 					return "", err
 				}
-				fmtDir = strings.Replace(fmtDir, dir, out, 1)
+				fmtTag = strings.Replace(fmtTag, dir, out, 1)
 				break
 			}
 		}
 	}
 	if foundDir {
-		return outputDirectives(fmtDir)
+		return outputInnerTags(fmtTag)
 	}
-	return fmtDir, nil
+	return fmtTag, nil
 }
 
-func outputForDirective(forDir string) (string, error) {
-	s, err := gqpp.NewSelectionFromHtmlStr(forDir)
+func outputForTags(forTag string) (string, error) {
+	s, err := gqpp.NewSelectionFromHtmlStr(forTag)
 	if err != nil {
 		return "", err
 	}
@@ -440,8 +438,8 @@ func outputForDirective(forDir string) (string, error) {
 	return out, nil
 }
 
-func outputIfDirective(ifDir string) (string, error) {
-	s, err := gqpp.NewSelectionFromHtmlStr(ifDir)
+func outputIfTags(ifTag string) (string, error) {
+	s, err := gqpp.NewSelectionFromHtmlStr(ifTag)
 	if err != nil {
 		return "", err
 	}
@@ -471,8 +469,8 @@ func outputIfDirective(ifDir string) (string, error) {
 	return out, nil
 }
 
-func wrapFmtDirectiveInFunc(fmtDir string, paramStr string) (string, error) {
-	s, err := gqpp.NewSelectionFromHtmlStr(fmtDir)
+func wrapFmtTagInGoFunc(fmtTag string, paramStr string) (string, error) {
+	s, err := gqpp.NewSelectionFromHtmlStr(fmtTag)
 	if err != nil {
 		return "", err
 	}
@@ -485,8 +483,8 @@ func wrapFmtDirectiveInFunc(fmtDir string, paramStr string) (string, error) {
 	} else {
 		openTag = fmt.Sprintf("<%s>", tagAttr)
 	}
-	fmtDir = parsley.ReplaceFirstLine(fmtDir, openTag)
-	out := fmt.Sprintf("func %s(%s) string {\n\treturn`%s`\t}", nameAttr, paramStr, fmtDir)
+	fmtTag = parsley.ReplaceFirstLine(fmtTag, openTag)
+	out := fmt.Sprintf("func %s(%s) string {\n\treturn`%s`\t}", nameAttr, paramStr, fmtTag)
 	return parsley.FlattenStr(out), nil
 }
 

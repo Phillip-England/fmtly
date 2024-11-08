@@ -1,1 +1,0 @@
-<fmt name="CustomerList" tag="ul" class="p-4 bg-black"><h2>{{ title }}</h2><li><p>{{ customer.Name }}</p><div><p>{{ friend.Name }}</p><p>{{ friend.Age }}</p></div></li>` + If(isLoggedIn, `<div><div><p>{{ animal.Name }}</p></div><p>logged in</p></div>`, `<div><p>not logged in</p></div>`) + `</fmt>
