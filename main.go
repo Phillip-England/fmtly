@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"fmtly/internal/gqpp"
-	"fmtly/internal/parsley"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"tagly/internal/gqpp"
+	"tagly/internal/parsley"
 
 	"github.com/PuerkitoBio/goquery"
 )

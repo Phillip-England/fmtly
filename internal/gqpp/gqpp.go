@@ -2,9 +2,9 @@ package gqpp
 
 import (
 	"fmt"
-	"fmtly/internal/parsley"
 	"html"
 	"strings"
+	"tagly/internal/parsley"
 
 	"github.com/PuerkitoBio/goquery"
 )
