@@ -21,7 +21,7 @@ func main() {
 		panic(err)
 	}
 
-	err = appendFile("./components.go", "package main\n\n")
+	err = appendFile("./components.go", "package main"+"\n\n")
 	if err != nil {
 		panic(err)
 	}
@@ -78,18 +78,18 @@ func main() {
 			panic(err)
 		}
 
-		err = formatOutput("./components.go")
+		// err = formatOutput("./components.go")
+		// if err != nil {
+		// 	panic(err)
+		// }
+
+		err = appendFile("./components.go", tag+"\n\n")
 		if err != nil {
 			panic(err)
 		}
 
 		fmtTags[i] = tag
 
-	}
-
-	err = appendFile("./components.go", parsley.JoinLines(fmtTags))
-	if err != nil {
-		panic(err)
 	}
 
 }
@@ -135,6 +135,10 @@ func fmtTagsFromStr(str string) ([]string, error) {
 		fmtTagStr, err := goquery.OuterHtml(s)
 		if err != nil {
 			potErr = err
+			return
+		}
+		ignoreAttr, _ := s.Attr("ignore")
+		if ignoreAttr == "true" {
 			return
 		}
 		fmtTags = append(fmtTags, fmtTagStr)
@@ -533,11 +537,11 @@ func appendFile(filename, content string) error {
 	}
 	defer file.Close()
 
+	// Append a newline character to the content
 	_, err = file.WriteString(content)
 	if err != nil {
 		return fmt.Errorf("failed to write to file: %w", err)
 	}
-
 	return nil
 }
 

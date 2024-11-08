@@ -1,4 +1,4 @@
-<fmt name="CustomerList" tag="ul" class="p-4 bg-black">
+<fmt name="CustomerList" tag="ul" class="p-4 bg-black" ignore="true">
     <h2>{{ title }}</h2>
     <for in="customers" as="customer" tag="li" type="*Customer">
         <p>{{ customer.Name }}</p>
@@ -16,4 +16,8 @@
             <p>not logged in</p>
         </else>
     </if>
+</fmt>
+
+<fmt name="Button" tag="button" class="bg-blue-500">
+    <p>{{ name }}</p>
 </fmt>
