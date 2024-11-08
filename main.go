@@ -10,87 +10,93 @@ import (
 	"strings"
 	"tagly/internal/gqpp"
 	"tagly/internal/parsley"
+	"tagly/internal/tag"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
 
-	err := emptyFile("./components.go")
+	_, err := tag.NewTaglyFileFromFilePath("./components/index.html")
 	if err != nil {
 		panic(err)
 	}
 
-	err = appendFile("./components.go", "package main"+"\n\n")
-	if err != nil {
-		panic(err)
-	}
+	// err := emptyFile("./components.go")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	str, err := dirToStr("./components")
-	if err != nil {
-		panic(err)
-	}
+	// err = appendFile("./components.go", "package main"+"\n\n")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	fmtTags, err := fmtTagsFromStr(str)
-	if err != nil {
-		panic(err)
-	}
+	// str, err := dirToStr("./components")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	for i, tag := range fmtTags {
+	// fmtTags, err := fmtTagsFromStr(str)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-		tag, err = renameFmtTag(tag)
-		if err != nil {
-			panic(err)
-		}
+	// for i, tag := range fmtTags {
 
-		tag, err = renameTagsBySelector(tag, "for", "if")
-		if err != nil {
-			panic(err)
-		}
+	// 	tag, err = renameFmtTag(tag)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		tag, err = setTagDepthByDirectiveAttrs(tag, "for", "if")
-		if err != nil {
-			panic(err)
-		}
+	// 	tag, err = renameTagsBySelector(tag, "for", "if")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		props, err := extractFmtTagProps(tag)
-		if err != nil {
-			panic(err)
-		}
+	// 	tag, err = setTagDepthByDirectiveAttrs(tag, "for", "if")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		paramStr, err := makeFmtTagParamStr(tag, props)
-		if err != nil {
-			panic(err)
-		}
+	// 	props, err := extractFmtTagProps(tag)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		tag, err = outputFmtTagProps(tag, props)
-		if err != nil {
-			panic(err)
-		}
+	// 	paramStr, err := makeFmtTagParamStr(tag, props)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		tag, err = outputInnerTags(tag)
-		if err != nil {
-			panic(err)
-		}
+	// 	tag, err = outputFmtTagProps(tag, props)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		tag, err = wrapFmtTagInGoFunc(tag, paramStr)
-		if err != nil {
-			panic(err)
-		}
+	// 	tag, err = outputInnerTags(tag)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		// err = formatOutput("./components.go")
-		// if err != nil {
-		// 	panic(err)
-		// }
+	// 	tag, err = wrapFmtTagInGoFunc(tag, paramStr)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		err = appendFile("./components.go", tag+"\n\n")
-		if err != nil {
-			panic(err)
-		}
+	// err = formatOutput("./components.go")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-		fmtTags[i] = tag
+	// 	err = appendFile("./components.go", tag+"\n\n")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-	}
+	// 	fmtTags[i] = tag
+
+	// }
 
 }
 

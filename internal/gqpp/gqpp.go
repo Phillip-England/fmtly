@@ -3,11 +3,26 @@ package gqpp
 import (
 	"fmt"
 	"html"
+	"os"
 	"strings"
 	"tagly/internal/parsley"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+func NewSelectionFromFilePath(path string) (*goquery.Selection, error) {
+	f, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	fStr := string(f)
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(fStr))
+	if err != nil {
+		return nil, err
+	}
+	body := doc.Find("body")
+	return body, nil
+}
 
 func NewSelectionFromHtmlStr(htmlStr string) (*goquery.Selection, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlStr))
@@ -85,4 +100,43 @@ func AttrFromStr(str string, attrName string) (string, bool, error) {
 	}
 	out, exists := s.Attr(attrName)
 	return out, exists, nil
+}
+
+func CalculateNodeDepth(root *goquery.Selection, child *goquery.Selection) (int, error) {
+	depth := 0
+	childNodeName := goquery.NodeName(child)
+	childHtml, err := GetHtmlFromSelection(child)
+	if err != nil {
+		return -1, err
+	}
+	rootHtml, err := GetHtmlFromSelection(root)
+	if err != nil {
+		return -1, err
+	}
+	var potErr error
+	root.Find(childNodeName).Each(func(i int, search *goquery.Selection) {
+		searchHtml, err := GetHtmlFromSelection(search)
+		if err != nil {
+			potErr = err
+			return
+		}
+		if searchHtml == childHtml {
+			ClimbTreeUntil(search, func(parent *goquery.Selection) bool {
+				parentHtml, err := GetHtmlFromSelection(parent)
+				if err != nil {
+					potErr = err
+					return true
+				}
+				if parentHtml == rootHtml {
+					return true
+				}
+				depth++
+				return false
+			})
+		}
+	})
+	if potErr != nil {
+		return -1, potErr
+	}
+	return depth, nil
 }
