@@ -8,19 +8,26 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"tagly/internal/filetype"
 	"tagly/internal/gqpp"
 	"tagly/internal/parsley"
-	"tagly/internal/tag"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
 
-	_, err := tag.NewTaglyFileFromFilePath("./components/index.html")
+	taglyFile, err := filetype.NewTaglyFileFromFilePath("./components/index.html")
 	if err != nil {
 		panic(err)
 	}
+
+	templateFile, err := filetype.NewTemplateFileFromTaglyFile(taglyFile)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(templateFile)
 
 	// err := emptyFile("./components.go")
 	// if err != nil {
