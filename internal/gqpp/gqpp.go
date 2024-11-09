@@ -140,3 +140,44 @@ func CalculateNodeDepth(root *goquery.Selection, child *goquery.Selection) (int,
 	}
 	return depth, nil
 }
+
+func CountMatchingParentTags(root, child *goquery.Selection, tagNames ...string) (int, error) {
+	count := 0
+	tagSet := make(map[string]struct{})
+	for _, tag := range tagNames {
+		tagSet[tag] = struct{}{}
+	}
+	childHtml, err := GetHtmlFromSelection(child)
+	if err != nil {
+		return -1, err
+	}
+	found := false
+	var potentialErr error
+	root.Find(goquery.NodeName(child)).EachWithBreak(func(i int, search *goquery.Selection) bool {
+		searchHtml, err := GetHtmlFromSelection(search)
+		if err != nil {
+			potentialErr = err
+			return false
+		}
+		if searchHtml == childHtml {
+			found = true
+			current := search.Parent()
+			for current.Length() > 0 {
+				nodeName := goquery.NodeName(current)
+				if _, exists := tagSet[nodeName]; exists {
+					count++
+				}
+				current = current.Parent()
+			}
+			return false
+		}
+		return true
+	})
+	if potentialErr != nil {
+		return -1, potentialErr
+	}
+	if !found {
+		return -1, fmt.Errorf("child node not found within the root")
+	}
+	return count, nil
+}

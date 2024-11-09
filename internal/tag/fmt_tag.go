@@ -8,9 +8,10 @@ import (
 )
 
 type FmtTag struct {
-	Info    TagInfo
-	ForTags []ForTag
-	IfTags  []IfTag
+	Info     TagInfo
+	StrProps []StrProp
+	ForTags  []ForTag
+	IfTags   []IfTag
 }
 
 func NewFmtTagsFromFilePath(path string) ([]FmtTag, error) {
@@ -39,7 +40,9 @@ func NewFmtTagFromSelection(s *goquery.Selection) (FmtTag, error) {
 	t := &FmtTag{}
 	err := fungi.Process(
 		func() error { return t.setTagInfo(s, s, "name", "tag") },
+		func() error { return t.extractStrProps(s) },
 		func() error { return t.extractForTags() },
+		func() error { return t.extractIfTags() },
 	)
 	if err != nil {
 		return *t, err
@@ -53,6 +56,15 @@ func (t *FmtTag) setTagInfo(root *goquery.Selection, tag *goquery.Selection, att
 		return err
 	}
 	t.Info = info
+	return nil
+}
+
+func (t *FmtTag) extractStrProps(s *goquery.Selection) error {
+	props, err := NewStrPropsFromSelection(s)
+	if err != nil {
+		return err
+	}
+	t.StrProps = props
 	return nil
 }
 
@@ -95,3 +107,26 @@ func (t *FmtTag) extractIfTags() error {
 	}
 	return nil
 }
+
+// func (t *FmtTag) setParamStr() error {
+// 	paramStr := ""
+// 	for _, prop := range t.StrProps {
+// 		newParam := prop.AsParam + ", "
+// 		if strings.Contains(paramStr, newParam) {
+// 			continue
+// 		}
+// 		paramStr += newParam
+// 	}
+// 	for _, tag := range t.ForTags {
+// 		if tag.AsParam == "" || len(tag.AsParam) == 0 {
+// 			continue
+// 		}
+// 		paramStr += tag.AsParam + ", "
+// 	}
+// 	for _, tag := range t.IfTags {
+// 		paramStr += tag.AsParam + ", "
+// 	}
+// 	paramStr = paramStr[:len(paramStr)-2]
+// 	t.ParamStr = paramStr
+// 	return nil
+// }
