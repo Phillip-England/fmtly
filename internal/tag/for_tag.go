@@ -2,21 +2,18 @@ package tag
 
 import (
 	"tagly/internal/fungi"
-	"tagly/internal/gqpp"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type ForTag struct {
-	Html  string
-	Depth int
+	TagInfo TagInfo
 }
 
-func NewForTagFromSelection(root *goquery.Selection, s *goquery.Selection) (ForTag, error) {
+func NewForTagFromSelection(root *goquery.Selection, tag *goquery.Selection) (ForTag, error) {
 	t := &ForTag{}
 	err := fungi.Process(
-		func() error { return t.setHtml(s) },
-		func() error { return t.setDepth(root) },
+		func() error { return t.setTagInfo(root, tag) },
 	)
 	if err != nil {
 		return *t, err
@@ -24,24 +21,11 @@ func NewForTagFromSelection(root *goquery.Selection, s *goquery.Selection) (ForT
 	return *t, nil
 }
 
-func (t *ForTag) setHtml(s *goquery.Selection) error {
-	htmlStr, err := gqpp.GetHtmlFromSelection(s)
+func (t *ForTag) setTagInfo(root *goquery.Selection, tag *goquery.Selection) error {
+	info, err := NewTagInfoFromSelection(root, tag)
 	if err != nil {
 		return err
 	}
-	t.Html = htmlStr
-	return nil
-}
-
-func (t *ForTag) setDepth(root *goquery.Selection) error {
-	s, err := gqpp.NewSelectionFromHtmlStr(t.Html)
-	if err != nil {
-		return err
-	}
-	d, err := gqpp.CalculateNodeDepth(root, s)
-	if err != nil {
-		return err
-	}
-	t.Depth = d
+	t.TagInfo = info
 	return nil
 }

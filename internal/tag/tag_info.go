@@ -7,25 +7,26 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type IfTag struct {
+type TagInfo struct {
 	Html    string
 	Depth   int
 	AttrStr string
 }
 
-func NewIfTagFromSelection(root *goquery.Selection, s *goquery.Selection) (IfTag, error) {
-	t := &IfTag{}
+func NewTagInfoFromSelection(root *goquery.Selection, tag *goquery.Selection, attrsToExclude ...string) (TagInfo, error) {
+	tagInfo := &TagInfo{}
 	err := fungi.Process(
-		func() error { return t.setHtml(s) },
-		func() error { return t.setDepth(root) },
+		func() error { return tagInfo.setHtml(tag) },
+		func() error { return tagInfo.setDepth(root) },
+		func() error { return tagInfo.setAttrStr(attrsToExclude...) },
 	)
 	if err != nil {
-		return *t, err
+		return *tagInfo, err
 	}
-	return *t, nil
+	return *tagInfo, nil
 }
 
-func (t *IfTag) setHtml(s *goquery.Selection) error {
+func (t *TagInfo) setHtml(s *goquery.Selection) error {
 	htmlStr, err := gqpp.GetHtmlFromSelection(s)
 	if err != nil {
 		return err
@@ -34,7 +35,7 @@ func (t *IfTag) setHtml(s *goquery.Selection) error {
 	return nil
 }
 
-func (t *IfTag) setDepth(root *goquery.Selection) error {
+func (t *TagInfo) setDepth(root *goquery.Selection) error {
 	s, err := gqpp.NewSelectionFromHtmlStr(t.Html)
 	if err != nil {
 		return err
@@ -47,12 +48,12 @@ func (t *IfTag) setDepth(root *goquery.Selection) error {
 	return nil
 }
 
-func (t *IfTag) setAttrStr() error {
+func (t *TagInfo) setAttrStr(attrsToExclude ...string) error {
 	s, err := gqpp.NewSelectionFromHtmlStr(t.Html)
 	if err != nil {
 		return err
 	}
-	attrStr := gqpp.GetAttrStr(s, "condition", "tag")
+	attrStr := gqpp.GetAttrStr(s, attrsToExclude...)
 	t.AttrStr = attrStr
 	return nil
 }
