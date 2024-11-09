@@ -1,6 +1,8 @@
 package parsley
 
-import "strings"
+import (
+	"strings"
+)
 
 func MakeLines(s string) []string {
 	return strings.Split(s, "\n")
@@ -112,4 +114,40 @@ func ReplaceLastLine(input, newLine string) string {
 
 func Squeeze(s string) string {
 	return strings.ReplaceAll(s, " ", "")
+}
+
+func ScanBetweenSubStrs(s, start, end string) []string {
+	var out []string
+	inSearch := false
+	searchStr := ""
+
+	i := 0
+	for i < len(s) {
+		// Check for the start delimiter
+		if !inSearch && i+len(start) <= len(s) && s[i:i+len(start)] == start {
+			inSearch = true
+			searchStr = start // Start capturing, including the start delimiter
+			i += len(start)
+			continue
+		}
+
+		// If we're in search mode, start capturing until we find the end delimiter
+		if inSearch {
+			// Check for the end delimiter
+			if i+len(end) <= len(s) && s[i:i+len(end)] == end {
+				searchStr += end // Include the end delimiter
+				out = append(out, searchStr)
+				searchStr = ""
+				inSearch = false
+				i += len(end)
+				continue
+			}
+			// Append current character to searchStr if still inside the delimiters
+			searchStr += string(s[i])
+		}
+
+		i++
+	}
+
+	return out
 }

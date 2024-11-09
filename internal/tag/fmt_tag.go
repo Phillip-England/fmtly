@@ -8,7 +8,7 @@ import (
 )
 
 type FmtTag struct {
-	Html    string
+	Info    TagInfo
 	ForTags []ForTag
 	IfTags  []IfTag
 }
@@ -38,7 +38,7 @@ func NewFmtTagsFromFilePath(path string) ([]FmtTag, error) {
 func NewFmtTagFromSelection(s *goquery.Selection) (FmtTag, error) {
 	t := &FmtTag{}
 	err := fungi.Process(
-		func() error { return t.setHtml(s) },
+		func() error { return t.setTagInfo(s, s, "name", "tag") },
 		func() error { return t.extractForTags() },
 	)
 	if err != nil {
@@ -47,17 +47,17 @@ func NewFmtTagFromSelection(s *goquery.Selection) (FmtTag, error) {
 	return *t, nil
 }
 
-func (t *FmtTag) setHtml(s *goquery.Selection) error {
-	htmlStr, err := gqpp.GetHtmlFromSelection(s)
+func (t *FmtTag) setTagInfo(root *goquery.Selection, tag *goquery.Selection, attrsToExclude ...string) error {
+	info, err := NewTagInfoFromSelection(root, tag, attrsToExclude...)
 	if err != nil {
 		return err
 	}
-	t.Html = htmlStr
+	t.Info = info
 	return nil
 }
 
 func (t *FmtTag) extractForTags() error {
-	s, err := gqpp.NewSelectionFromHtmlStr(t.Html)
+	s, err := gqpp.NewSelectionFromHtmlStr(t.Info.Html)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (t *FmtTag) extractForTags() error {
 }
 
 func (t *FmtTag) extractIfTags() error {
-	s, err := gqpp.NewSelectionFromHtmlStr(t.Html)
+	s, err := gqpp.NewSelectionFromHtmlStr(t.Info.Html)
 	if err != nil {
 		return err
 	}
