@@ -98,9 +98,9 @@ func (t ForTag) TranspileToGo() (string, error) {
 		newFor = strings.Replace(newFor, prop.Raw, "`+ "+prop.Value+" +`", 1)
 	}
 	newFor = parsley.RemoveFirstLine(fmt.Sprintf(`
-collectStr(%s, func(i int, %s []%s) string {
+collectStr(%s, func(i int, %s %s) string {
     return %s%s%s
-})    
+})
 `, t.AttrIn, t.AttrAs, t.AttrType, parsley.BackTick(), newFor, parsley.BackTick()))
 	return newFor, nil
 }

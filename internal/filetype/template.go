@@ -1,6 +1,7 @@
 package filetype
 
 import (
+	"fmt"
 	"tagly/internal/fungi"
 	"tagly/internal/gout"
 )
@@ -19,6 +20,9 @@ func NewTemplateFileFromTaglyFile(tagFile TaglyFile) (TemplateFile, error) {
 	)
 	if err != nil {
 		return *tempFile, err
+	}
+	for _, compFunc := range tempFile.ComponentFuncs {
+		fmt.Println(compFunc.Code)
 	}
 	return *tempFile, nil
 }

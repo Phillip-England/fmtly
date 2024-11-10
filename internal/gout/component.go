@@ -1,7 +1,6 @@
 package gout
 
 import (
-	"fmt"
 	"strings"
 	"tagly/internal/fungi"
 	"tagly/internal/gqpp"
@@ -10,35 +9,26 @@ import (
 )
 
 type ComponentFunc struct {
-	Name     string
-	Shell    string
-	FmtTag   *tag.FmtTag
-	ParamStr string
+	Name       string
+	Code       string
+	FmtTag     *tag.FmtTag
+	ParamStr   string
+	ReturnHtml string
 }
 
 func NewComponentFuncFromFmtTag(fmtTag tag.FmtTag) (ComponentFunc, error) {
 	comp := &ComponentFunc{}
 	err := fungi.Process(
-		func() error { return comp.makeShell() },
 		func() error { return comp.copyFmtTag(fmtTag) },
 		func() error { return comp.setName() },
 		func() error { return comp.setParamStr() },
 		func() error { return comp.transpileTagsToGo() },
+		func() error { return comp.captureReturnHtml() },
 	)
 	if err != nil {
 		return *comp, err
 	}
 	return *comp, nil
-}
-
-func (comp *ComponentFunc) makeShell() error {
-	comp.Shell = parsley.RemoveFirstLine(fmt.Sprintf(`
-func NAME(PARAMS) string {
-	return %s
-		RETURN
-	%s
-}`, parsley.BackTick(), parsley.BackTick()))
-	return nil
 }
 
 func (comp *ComponentFunc) copyFmtTag(fmtTag tag.FmtTag) error {
@@ -76,29 +66,63 @@ func (comp *ComponentFunc) setParamStr() error {
 }
 
 func (comp *ComponentFunc) transpileTagsToGo() error {
-	clay := comp.FmtTag.Info.Html
+	clay := parsley.FlattenStr(comp.FmtTag.Info.Html)
 	for {
-		foundTag := false
-		for _, t := range comp.FmtTag.Tags {
+		newSel, err := gqpp.NewSelectionFromHtmlStr(clay)
+		if err != nil {
+			return err
+		}
+		newFmt, err := tag.NewFmtTagFromSelection(newSel)
+		if err != nil {
+			return err
+		}
+		if len(newFmt.Tags) == 0 {
+			break
+		}
+		for _, t := range newFmt.Tags {
 			goCode, err := t.TranspileToGo()
 			if err != nil {
 				return err
 			}
-			searchHtml := t.GetInfo().Html
-			if strings.Contains(clay, searchHtml) {
-				foundTag = true
+			goCode = parsley.FlattenStr(goCode)
+			tagHtml := parsley.FlattenStr(t.GetInfo().Html)
+			if strings.Contains(clay, tagHtml) {
+				clay = strings.Replace(clay, tagHtml, "`+"+goCode+"+`", 1)
 			}
-			clay = strings.Replace(clay, searchHtml, goCode, 1)
-			newSel, err := gqpp.NewSelectionFromHtmlStr(clay)
-			if err != nil {
-				return err
-			}
-			tag.NewFmtTagFromSelection(newSel)
-		}
-		if foundTag == false {
-			break
 		}
 	}
-	fmt.Println(clay)
+	finalSel, err := gqpp.NewSelectionFromHtmlStr(clay)
+	if err != nil {
+		return nil
+	}
+	finalFmt, err := tag.NewFmtTagFromSelection(finalSel)
+	if err != nil {
+		return err
+	}
+	finalCompFunc, err := finalFmt.TranspileToGo()
+	if err != nil {
+		return err
+	}
+	finalCompFunc = strings.Replace(finalCompFunc, "PARAMS", comp.ParamStr, 1)
+	comp.Code = finalCompFunc
 	return nil
+}
+
+func (comp *ComponentFunc) captureReturnHtml() error {
+	indexOfReturn := strings.Index(comp.Code, "return")
+	sliced := comp.Code[indexOfReturn:len(comp.Code)]
+	indexOfFirstBackTick := strings.Index(sliced, "`")
+	indexOfFinalBackTick := strings.LastIndex(sliced, "`")
+	sliced = sliced[indexOfFirstBackTick+1 : indexOfFinalBackTick]
+	sel, err := gqpp.NewSelectionFromHtmlStr(sliced)
+	if err != nil {
+		return err
+	}
+	htmlStr, err := gqpp.GetHtmlFromSelection(sel)
+	if err != nil {
+		return err
+	}
+	comp.ReturnHtml = htmlStr
+	return nil
+
 }

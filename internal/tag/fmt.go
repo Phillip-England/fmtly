@@ -17,6 +17,8 @@ type FmtTag struct {
 	ForTags  []ForTag
 	IfTags   []IfTag
 	Tags     []Tag
+	AttrName string
+	AttrTag  string
 }
 
 func NewFmtTagsFromFilePath(path string) ([]FmtTag, error) {
@@ -45,6 +47,7 @@ func NewFmtTagFromSelection(s *goquery.Selection) (FmtTag, error) {
 	t := &FmtTag{}
 	err := fungi.Process(
 		func() error { return t.setTagInfo(s, s, "name", "tag") },
+		func() error { return t.setAttrs(s) },
 		func() error { return t.setName() },
 		func() error { return t.extractStrProps(s) },
 		func() error { return t.extractForTags() },
@@ -64,6 +67,14 @@ func (t *FmtTag) setTagInfo(root *goquery.Selection, tag *goquery.Selection, att
 		return err
 	}
 	t.Info = info
+	return nil
+}
+
+func (t *FmtTag) setAttrs(s *goquery.Selection) error {
+	nameAttr, _ := s.Attr("name")
+	tagAttr, _ := s.Attr("tag")
+	t.AttrName = nameAttr
+	t.AttrTag = tagAttr
 	return nil
 }
 
@@ -164,6 +175,28 @@ func (t *FmtTag) sortTagsByDepth() error {
 	}
 	t.Tags = sorted
 	return nil
+}
+
+func (t FmtTag) TranspileToGo() (string, error) {
+	s, err := gqpp.NewSelectionFromHtmlStr(t.Info.Html)
+	if err != nil {
+		return "", err
+	}
+	newHtml, err := gqpp.GetHtmlFromSelectionWithNewTag(s, t.AttrTag, t.Info.AttrStr)
+	if err != nil {
+		return "", err
+	}
+	out := parsley.RemoveFirstLine(fmt.Sprintf(`
+func %s(PARAMS) string {
+	return %s
+		%s
+	%s
+}
+`, t.AttrName, parsley.BackTick(), newHtml, parsley.BackTick()))
+	for _, prop := range t.StrProps {
+		out = strings.Replace(out, prop.Raw, "`+"+prop.Value+"+`", 1)
+	}
+	return out, nil
 }
 
 type StrProp struct {
