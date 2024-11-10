@@ -1,6 +1,7 @@
 package tag
 
 import (
+	"fmt"
 	"strings"
 	"tagly/internal/fungi"
 	"tagly/internal/gqpp"
@@ -10,10 +11,12 @@ import (
 )
 
 type FmtTag struct {
+	Name     string
 	Info     TagInfo
 	StrProps []StrProp
 	ForTags  []ForTag
 	IfTags   []IfTag
+	Tags     []Tag
 }
 
 func NewFmtTagsFromFilePath(path string) ([]FmtTag, error) {
@@ -42,9 +45,12 @@ func NewFmtTagFromSelection(s *goquery.Selection) (FmtTag, error) {
 	t := &FmtTag{}
 	err := fungi.Process(
 		func() error { return t.setTagInfo(s, s, "name", "tag") },
+		func() error { return t.setName() },
 		func() error { return t.extractStrProps(s) },
 		func() error { return t.extractForTags() },
 		func() error { return t.extractIfTags() },
+		func() error { return t.combineAllTags() },
+		func() error { return t.sortTagsByDepth() },
 	)
 	if err != nil {
 		return *t, err
@@ -58,6 +64,19 @@ func (t *FmtTag) setTagInfo(root *goquery.Selection, tag *goquery.Selection, att
 		return err
 	}
 	t.Info = info
+	return nil
+}
+
+func (t *FmtTag) setName() error {
+	s, err := gqpp.NewSelectionFromHtmlStr(t.Info.Html)
+	if err != nil {
+		return err
+	}
+	name, exists := s.Attr("name")
+	if !exists {
+		return fmt.Errorf("<fmt> tags require an attr:\n\n%s", t.Info.Html)
+	}
+	t.Name = name
 	return nil
 }
 
@@ -110,6 +129,43 @@ func (t *FmtTag) extractIfTags() error {
 	return nil
 }
 
+func (t *FmtTag) combineAllTags() error {
+	tags := make([]Tag, 0)
+	for _, tag := range t.ForTags {
+		tags = append(tags, tag)
+	}
+	for _, tag := range t.IfTags {
+		tags = append(tags, tag)
+	}
+	t.Tags = tags
+	return nil
+}
+
+func (t *FmtTag) sortTagsByDepth() error {
+	maxDepth := 0
+	for _, tag := range t.Tags {
+		depth := tag.GetInfo().Depth
+		if depth > maxDepth {
+			maxDepth = depth
+		}
+	}
+	sorted := make([]Tag, 0)
+	for {
+		if len(sorted) == len(t.Tags) {
+			break
+		}
+		for _, tag := range t.Tags {
+			depth := tag.GetInfo().Depth
+			if depth == maxDepth {
+				sorted = append(sorted, tag)
+			}
+		}
+		maxDepth--
+	}
+	t.Tags = sorted
+	return nil
+}
+
 type StrProp struct {
 	Raw     string
 	Value   string
@@ -150,26 +206,3 @@ func NewStrPropsFromSelection(s *goquery.Selection) ([]StrProp, error) {
 	}
 	return out, nil
 }
-
-// func (t *FmtTag) setParamStr() error {
-// 	paramStr := ""
-// 	for _, prop := range t.StrProps {
-// 		newParam := prop.AsParam + ", "
-// 		if strings.Contains(paramStr, newParam) {
-// 			continue
-// 		}
-// 		paramStr += newParam
-// 	}
-// 	for _, tag := range t.ForTags {
-// 		if tag.AsParam == "" || len(tag.AsParam) == 0 {
-// 			continue
-// 		}
-// 		paramStr += tag.AsParam + ", "
-// 	}
-// 	for _, tag := range t.IfTags {
-// 		paramStr += tag.AsParam + ", "
-// 	}
-// 	paramStr = paramStr[:len(paramStr)-2]
-// 	t.ParamStr = paramStr
-// 	return nil
-// }

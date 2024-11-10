@@ -181,3 +181,27 @@ func CountMatchingParentTags(root, child *goquery.Selection, tagNames ...string)
 	}
 	return count, nil
 }
+
+func GetHtmlFromSelectionWithNewTag(s *goquery.Selection, newTagName string, newTagAttrStr string) (string, error) {
+	htmlStr, err := s.Html()
+	if err != nil {
+		return "", err
+	}
+	openTag := ""
+	if newTagAttrStr == "" {
+		openTag = fmt.Sprintf("<%s>", newTagName)
+	} else {
+		openTag = fmt.Sprintf("<%s %s>", newTagName, newTagAttrStr)
+	}
+	closeTag := fmt.Sprintf("</%s>", newTagName)
+	out := fmt.Sprintf("%s%s%s", openTag, htmlStr, closeTag)
+	newSel, err := NewSelectionFromHtmlStr(out)
+	if err != nil {
+		return "", err
+	}
+	finalOut, err := GetHtmlFromSelection(newSel)
+	if err != nil {
+		return "", err
+	}
+	return finalOut, nil
+}

@@ -22,12 +22,10 @@ func main() {
 		panic(err)
 	}
 
-	templateFile, err := filetype.NewTemplateFileFromTaglyFile(taglyFile)
+	_, err = filetype.NewTemplateFileFromTaglyFile(taglyFile)
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(templateFile)
 
 	// err := emptyFile("./components.go")
 	// if err != nil {

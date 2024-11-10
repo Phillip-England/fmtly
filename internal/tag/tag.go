@@ -1,3 +1,6 @@
 package tag
 
-type Tag interface{}
+type Tag interface {
+	TranspileToGo() (string, error)
+	GetInfo() TagInfo
+}

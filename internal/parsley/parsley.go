@@ -151,3 +151,42 @@ func ScanBetweenSubStrs(s, start, end string) []string {
 
 	return out
 }
+
+func RemoveFirstLine(input string) string {
+	index := strings.Index(input, "\n")
+	if index == -1 {
+		return ""
+	}
+	return input[index+1:]
+}
+
+func RemoveTrailingEmptyLines(input string) string {
+	// Split the input string into lines
+	lines := strings.Split(input, "\n")
+
+	// Remove empty lines from the end
+	for len(lines) > 0 && strings.TrimSpace(lines[len(lines)-1]) == "" {
+		lines = lines[:len(lines)-1]
+	}
+
+	// Join the cleaned lines back into a single string
+	return strings.Join(lines, "\n")
+}
+
+func RemoveEmptyLines(input string) string {
+	// Split the input string into lines
+	lines := strings.Split(input, "\n")
+
+	// Create a slice to hold the non-empty lines
+	var cleanedLines []string
+
+	// Loop through the lines and add non-empty lines to cleanedLines
+	for _, line := range lines {
+		if strings.TrimSpace(line) != "" {
+			cleanedLines = append(cleanedLines, line)
+		}
+	}
+
+	// Join the non-empty lines back into a single string
+	return strings.Join(cleanedLines, "\n")
+}

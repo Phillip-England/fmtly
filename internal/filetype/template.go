@@ -1,20 +1,35 @@
 package filetype
 
 import (
-	"fmt"
+	"tagly/internal/fungi"
 	"tagly/internal/gout"
 )
 
-type TemplateFile struct{}
+type TemplateFile struct {
+	SrcPath        string
+	ComponentFuncs []gout.ComponentFunc
+}
 
-func NewTemplateFileFromTaglyFile(f TaglyFile) (TemplateFile, error) {
-	tf := &TemplateFile{}
-	for _, fmtTag := range f.FmtTags {
+func NewTemplateFileFromTaglyFile(tagFile TaglyFile) (TemplateFile, error) {
+	tempFile := &TemplateFile{
+		SrcPath: tagFile.Path,
+	}
+	err := fungi.Process(
+		func() error { return tempFile.generateComponentFuncs(tagFile) },
+	)
+	if err != nil {
+		return *tempFile, err
+	}
+	return *tempFile, nil
+}
+
+func (tf *TemplateFile) generateComponentFuncs(tagFile TaglyFile) error {
+	for _, fmtTag := range tagFile.FmtTags {
 		compFunc, err := gout.NewComponentFuncFromFmtTag(fmtTag)
 		if err != nil {
-			return *tf, err
+			return err
 		}
-		fmt.Println(compFunc)
+		tf.ComponentFuncs = append(tf.ComponentFuncs, compFunc)
 	}
-	return *tf, nil
+	return nil
 }
