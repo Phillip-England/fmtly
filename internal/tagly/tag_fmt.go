@@ -5,23 +5,19 @@ import (
 	"strings"
 	"tagly/internal/fungi"
 	"tagly/internal/gqpp"
+	"tagly/internal/parsley"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type TagFmt struct {
-	Name         string
-	AttrName     string
-	AttrTag      string
-	Info         TagInfo
-	Tags         []Tag
-	Props        []TemplateProp
-	StrProps     []TemplateProp
-	ForStrProps  []TemplateProp
-	ForTypeProps []TemplateProp
-	ChildProp    TemplateProp
-	TagFors      []TagFor
-	TagIfs       []TagIf
+	Name     string
+	AttrName string
+	AttrTag  string
+	Info     TagInfo
+	Tags     []Tag
+	TagFors  []TagFor
+	TagIfs   []TagIf
 }
 
 func NewTagFmtsFromFilePath(path string) ([]TagFmt, error) {
@@ -52,16 +48,91 @@ func NewTagFmtFromSelection(sel *goquery.Selection) (TagFmt, error) {
 		func() error { return tag.setTagInfo(sel, sel, "name", "tag") },
 		func() error { return tag.setAttrs(sel) },
 		func() error { return tag.setName() },
-		func() error { return tag.extractAllProps() },
-		func() error { return tag.sortProps() },
 		func() error { return tag.extractTagFors() },
 		func() error { return tag.extractTagIfs() },
+		func() error { return tag.combineTags() },
+		func() error { return tag.sortTagsByDepth() },
 	)
 	if err != nil {
 		return *tag, err
 	}
 
 	return *tag, nil
+}
+
+func (tag TagFmt) AsStr() (string, error) {
+	sel, err := gqpp.NewSelectionFromHtmlStr(tag.Info.Html)
+	if err != nil {
+		return "", err
+	}
+	newTag, err := gqpp.GetHtmlFromSelectionWithNewTag(sel, tag.AttrTag, tag.Info.AttrStr)
+	if err != nil {
+		return "", err
+	}
+	for _, prop := range tag.Info.Props {
+		newTag = strings.Replace(newTag, prop.Raw, "`+"+prop.Value+"+`", 1)
+	}
+	return newTag, nil
+}
+
+func (tag TagFmt) GetInfo() TagInfo { return tag.Info }
+
+func (tag TagFmt) TranspileToGo() (string, error) {
+	clay := tag.CloneAsPointer()
+	out := parsley.FlattenStr(tag.Info.Html)
+	targetLength := len(clay.Tags)
+	modifiedTags := make([]Tag, 0)
+	for {
+		if len(modifiedTags) == targetLength {
+			break
+		}
+		for _, innerTag := range clay.Tags {
+			innerHtml := parsley.FlattenStr(innerTag.GetInfo().Html)
+			goCode, err := innerTag.TranspileToGo()
+			if err != nil {
+				return "", err
+			}
+			out = strings.Replace(out, innerHtml, goCode, 1)
+			modifiedTags = append(modifiedTags, innerTag)
+			newSel, err := gqpp.NewSelectionFromHtmlStr(out)
+			if err != nil {
+				return "", err
+			}
+			newFmt, err := NewTagFmtFromSelection(newSel)
+			if err != nil {
+				return "", err
+			}
+			clay = newFmt.CloneAsPointer()
+		}
+	}
+	fmt.Println(out)
+	return "", nil
+}
+
+func (tag *TagFmt) GetGoFuncParamStr() (string, error) {
+	paramStr := ""
+	for _, strProp := range tag.Info.StrProps {
+		paramStr += strProp.FmtAsGoParam("string")
+	}
+	slice := strings.Split(paramStr, " ")
+	filtered := parsley.RemoveDuplicatesInSlice(slice)
+	paramStr = strings.Join(filtered, " ")
+	for _, tagFor := range tag.TagFors {
+		if !tagFor.IsRootFor {
+			continue
+		}
+		paramStr += fmt.Sprintf("%s %s, ", tagFor.AttrAs, tagFor.AttrType)
+	}
+	for _, tagIf := range tag.TagIfs {
+		paramStr += fmt.Sprintf("%s bool, ", tagIf.AttrCondition)
+	}
+	return paramStr, nil
+}
+
+func (tag TagFmt) CloneAsPointer() *TagFmt {
+	tagCopy := tag
+	tagPointer := &tagCopy
+	return tagPointer
 }
 
 func (tag *TagFmt) setTagInfo(root *goquery.Selection, selfSelection *goquery.Selection, attrsToExclude ...string) error {
@@ -89,63 +160,6 @@ func (tag *TagFmt) setAttrs(s *goquery.Selection) error {
 
 func (tag *TagFmt) setName() error {
 	tag.Name = tag.AttrName
-	return nil
-}
-
-func (tag *TagFmt) extractAllProps() error {
-	sel, err := gqpp.NewSelectionFromHtmlStr(tag.Info.Html)
-	if err != nil {
-		return err
-	}
-	props, err := NewTemplatePropsFromSelection(sel)
-	if err != nil {
-		return err
-	}
-	tag.Props = props
-	return nil
-}
-
-func (tag *TagFmt) sortProps() error {
-	sel, err := gqpp.NewSelectionFromHtmlStr(tag.Info.Html)
-	if err != nil {
-		return err
-	}
-	strProps := make([]TemplateProp, 0)
-	forTypeProps := make([]TemplateProp, 0)
-	forStrProps := make([]TemplateProp, 0)
-	childrenProps := make([]TemplateProp, 0)
-	for _, prop := range tag.Props {
-		shouldBreak := false
-		sel.Find("for").Each(func(i int, forSel *goquery.Selection) {
-			asAttr, _ := forSel.Attr("as")
-			if prop.Value == asAttr {
-				forStrProps = append(forStrProps, prop)
-				shouldBreak = true
-			}
-		})
-		if shouldBreak {
-			break
-		}
-		if strings.Count(prop.Raw, ".") == 1 {
-			forTypeProps = append(forTypeProps, prop)
-			continue
-		}
-		if prop.Value == "...children" {
-			childrenProps = append(childrenProps, prop)
-			continue
-		}
-		strProps = append(strProps, prop)
-	}
-
-	if len(childrenProps) > 1 {
-		return fmt.Errorf("only one {{ children... }} prop allowed per <fmt> component:\n\n%s", tag.Info.Html)
-	}
-	tag.ForStrProps = forStrProps
-	tag.ForTypeProps = forTypeProps
-	tag.StrProps = strProps
-	if len(childrenProps) == 1 {
-		tag.ChildProp = childrenProps[0]
-	}
 	return nil
 }
 
@@ -185,6 +199,42 @@ func (tag *TagFmt) extractTagIfs() error {
 	})
 	if potErr != nil {
 		return potErr
+	}
+	return nil
+}
+
+func (tag *TagFmt) combineTags() error {
+	tags := make([]Tag, 0)
+	for _, tagFor := range tag.TagFors {
+		tags = append(tags, tagFor)
+	}
+	for _, tagIf := range tag.TagFors {
+		tags = append(tags, tagIf)
+	}
+	return nil
+}
+
+func (tag *TagFmt) sortTagsByDepth() error {
+	sorted := make([]Tag, 0)
+	highestDepth := 0
+	targetLength := len(tag.Tags)
+	for _, innerTag := range tag.Tags {
+		depth := innerTag.GetInfo().Depth
+		if depth > highestDepth {
+			highestDepth = depth
+		}
+	}
+	for {
+		for _, innerTag := range tag.Tags {
+			depth := innerTag.GetInfo().Depth
+			if depth == highestDepth {
+				sorted = append(sorted, innerTag)
+			}
+		}
+		highestDepth--
+		if len(sorted) == targetLength {
+			break
+		}
 	}
 	return nil
 }

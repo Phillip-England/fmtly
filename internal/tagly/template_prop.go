@@ -1,6 +1,7 @@
 package tagly
 
 import (
+	"fmt"
 	"strings"
 	"tagly/internal/gqpp"
 	"tagly/internal/parsley"
@@ -30,4 +31,8 @@ func NewTemplatePropsFromSelection(sel *goquery.Selection) ([]TemplateProp, erro
 		})
 	}
 	return out, nil
+}
+
+func (prop TemplateProp) FmtAsGoParam(goType string) string {
+	return fmt.Sprintf("%s %s, ", prop.Value, goType)
 }

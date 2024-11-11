@@ -2,6 +2,7 @@ package tagly
 
 import (
 	"fmt"
+	"strings"
 	"tagly/internal/fungi"
 	"tagly/internal/gqpp"
 	"tagly/internal/parsley"
@@ -29,6 +30,28 @@ func NewTagIfFromSelection(root *goquery.Selection, ogSel *goquery.Selection) (T
 		return *tag, err
 	}
 	return *tag, nil
+}
+
+func (tag TagIf) AsStr() (string, error) {
+	sel, err := gqpp.NewSelectionFromHtmlStr(tag.Info.Html)
+	if err != nil {
+		return "", err
+	}
+	newTag, err := gqpp.GetHtmlFromSelectionWithNewTag(sel, tag.AttrTag, tag.Info.AttrStr)
+	if err != nil {
+		return "", err
+	}
+	for _, prop := range tag.Info.Props {
+		newTag = strings.Replace(newTag, prop.Raw, "`+"+prop.Value+"+`", 1)
+	}
+	return newTag, nil
+}
+
+func (tag TagIf) GetInfo() TagInfo { return tag.Info }
+
+func (tag TagIf) TranspileToGo() (string, error) {
+
+	return "", nil
 }
 
 func (tag *TagIf) setTagInfo(root *goquery.Selection, ogSel *goquery.Selection, attrsToExclude ...string) error {

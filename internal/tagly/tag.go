@@ -1,6 +1,7 @@
 package tagly
 
 type Tag interface {
-	TranspileToGo() (string, error)
+	AsStr() (string, error)
 	GetInfo() TagInfo
+	TranspileToGo() (string, error)
 }
