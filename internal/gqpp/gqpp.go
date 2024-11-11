@@ -122,6 +122,9 @@ func CalculateNodeDepth(root *goquery.Selection, child *goquery.Selection) (int,
 		}
 		if searchHtml == childHtml {
 			ClimbTreeUntil(search, func(parent *goquery.Selection) bool {
+				if parent.Length() == 0 {
+					potErr = fmt.Errorf("child node: %s not found within parent node: %s", childHtml[0:30], rootHtml[0:30])
+				}
 				parentHtml, err := GetHtmlFromSelection(parent)
 				if err != nil {
 					potErr = err

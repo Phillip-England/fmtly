@@ -8,24 +8,34 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"tagly/internal/filetype"
 	"tagly/internal/gqpp"
 	"tagly/internal/parsley"
+	"tagly/internal/tagly"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
 
-	taglyFile, err := filetype.NewTaglyFileFromFilePath("./components/index.html")
+	fTagly, err := tagly.NewFileTaglyFromFilePath("./components/index.t.html")
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = filetype.NewTemplateFileFromTaglyFile(taglyFile)
+	_, err = tagly.NewFileComponentFromFileTagly(fTagly)
 	if err != nil {
 		panic(err)
 	}
+
+	// taglyFile, err := filetype.NewTaglyFileFromFilePath("./components/index.t.html")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// _, err = filetype.NewTemplateFileFromTaglyFile(taglyFile)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// err := emptyFile("./components.go")
 	// if err != nil {

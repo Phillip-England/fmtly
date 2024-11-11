@@ -45,3 +45,10 @@ Here is all the tags provided by fmtly:
     </if>
 </fmt>
 ```
+
+## TODO
+
+Don't want to forget these ideas.
+
+1. We need to enable <slot> support. 
+2. Change so components are not named by and attribute NAME :)

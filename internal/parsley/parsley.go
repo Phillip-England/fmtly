@@ -190,3 +190,17 @@ func RemoveEmptyLines(input string) string {
 	// Join the non-empty lines back into a single string
 	return strings.Join(cleanedLines, "\n")
 }
+
+func RemoveDuplicatesInSlice(strSlice []string) []string {
+	unique := make(map[string]bool)
+	var result []string
+
+	for _, item := range strSlice {
+		if _, found := unique[item]; !found {
+			unique[item] = true
+			result = append(result, item)
+		}
+	}
+
+	return result
+}
