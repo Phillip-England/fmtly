@@ -1,24 +1,8 @@
-<fmt name="CustomerList" tag="ul" class="p-4 bg-black">
-    <h2>{{ title }}</h2>
-    <h2>{{ title }}</h2>
-    <for in="customers" as="customer" tag="li" type="*Customer">
-        <p>{{ customer.Name }}</p>
-        <for in="customer.Friends" tag="div" as="friend" type="*Friend">
-            <p>{{ friend.Name }}</p>
-            <p>{{ friend.Age }}</p>
-        </for>
-    </for>
-    <if condition="isLoggedIn" tag="div">
-        <for in="animals" as="animal" tag="div" type="string">
-            <p>{{ animal }}</p>
-        </for>
-        <p>logged in</p>
-        <else>
-            <p>not logged in</p>
-        </else>
-    </if>
-</fmt>
 
-<fmt name="Button" tag="button" class="bg-blue-500">
-    <p>{{ name }}</p>
-</fmt>
+<div:CustomerList>
+    for i, guest := range guests as []Guest {
+        
+    }
+</div>
+
+

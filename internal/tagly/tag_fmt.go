@@ -101,6 +101,7 @@ func (tag TagFmt) TranspileToGo() (string, error) {
 			out = strings.Replace(out, innerHtml, goCode, 1)
 		}
 	}
+	fmt.Println(out)
 	return out, nil
 }
 

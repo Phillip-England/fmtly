@@ -50,8 +50,19 @@ func (tag TagFor) AsStr() (string, error) {
 func (tag TagFor) GetInfo() TagInfo { return tag.Info }
 
 func (tag TagFor) TranspileToGo() (string, error) {
-
-	return "FORTAG", nil
+	htmlStr, err := tag.AsStr()
+	if err != nil {
+		return "", err
+	}
+	htmlStr = parsley.WrapStr(htmlStr, "`", "`")
+	parts := strings.Split(htmlStr, "+")
+	buildParts := make([]string, 0)
+	for _, part := range parts {
+		buildParts = append(buildParts, fmt.Sprintf(`%sBuilder.WriteString(%s)`, tag.AttrAs, part))
+	}
+	htmlStr = strings.Join(buildParts, " ")
+	goCode := fmt.Sprintf(`builder.WriteString(%scollectStr(%s, func(i int, %s %s) string { var %sBuilder strings.Builder %s return %sBuilder.String() })%s)`, parsley.BackTick(), tag.AttrIn, tag.AttrAs, tag.AttrType, tag.AttrAs, htmlStr, tag.AttrAs, parsley.BackTick())
+	return parsley.FlattenStr(goCode), nil
 }
 
 func (tag *TagFor) setTagInfo(root *goquery.Selection, ogSel *goquery.Selection, attrsToExclude ...string) error {

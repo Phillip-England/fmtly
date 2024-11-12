@@ -194,13 +194,21 @@ func RemoveEmptyLines(input string) string {
 func RemoveDuplicatesInSlice(strSlice []string) []string {
 	unique := make(map[string]bool)
 	var result []string
-
 	for _, item := range strSlice {
 		if _, found := unique[item]; !found {
 			unique[item] = true
 			result = append(result, item)
 		}
 	}
-
 	return result
+}
+
+func WrapStr(s, prefix, suffix string) string {
+	return prefix + s + suffix
+}
+
+func MatchLeadingSpaces(str1, str2 string) string {
+	leadingSpaces := len(str2) - len(strings.TrimLeft(str2, " "))
+	padding := strings.Repeat(" ", leadingSpaces)
+	return padding + str1
 }
