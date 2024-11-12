@@ -1,4 +1,4 @@
-package parsley
+package purse
 
 import (
 	"strings"

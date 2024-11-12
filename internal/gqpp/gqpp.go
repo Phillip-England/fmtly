@@ -2,10 +2,10 @@ package gqpp
 
 import (
 	"fmt"
+	"gotml/internal/purse"
 	"html"
 	"os"
 	"strings"
-	"tagly/internal/parsley"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -74,15 +74,15 @@ func GetHtmlFromSelection(s *goquery.Selection) (string, error) {
 		return "", err
 	}
 	htmlStr = html.UnescapeString(htmlStr)
-	lastLine := parsley.GetLastLine(htmlStr)
-	leadingSpaces := parsley.CountLeadingSpaces(lastLine)
-	lines := parsley.MakeLines(htmlStr)
+	lastLine := purse.GetLastLine(htmlStr)
+	leadingSpaces := purse.CountLeadingSpaces(lastLine)
+	lines := purse.MakeLines(htmlStr)
 	for i, line := range lines {
 		if i == 0 {
 			lines[i] = strings.Repeat(" ", leadingSpaces) + line
 		}
 	}
-	return parsley.JoinLines(lines), nil
+	return purse.JoinLines(lines), nil
 }
 
 func ClimbTreeUntil(s *goquery.Selection, cond func(parent *goquery.Selection) bool) error {
