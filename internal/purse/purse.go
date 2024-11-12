@@ -212,3 +212,11 @@ func MatchLeadingSpaces(str1, str2 string) string {
 	padding := strings.Repeat(" ", leadingSpaces)
 	return padding + str1
 }
+
+func SnipStrAtIndex(s string, x int) string {
+	// Ensure that x doesn't exceed the length of the string
+	if x > len(s) {
+		x = len(s)
+	}
+	return s[:x]
+}

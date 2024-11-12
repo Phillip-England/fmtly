@@ -68,7 +68,7 @@ func GetAttrStr(selection *goquery.Selection, filter ...string) string {
 	return strings.Join(attrs, " ")
 }
 
-func GetHtmlFromSelection(s *goquery.Selection) (string, error) {
+func NewHtmlFromSelection(s *goquery.Selection) (string, error) {
 	htmlStr, err := goquery.OuterHtml(s)
 	if err != nil {
 		return "", err
@@ -105,17 +105,17 @@ func AttrFromStr(str string, attrName string) (string, bool, error) {
 func CalculateNodeDepth(root *goquery.Selection, child *goquery.Selection) (int, error) {
 	depth := 0
 	childNodeName := goquery.NodeName(child)
-	childHtml, err := GetHtmlFromSelection(child)
+	childHtml, err := NewHtmlFromSelection(child)
 	if err != nil {
 		return -1, err
 	}
-	rootHtml, err := GetHtmlFromSelection(root)
+	rootHtml, err := NewHtmlFromSelection(root)
 	if err != nil {
 		return -1, err
 	}
 	var potErr error
 	root.Find(childNodeName).Each(func(i int, search *goquery.Selection) {
-		searchHtml, err := GetHtmlFromSelection(search)
+		searchHtml, err := NewHtmlFromSelection(search)
 		if err != nil {
 			potErr = err
 			return
@@ -125,7 +125,7 @@ func CalculateNodeDepth(root *goquery.Selection, child *goquery.Selection) (int,
 				if parent.Length() == 0 {
 					potErr = fmt.Errorf("child node: %s not found within parent node: %s", childHtml[0:30], rootHtml[0:30])
 				}
-				parentHtml, err := GetHtmlFromSelection(parent)
+				parentHtml, err := NewHtmlFromSelection(parent)
 				if err != nil {
 					potErr = err
 					return true
@@ -150,14 +150,14 @@ func CountMatchingParentTags(root, child *goquery.Selection, tagNames ...string)
 	for _, tag := range tagNames {
 		tagSet[tag] = struct{}{}
 	}
-	childHtml, err := GetHtmlFromSelection(child)
+	childHtml, err := NewHtmlFromSelection(child)
 	if err != nil {
 		return -1, err
 	}
 	found := false
 	var potentialErr error
 	root.Find(goquery.NodeName(child)).EachWithBreak(func(i int, search *goquery.Selection) bool {
-		searchHtml, err := GetHtmlFromSelection(search)
+		searchHtml, err := NewHtmlFromSelection(search)
 		if err != nil {
 			potentialErr = err
 			return false
@@ -185,7 +185,7 @@ func CountMatchingParentTags(root, child *goquery.Selection, tagNames ...string)
 	return count, nil
 }
 
-func GetHtmlFromSelectionWithNewTag(s *goquery.Selection, newTagName string, newTagAttrStr string) (string, error) {
+func NewHtmlFromSelectionWithNewTag(s *goquery.Selection, newTagName string, newTagAttrStr string) (string, error) {
 	htmlStr, err := s.Html()
 	if err != nil {
 		return "", err
@@ -202,7 +202,7 @@ func GetHtmlFromSelectionWithNewTag(s *goquery.Selection, newTagName string, new
 	if err != nil {
 		return "", err
 	}
-	finalOut, err := GetHtmlFromSelection(newSel)
+	finalOut, err := NewHtmlFromSelection(newSel)
 	if err != nil {
 		return "", err
 	}
