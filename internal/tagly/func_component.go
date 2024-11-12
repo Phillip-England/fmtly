@@ -17,7 +17,7 @@ func NewFuncComponentFromTagFmt(ogFmt TagFmt) (FuncComponent, error) {
 		func() error { return comp.setOrignalFmt(ogFmt) },
 		func() error { return comp.setName() },
 		func() error { return comp.setParamStr() },
-		func() error { return comp.generateGoFunc() },
+		func() error { return comp.generateCode() },
 	// func() error { return comp.captureReturnHtml() },
 	)
 	if err != nil {
@@ -45,10 +45,11 @@ func (comp *FuncComponent) setParamStr() error {
 	return nil
 }
 
-func (comp *FuncComponent) generateGoFunc() error {
-	_, err := comp.OriginalFmt.TranspileToGo()
+func (comp *FuncComponent) generateCode() error {
+	goCode, err := comp.OriginalFmt.TranspileToGo()
 	if err != nil {
 		return err
 	}
+	comp.Code = goCode
 	return nil
 }

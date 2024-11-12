@@ -50,8 +50,7 @@ func (tag TagIf) AsStr() (string, error) {
 func (tag TagIf) GetInfo() TagInfo { return tag.Info }
 
 func (tag TagIf) TranspileToGo() (string, error) {
-
-	return "", nil
+	return "IFTAG", nil
 }
 
 func (tag *TagIf) setTagInfo(root *goquery.Selection, ogSel *goquery.Selection, attrsToExclude ...string) error {

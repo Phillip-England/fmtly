@@ -78,35 +78,30 @@ func (tag TagFmt) AsStr() (string, error) {
 func (tag TagFmt) GetInfo() TagInfo { return tag.Info }
 
 func (tag TagFmt) TranspileToGo() (string, error) {
-	clay := tag.CloneAsPointer()
-	out := parsley.FlattenStr(tag.Info.Html)
-	targetLength := len(clay.Tags)
-	modifiedTags := make([]Tag, 0)
+	out := parsley.FlattenStr(tag.GetInfo().Html)
 	for {
-		if len(modifiedTags) == targetLength {
+		newSel, err := gqpp.NewSelectionFromHtmlStr(out)
+		if err != nil {
+			return "", err
+		}
+		newFmt, err := NewTagFmtFromSelection(newSel)
+		if err != nil {
+			return "", err
+		}
+		tags := newFmt.Tags
+		if len(tags) == 0 {
 			break
 		}
-		for _, innerTag := range clay.Tags {
+		for _, innerTag := range tags {
 			innerHtml := parsley.FlattenStr(innerTag.GetInfo().Html)
 			goCode, err := innerTag.TranspileToGo()
 			if err != nil {
-				return "", err
+				return "", nil
 			}
 			out = strings.Replace(out, innerHtml, goCode, 1)
-			modifiedTags = append(modifiedTags, innerTag)
-			newSel, err := gqpp.NewSelectionFromHtmlStr(out)
-			if err != nil {
-				return "", err
-			}
-			newFmt, err := NewTagFmtFromSelection(newSel)
-			if err != nil {
-				return "", err
-			}
-			clay = newFmt.CloneAsPointer()
 		}
 	}
-	fmt.Println(out)
-	return "", nil
+	return out, nil
 }
 
 func (tag *TagFmt) GetGoFuncParamStr() (string, error) {
@@ -208,9 +203,10 @@ func (tag *TagFmt) combineTags() error {
 	for _, tagFor := range tag.TagFors {
 		tags = append(tags, tagFor)
 	}
-	for _, tagIf := range tag.TagFors {
+	for _, tagIf := range tag.TagIfs {
 		tags = append(tags, tagIf)
 	}
+	tag.Tags = tags
 	return nil
 }
 
@@ -225,16 +221,18 @@ func (tag *TagFmt) sortTagsByDepth() error {
 		}
 	}
 	for {
+		if len(sorted) == targetLength {
+			break
+		}
 		for _, innerTag := range tag.Tags {
 			depth := innerTag.GetInfo().Depth
 			if depth == highestDepth {
 				sorted = append(sorted, innerTag)
+				continue
 			}
 		}
 		highestDepth--
-		if len(sorted) == targetLength {
-			break
-		}
 	}
+	tag.Tags = sorted
 	return nil
 }

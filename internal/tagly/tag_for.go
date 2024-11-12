@@ -51,7 +51,7 @@ func (tag TagFor) GetInfo() TagInfo { return tag.Info }
 
 func (tag TagFor) TranspileToGo() (string, error) {
 
-	return "===========================", nil
+	return "FORTAG", nil
 }
 
 func (tag *TagFor) setTagInfo(root *goquery.Selection, ogSel *goquery.Selection, attrsToExclude ...string) error {
