@@ -1,4 +1,4 @@
-module gotml
+module gtml
 
 go 1.23.2
 

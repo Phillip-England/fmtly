@@ -1,4 +1,4 @@
-package gotml
+package gtml
 
 import (
 	"fmt"

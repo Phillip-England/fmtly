@@ -1,10 +1,10 @@
-package gotml
+package gtml
 
 import (
 	"fmt"
-	"gotml/internal/fungi"
-	"gotml/internal/gqpp"
-	"gotml/internal/purse"
+	"gtml/internal/fungi"
+	"gtml/internal/gqpp"
+	"gtml/internal/purse"
 
 	"github.com/PuerkitoBio/goquery"
 )

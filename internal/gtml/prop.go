@@ -1,8 +1,8 @@
-package gotml
+package gtml
 
 import (
-	"gotml/internal/gqpp"
-	"gotml/internal/purse"
+	"gtml/internal/gqpp"
+	"gtml/internal/purse"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
