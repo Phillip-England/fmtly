@@ -69,7 +69,7 @@ func FlattenLines(lines []string) []string {
 	return lines
 }
 
-func FlattenStr(str string) string {
+func Flatten(str string) string {
 	lines := MakeLines(str)
 	flat := FlattenLines(lines)
 	return strings.Join(flat, "")
@@ -219,4 +219,63 @@ func SnipStrAtIndex(s string, x int) string {
 		x = len(s)
 	}
 	return s[:x]
+}
+
+func TargetSearch(input, primarySearch, secondarySearch string) (string, bool) {
+	startIndex := strings.Index(input, primarySearch)
+	if startIndex == -1 {
+		return "", false
+	}
+	substring := input[startIndex:]
+	endIndex := strings.Index(substring, secondarySearch)
+	if endIndex == -1 {
+		return "", false
+	}
+	finalEndIndex := startIndex + endIndex + len(secondarySearch)
+	return input[startIndex:finalEndIndex], true
+}
+
+func SplitWithTargetInclusion(str, target string) []string {
+	var parts []string
+	start := 0
+
+	for {
+		// Find the next occurrence of the target string
+		index := strings.Index(str[start:], target)
+		if index == -1 {
+			// No more occurrences, add the remaining part of the string
+			parts = append(parts, str[start:])
+			break
+		}
+
+		// Adjust the index relative to the original string
+		index += start
+
+		// Add the part up to the target
+		parts = append(parts, str[start:index])
+		// Add the target itself as a separate item
+		parts = append(parts, target)
+
+		// Move the start index past the target
+		start = index + len(target)
+	}
+
+	return parts
+}
+
+func PrefixSliceItems(items []string, prefix string) string {
+	var prefixedItems []string
+	for _, item := range items {
+		prefixedItems = append(prefixedItems, prefix+item)
+	}
+	return strings.Join(prefixedItems, "")
+}
+
+func ReverseSlice[T any](slice []T) []T {
+	n := len(slice)
+	reversed := make([]T, n)
+	for i, v := range slice {
+		reversed[n-1-i] = v
+	}
+	return reversed
 }

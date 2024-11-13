@@ -2,7 +2,7 @@ package gqpp
 
 import (
 	"fmt"
-	"gotml/internal/purse"
+	"gtml/internal/purse"
 	"html"
 	"os"
 	"strings"
@@ -207,4 +207,105 @@ func NewHtmlFromSelectionWithNewTag(s *goquery.Selection, newTagName string, new
 		return "", err
 	}
 	return finalOut, nil
+}
+
+func FindDeepestMatchingSelection(selection *goquery.Selection, selectors ...string) (*goquery.Selection, bool) {
+	var deepestSelection *goquery.Selection
+	maxDepth := -1
+
+	for _, selector := range selectors {
+		found := selection.Find(selector)
+		if found.Length() > 0 {
+			for i := 0; i < found.Length(); i++ {
+				node := found.Eq(i)
+
+				// Calculate the depth of this node within the original selection
+				depth, err := CalculateNodeDepth(selection, node)
+				if err != nil {
+					return nil, false
+				}
+
+				// Update the deepest node found if this one is deeper
+				if depth > maxDepth {
+					maxDepth = depth
+					deepestSelection = node
+				}
+			}
+		}
+	}
+
+	if deepestSelection == nil {
+		return nil, false
+	}
+	return deepestSelection, true
+}
+
+func HasMatchingElements(selection *goquery.Selection, selectors ...string) bool {
+	for _, selector := range selectors {
+		if selection.Find(selector).Length() > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func GetFirstMatchingAttr(selection *goquery.Selection, attrs ...string) string {
+	for _, attr := range attrs {
+		if _, exists := selection.Attr(attr); exists {
+			return attr
+		}
+	}
+	return ""
+}
+
+func GetAttrPart(selection *goquery.Selection, attrName string, part int) (string, error) {
+	attr, exists := selection.Attr(attrName)
+	if !exists {
+		return "", fmt.Errorf("attr: '%s' does not exist when it should", attrName)
+	}
+	parts := strings.Split(attr, " ")
+	if len(parts) < part {
+		return "", fmt.Errorf("attr: '%s' must contain %d parts", attrName, part)
+	}
+	return parts[part], nil
+}
+
+func GetAttr(selection *goquery.Selection, attrName string) (string, error) {
+	attr, exists := selection.Attr(attrName)
+	if !exists {
+		return "", fmt.Errorf("attr: '%s' does not exist", attrName)
+	}
+	return attr, nil
+}
+
+func HasAttr(selection *goquery.Selection, attrs ...string) bool {
+	for _, attr := range attrs {
+		if _, exists := selection.Attr(attr); exists {
+			return true
+		}
+	}
+	return false
+}
+
+func HasParentWithAttrs(sel *goquery.Selection, attrs ...string) bool {
+	// Create a set of the attribute names for quick lookup
+	attrSet := make(map[string]struct{})
+	for _, attr := range attrs {
+		attrSet[attr] = struct{}{}
+	}
+
+	// Traverse up the parent hierarchy
+	current := sel.Parent()
+	for current.Length() > 0 {
+		for _, node := range current.Nodes {
+			for _, attr := range node.Attr {
+				if _, found := attrSet[attr.Key]; found {
+					return true
+				}
+			}
+		}
+		current = current.Parent()
+	}
+
+	return false
 }
