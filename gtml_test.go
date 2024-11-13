@@ -7,7 +7,7 @@ import (
 
 func TestMain(t *testing.T) {
 
-	_, err := gtml.NewGtmlRootFromStr(`
+	_, err := gtml.NewGtmlComponentFromStr(`
 		<div _component="GuestList">
 			<div _for="guest of guests []Guest">
 				<h1>{{ guest.Name }}</h1>
