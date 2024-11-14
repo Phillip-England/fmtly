@@ -1,13 +1,15 @@
 package gtml_test
 
 import (
+	"fmt"
 	"gtml"
+	"strings"
 	"testing"
 )
 
-func TestMain(t *testing.T) {
+func TestGuestList(t *testing.T) {
 
-	_, err := gtml.NewGtmlComponentFromStr(`
+	elm, err := gtml.NewGtmlElementFromStr(`
 		<div _component="GuestList">
 			<div _for="guest of guests []Guest">
 				<h1>{{ guest.Name }}</h1>
@@ -30,5 +32,27 @@ func TestMain(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+
+	clay := elm.GetHtml()
+	for {
+
+		gtml.WalkUpGtmlBranches(elm, func(child gtml.GtmlElement) error {
+			childHtml := child.GetHtml()
+			clay = strings.Replace(clay, childHtml, "inner", 1)
+			return nil
+		})
+
+		elm, err = gtml.NewGtmlElementFromStr(clay)
+		if err != nil {
+			panic(err)
+		}
+
+		if len(elm.GetChildren()) == 0 {
+			break
+		}
+
+	}
+
+	fmt.Println(clay)
 
 }

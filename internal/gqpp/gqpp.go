@@ -287,7 +287,7 @@ func HasAttr(selection *goquery.Selection, attrs ...string) bool {
 	return false
 }
 
-func HasParentWithAttrs(sel *goquery.Selection, attrs ...string) bool {
+func HasParentWithAttrs(sel *goquery.Selection, stopAt *goquery.Selection, attrs ...string) bool {
 	// Create a set of the attribute names for quick lookup
 	attrSet := make(map[string]struct{})
 	for _, attr := range attrs {
@@ -297,6 +297,11 @@ func HasParentWithAttrs(sel *goquery.Selection, attrs ...string) bool {
 	// Traverse up the parent hierarchy
 	current := sel.Parent()
 	for current.Length() > 0 {
+		// Stop if we reach the specified stopAt selection
+		if current.IsSelection(stopAt) {
+			break
+		}
+
 		for _, node := range current.Nodes {
 			for _, attr := range node.Attr {
 				if _, found := attrSet[attr.Key]; found {
