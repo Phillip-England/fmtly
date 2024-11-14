@@ -15,6 +15,7 @@ type GtmlElement interface {
 	GetId() string
 	HasChildren() bool
 	Print()
+	GetWriteStringCall() (string, bool)
 }
 
 func NewGtmlElementFromStr(str string) (GtmlElement, error) {

@@ -38,7 +38,8 @@ func TestGuestList(t *testing.T) {
 
 		gtml.WalkUpGtmlBranches(elm, func(child gtml.GtmlElement) error {
 			childHtml := child.GetHtml()
-			clay = strings.Replace(clay, childHtml, "inner", 1)
+			writeStringCall, _ := child.GetWriteStringCall()
+			clay = strings.Replace(clay, childHtml, writeStringCall, 1)
 			return nil
 		})
 

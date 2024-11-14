@@ -40,3 +40,6 @@ func (elm ComponentElement) GetSelection() *goquery.Selection { return elm.Value
 func (elm ComponentElement) GetId() string                    { return elm.Id }
 func (elm ComponentElement) HasChildren() bool                { return len(elm.Children) > 0 }
 func (elm ComponentElement) Print()                           { fmt.Println(elm.Html) }
+func (elm ComponentElement) GetWriteStringCall() (string, bool) {
+	return "", false
+}

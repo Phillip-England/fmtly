@@ -10,16 +10,18 @@ import (
 )
 
 type ForElement struct {
-	Value     *goquery.Selection
-	Children  []GtmlElement
-	Id        string
-	Html      string
-	ForAttr   string
-	ItemName  string
-	ItemType  string
-	ItemsName string
-	ItemsType string
-	Props     []GtmlProp
+	Value       *goquery.Selection
+	Children    []GtmlElement
+	Id          string
+	Html        string
+	ForAttr     string
+	ItemName    string
+	ItemType    string
+	ItemsName   string
+	ItemsType   string
+	Props       []GtmlProp
+	BuilderName string
+	LoopName    string
 }
 
 func (elm ForElement) GetChildren() []GtmlElement       { return elm.Children }
@@ -28,7 +30,10 @@ func (elm ForElement) GetSelection() *goquery.Selection { return elm.Value }
 func (elm ForElement) GetId() string                    { return elm.Id }
 func (elm ForElement) HasChildren() bool                { return len(elm.Children) > 0 }
 func (elm ForElement) Print()                           { fmt.Println(elm.Html) }
-func (elm ForElement) Test()                            { fmt.Println(elm.Html) }
+func (elm ForElement) GetWriteStringCall() (string, bool) {
+	call := fmt.Sprintf("%s.WriteString(%s)", elm.BuilderName, elm.LoopName)
+	return call, true
+}
 
 func NewForElementFromSelection(sel *goquery.Selection) (ForElement, error) {
 	elm := &ForElement{
@@ -64,5 +69,7 @@ func NewForElementFromSelection(sel *goquery.Selection) (ForElement, error) {
 	elm.ItemType = fourthPart
 	props := NewPropsFromStr(elm.Html)
 	elm.Props = props
+	elm.BuilderName = fmt.Sprintf("%sBuilder", elm.ItemName)
+	elm.LoopName = fmt.Sprintf("%sLoop", elm.ItemName)
 	return *elm, nil
 }
