@@ -16,6 +16,10 @@ type GtmlElement interface {
 	HasChildren() bool
 	Print()
 	GetWriteStringCall() (string, bool)
+	GetParent() GtmlElement
+	IsRoot() bool
+	Delete()
+	SetChildren(children []GtmlElement)
 }
 
 func NewGtmlElementFromStr(str string) (GtmlElement, error) {
@@ -25,7 +29,7 @@ func NewGtmlElementFromStr(str string) (GtmlElement, error) {
 	}
 	_, exists := sel.Attr("_component")
 	if exists {
-		elm, err := NewComponentElementFromSelection(sel)
+		elm, err := NewComponentElementFromSelection(sel, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -33,7 +37,7 @@ func NewGtmlElementFromStr(str string) (GtmlElement, error) {
 	}
 	_, exists = sel.Attr("_for")
 	if exists {
-		elm, err := NewForElementFromSelection(sel)
+		elm, err := NewForElementFromSelection(sel, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +45,7 @@ func NewGtmlElementFromStr(str string) (GtmlElement, error) {
 	}
 	_, exists = sel.Attr("_if")
 	if exists {
-		elm, err := NewIfElementFromSelection(sel)
+		elm, err := NewIfElementFromSelection(sel, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -49,7 +53,7 @@ func NewGtmlElementFromStr(str string) (GtmlElement, error) {
 	}
 	_, exists = sel.Attr("_else")
 	if exists {
-		elm, err := NewElseElementFromSelection(sel)
+		elm, err := NewElseElementFromSelection(sel, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -58,13 +62,13 @@ func NewGtmlElementFromStr(str string) (GtmlElement, error) {
 	return nil, fmt.Errorf("Provided html is not a valid gtml element: %s", str)
 }
 
-func GetGtmlElementChildren(elm GtmlElement) ([]GtmlElement, error) {
+func GetGtmlElementChildren(parent GtmlElement) ([]GtmlElement, error) {
 	children := make([]GtmlElement, 0)
-	sel := elm.GetSelection()
+	sel := parent.GetSelection()
 	var potErr error
 	sel.Find("*[_for]").Each(func(i int, forSel *goquery.Selection) {
 		if !gqpp.HasParentWithAttrs(forSel, sel, "_for", "_else", "_if") {
-			forElm, err := NewForElementFromSelection(forSel)
+			forElm, err := NewForElementFromSelection(forSel, parent)
 			if err != nil {
 				potErr = err
 				return
@@ -72,9 +76,12 @@ func GetGtmlElementChildren(elm GtmlElement) ([]GtmlElement, error) {
 			children = append(children, forElm)
 		}
 	})
+	if potErr != nil {
+		return nil, potErr
+	}
 	sel.Find("*[_if]").Each(func(i int, forSel *goquery.Selection) {
 		if !gqpp.HasParentWithAttrs(forSel, sel, "_for", "_else", "_if") {
-			ifElm, err := NewIfElementFromSelection(forSel)
+			ifElm, err := NewIfElementFromSelection(forSel, parent)
 			if err != nil {
 				potErr = err
 				return
@@ -82,9 +89,12 @@ func GetGtmlElementChildren(elm GtmlElement) ([]GtmlElement, error) {
 			children = append(children, ifElm)
 		}
 	})
+	if potErr != nil {
+		return nil, potErr
+	}
 	sel.Find("*[_else]").Each(func(i int, forSel *goquery.Selection) {
 		if !gqpp.HasParentWithAttrs(forSel, sel, "_for", "_else", "_if") {
-			elseElm, err := NewElseElementFromSelection(forSel)
+			elseElm, err := NewElseElementFromSelection(forSel, parent)
 			if err != nil {
 				potErr = err
 				return
@@ -133,4 +143,23 @@ func WalkUpGtmlBranches(elm GtmlElement, fn func(child GtmlElement) error) error
 		}
 	}
 	return nil
+}
+
+func DeleteGtmlElementNode(elm GtmlElement) {
+	if elm.IsRoot() {
+		return
+	}
+	parent := elm.GetParent()
+	filtered := make([]GtmlElement, 0)
+	for _, child := range parent.GetChildren() {
+		if child.GetId() == elm.GetId() {
+			continue
+		}
+		filtered = append(filtered, child)
+	}
+	parent.SetChildren(filtered)
+	parent.Print()
+	// for _, child := range parent.GetChildren() {
+	// 	child.Print()
+	// }
 }

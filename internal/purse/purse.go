@@ -1,7 +1,9 @@
 package purse
 
 import (
+	"math/rand"
 	"strings"
+	"time"
 )
 
 func MakeLines(s string) []string {
@@ -278,4 +280,15 @@ func ReverseSlice[T any](slice []T) []T {
 		reversed[n-1-i] = v
 	}
 	return reversed
+}
+
+func RandStr(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	rand.Seed(time.Now().UnixNano())
+
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
 }
