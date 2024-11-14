@@ -24,7 +24,7 @@ func NewSelectionFromFilePath(path string) (*goquery.Selection, error) {
 	return body, nil
 }
 
-func NewSelectionFromHtmlStr(htmlStr string) (*goquery.Selection, error) {
+func NewSelectionFromStr(htmlStr string) (*goquery.Selection, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlStr))
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func ChangeSelectionTagName(s *goquery.Selection, tagName string) (*goquery.Sele
 	} else {
 		out = fmt.Sprintf("<%s %s>%s</%s>", tagName, attrStr, htmlStr, tagName)
 	}
-	newSel, err := NewSelectionFromHtmlStr(out)
+	newSel, err := NewSelectionFromStr(out)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func ClimbTreeUntil(s *goquery.Selection, cond func(parent *goquery.Selection) b
 }
 
 func AttrFromStr(str string, attrName string) (string, bool, error) {
-	s, err := NewSelectionFromHtmlStr(str)
+	s, err := NewSelectionFromStr(str)
 	if err != nil {
 		return "", false, err
 	}
@@ -198,7 +198,7 @@ func NewHtmlFromSelectionWithNewTag(s *goquery.Selection, newTagName string, new
 	}
 	closeTag := fmt.Sprintf("</%s>", newTagName)
 	out := fmt.Sprintf("%s%s%s", openTag, htmlStr, closeTag)
-	newSel, err := NewSelectionFromHtmlStr(out)
+	newSel, err := NewSelectionFromStr(out)
 	if err != nil {
 		return "", err
 	}
