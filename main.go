@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gtml/internal/gtml"
 )
 
@@ -27,10 +26,9 @@ func main() {
 		panic(err)
 	}
 
-	for _, child := range elm.GetChildren() {
-		child.DeleteSelf()
+	_, err = gtml.NewComponentFunc(elm)
+	if err != nil {
+		panic(err)
 	}
-
-	fmt.Println(len(elm.GetChildren()))
 
 }
