@@ -255,7 +255,8 @@ func (elm *ForElement) Print()       { fmt.Println(elm.Data) }
 
 // ##==================================================================
 type ComponentFunc struct {
-	Name string
+	Name  string
+	Shell string
 }
 
 func NewComponentFunc(elm Element) (*ComponentFunc, error) {
@@ -264,12 +265,30 @@ func NewComponentFunc(elm Element) (*ComponentFunc, error) {
 	}
 	comp := &ComponentFunc{}
 	err := fungi.Process(
-	// func() error { return comp.SetName(elm) },
+		func() error { return comp.SetShell() },
+		func() error { return comp.SetName(elm) },
 	)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(comp.Name)
 	return comp, nil
+}
+
+func (comp *ComponentFunc) SetShell(elm Element) error {
+	shell := `
+func NAME()
+	`
+	return nil
+}
+
+func (comp *ComponentFunc) SetName(elm Element) error {
+	attr, err := elm.GetAttrData()
+	if err != nil {
+		return err
+	}
+	comp.Name = attr
+	return nil
 }
 
 // ##==================================================================
