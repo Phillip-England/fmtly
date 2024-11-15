@@ -21,6 +21,7 @@ type Element interface {
 	DeleteSelf() error
 	DeleteChildren()
 	GetAttrData() (string, error)
+	Clone() Element
 	Type() string
 	IsRoot() bool
 	Print()
@@ -202,6 +203,11 @@ func (elm *ComponentElement) GetAttrData() (string, error) {
 	attr, _ := sel.Attr("_component")
 	return attr, nil
 }
+func (elm *ComponentElement) Clone() Element {
+	elmValue := *elm
+	clone := &elmValue
+	return clone
+}
 func (elm *ComponentElement) Type() string { return elm.ElementType }
 func (elm *ComponentElement) IsRoot() bool { return elm.IsRootElement }
 func (elm *ComponentElement) Print()       { fmt.Println(elm.Data) }
@@ -213,6 +219,7 @@ type ForElement struct {
 	ElementType   string
 	Parent        Element
 	IsRootElement bool
+	ForAttrParts  []string
 }
 
 func NewForElement(str string, parent Element) (*ForElement, error) {
@@ -226,6 +233,15 @@ func NewForElement(str string, parent Element) (*ForElement, error) {
 	if err != nil {
 		return nil, err
 	}
+	forAttr, err := elm.GetAttrData()
+	if err != nil {
+		return nil, err
+	}
+	parts := strings.Split(forAttr, " ")
+	if len(parts) != 4 {
+		return nil, fmt.Errorf("_for element requires attributes with the following schema: ITEM of ITEMS []TYPE", str)
+	}
+	elm.ForAttrParts = parts
 	return elm, nil
 }
 
@@ -244,6 +260,11 @@ func (elm *ForElement) GetAttrData() (string, error) {
 	}
 	attr, _ := sel.Attr("_for")
 	return attr, nil
+}
+func (elm *ForElement) Clone() Element {
+	elmValue := *elm
+	clone := &elmValue
+	return clone
 }
 func (elm *ForElement) Type() string { return elm.ElementType }
 func (elm *ForElement) IsRoot() bool { return elm.IsRootElement }
@@ -267,18 +288,24 @@ func NewComponentFunc(elm Element) (*ComponentFunc, error) {
 	err := fungi.Process(
 		func() error { return comp.SetShell() },
 		func() error { return comp.SetName(elm) },
+		func() error { return comp.WriteShellName() },
+		func() error { return comp.SetVars(elm.Clone()) },
 	)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(comp.Name)
 	return comp, nil
 }
 
-func (comp *ComponentFunc) SetShell(elm Element) error {
+func (comp *ComponentFunc) SetShell() error {
 	shell := `
-func NAME()
-	`
+func NAME(PARAMS) string {
+	var builder strings.Builder
+	VARS
+	BODY
+	return builder.String()
+} `
+	comp.Shell = purse.RemoveFirstLine(shell)
 	return nil
 }
 
@@ -288,6 +315,57 @@ func (comp *ComponentFunc) SetName(elm Element) error {
 		return err
 	}
 	comp.Name = attr
+	return nil
+}
+
+func (comp *ComponentFunc) WriteShellParam(str string) error {
+	comp.Shell = strings.Replace(comp.Shell, "PARAM", str, 1)
+	return nil
+}
+
+func (comp *ComponentFunc) WriteShellName() error {
+	comp.Shell = strings.Replace(comp.Shell, "NAME", comp.Name, 1)
+	return nil
+}
+
+func (comp *ComponentFunc) WriteShellVars(str string) error {
+	comp.Shell = strings.Replace(comp.Shell, "VARS", str+"\n\t"+"VARS", 1)
+	return nil
+}
+
+func (comp *ComponentFunc) WriteShellBody(str string) error {
+	comp.Shell = strings.Replace(comp.Shell, "BODY", str+"\n\t"+"BODY", 1)
+	return nil
+}
+
+func (comp *ComponentFunc) SetVars(clone Element) error {
+	err := WalkUpElementBranches(clone, func(next Element) error {
+		if next.Type() == "for" {
+			forElm, _ := next.(*ForElement)
+			attrParts := forElm.ForAttrParts
+			varName := fmt.Sprintf("%sLoop", forElm.ForAttrParts[0])
+			builderName := fmt.Sprintf("%sLoop", forElm.ForAttrParts[0])
+			_ = fmt.Sprintf(`
+%s := collect(%s, func(i int, %s %s) string {
+	var %s strings.Builder
+	BODY
+	return %s.String()
+})`, varName, attrParts[2], attrParts[0], purse.RemoveAllSubStr(attrParts[3], "[]"), builderName, builderName)
+			clay := next.GetData()
+			props := purse.ScanBetweenSubStrs(clay, "{{", "}}")
+			for _, prop := range props {
+				val := purse.Squeeze(prop)
+				val = purse.RemoveAllSubStr(val, "{{", "}}")
+
+				clay = strings.Replace(clay, prop, val, 1)
+			}
+			fmt.Println(clay)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
