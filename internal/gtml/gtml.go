@@ -2,7 +2,6 @@ package gtml
 
 import (
 	"fmt"
-	"gtml/internal/fungi"
 	"gtml/internal/gqpp"
 	"gtml/internal/purse"
 	"strings"
@@ -20,11 +19,11 @@ type Element interface {
 	GetParent() Element
 	DeleteSelf() error
 	DeleteChildren()
-	GetAttrData() (string, error)
-	Clone() Element
+	GetAttrData() string
 	Type() string
 	IsRoot() bool
 	Print()
+	GetProps() []string
 }
 
 func NewElement(str string, parent Element) (Element, error) {
@@ -51,7 +50,6 @@ func SetElementChildren(elm Element) error {
 	}
 	children := make([]Element, 0)
 	var potErr error
-	// as we add more element types, we can make a func out of this section below
 	sel.Find("*[_for]").Each(func(i int, inner *goquery.Selection) {
 		if !gqpp.HasParentWithAttrs(inner, sel, "_for") {
 			htmlStr, err := gqpp.NewHtmlFromSelection(inner)
@@ -90,6 +88,49 @@ func DeleteElement(elm Element) error {
 		parent.AddChild(child)
 	}
 	return nil
+}
+
+func CloneElement(elm Element) (Element, error) {
+	var clone Element
+	if elm.Type() == "component" {
+		if elm.IsRoot() {
+			clone, err := NewComponentElement(elm.GetData(), nil)
+			if err != nil {
+				return nil, err
+			}
+			return clone, nil
+		} else {
+			parent, err := CloneElement(elm.GetParent())
+			if err != nil {
+				return nil, err
+			}
+			clone, err := NewComponentElement(elm.GetData(), parent)
+			if err != nil {
+				return nil, err
+			}
+			return clone, nil
+		}
+	}
+	if elm.Type() == "for" {
+		if elm.IsRoot() {
+			clone, err := NewForElement(elm.GetData(), nil)
+			if err != nil {
+				return nil, err
+			}
+			return clone, nil
+		} else {
+			parent, err := CloneElement(elm.GetParent())
+			if err != nil {
+				return nil, err
+			}
+			clone, err := NewForElement(elm.GetData(), parent)
+			if err != nil {
+				return nil, err
+			}
+			return clone, nil
+		}
+	}
+	return clone, nil
 }
 
 func WalkChildElements(root Element, fn func(next Element) error) error {
@@ -164,6 +205,10 @@ func WalkUpElementBranches(elm Element, fn func(next Element) error) error {
 	return nil
 }
 
+func GetElementProps(elm Element) []string {
+	return purse.ScanBetweenSubStrs(elm.GetData(), "{{", "}}")
+}
+
 // ##==================================================================
 type ComponentElement struct {
 	Data          string
@@ -171,6 +216,8 @@ type ComponentElement struct {
 	ElementType   string
 	Parent        Element
 	IsRootElement bool
+	AttrData      string
+	Props         []string
 }
 
 func NewComponentElement(str string, parent Element) (*ComponentElement, error) {
@@ -184,6 +231,13 @@ func NewComponentElement(str string, parent Element) (*ComponentElement, error) 
 	if err != nil {
 		return nil, err
 	}
+	sel, err := gqpp.NewSelectionFromStr(elm.GetData())
+	if err != nil {
+		return nil, err
+	}
+	attr, _ := sel.Attr("_component")
+	elm.AttrData = attr
+	elm.Props = GetElementProps(elm)
 	return elm, nil
 }
 
@@ -195,22 +249,11 @@ func (elm *ComponentElement) HasChildren() bool      { return len(elm.Children) 
 func (elm *ComponentElement) GetParent() Element     { return elm.Parent }
 func (elm *ComponentElement) DeleteSelf() error      { return DeleteElement(elm) }
 func (elm *ComponentElement) DeleteChildren()        { elm.Children = make([]Element, 0) }
-func (elm *ComponentElement) GetAttrData() (string, error) {
-	sel, err := gqpp.NewSelectionFromStr(elm.GetData())
-	if err != nil {
-		return "", err
-	}
-	attr, _ := sel.Attr("_component")
-	return attr, nil
-}
-func (elm *ComponentElement) Clone() Element {
-	elmValue := *elm
-	clone := &elmValue
-	return clone
-}
-func (elm *ComponentElement) Type() string { return elm.ElementType }
-func (elm *ComponentElement) IsRoot() bool { return elm.IsRootElement }
-func (elm *ComponentElement) Print()       { fmt.Println(elm.Data) }
+func (elm *ComponentElement) GetAttrData() string    { return elm.AttrData }
+func (elm *ComponentElement) Type() string           { return elm.ElementType }
+func (elm *ComponentElement) IsRoot() bool           { return elm.IsRootElement }
+func (elm *ComponentElement) Print()                 { fmt.Println(elm.Data) }
+func (elm *ComponentElement) GetProps() []string     { return elm.Props }
 
 // ##==================================================================
 type ForElement struct {
@@ -219,7 +262,9 @@ type ForElement struct {
 	ElementType   string
 	Parent        Element
 	IsRootElement bool
-	ForAttrParts  []string
+	AttrParts     []string
+	AttrData      string
+	Props         []string
 }
 
 func NewForElement(str string, parent Element) (*ForElement, error) {
@@ -233,15 +278,18 @@ func NewForElement(str string, parent Element) (*ForElement, error) {
 	if err != nil {
 		return nil, err
 	}
-	forAttr, err := elm.GetAttrData()
+	sel, err := gqpp.NewSelectionFromStr(elm.GetData())
 	if err != nil {
 		return nil, err
 	}
+	forAttr, _ := sel.Attr("_for")
+	elm.AttrData = forAttr
 	parts := strings.Split(forAttr, " ")
 	if len(parts) != 4 {
-		return nil, fmt.Errorf("_for element requires attributes with the following schema: ITEM of ITEMS []TYPE", str)
+		return nil, fmt.Errorf("_for element requires attributes with the following schema: ITEM of ITEMS []TYPE: %s", str)
 	}
-	elm.ForAttrParts = parts
+	elm.AttrParts = parts
+	elm.Props = GetElementProps(elm)
 	return elm, nil
 }
 
@@ -253,121 +301,11 @@ func (elm *ForElement) AddChild(child Element) { elm.Children = append(elm.Child
 func (elm *ForElement) GetParent() Element     { return elm.Parent }
 func (elm *ForElement) DeleteSelf() error      { return DeleteElement(elm) }
 func (elm *ForElement) DeleteChildren()        { elm.Children = make([]Element, 0) }
-func (elm *ForElement) GetAttrData() (string, error) {
-	sel, err := gqpp.NewSelectionFromStr(elm.GetData())
-	if err != nil {
-		return "", err
-	}
-	attr, _ := sel.Attr("_for")
-	return attr, nil
-}
-func (elm *ForElement) Clone() Element {
-	elmValue := *elm
-	clone := &elmValue
-	return clone
-}
-func (elm *ForElement) Type() string { return elm.ElementType }
-func (elm *ForElement) IsRoot() bool { return elm.IsRootElement }
-func (elm *ForElement) Print()       { fmt.Println(elm.Data) }
-
-// ##==================================================================
-
-// ##==================================================================
-
-// ##==================================================================
-type ComponentFunc struct {
-	Name  string
-	Shell string
-}
-
-func NewComponentFunc(elm Element) (*ComponentFunc, error) {
-	if elm.Type() != "component" {
-		return nil, fmt.Errorf("only component elements can be used to generate component funcs: %s", elm.GetData())
-	}
-	comp := &ComponentFunc{}
-	err := fungi.Process(
-		func() error { return comp.SetShell() },
-		func() error { return comp.SetName(elm) },
-		func() error { return comp.WriteShellName() },
-		func() error { return comp.SetVars(elm.Clone()) },
-	)
-	if err != nil {
-		return nil, err
-	}
-	return comp, nil
-}
-
-func (comp *ComponentFunc) SetShell() error {
-	shell := `
-func NAME(PARAMS) string {
-	var builder strings.Builder
-	VARS
-	BODY
-	return builder.String()
-} `
-	comp.Shell = purse.RemoveFirstLine(shell)
-	return nil
-}
-
-func (comp *ComponentFunc) SetName(elm Element) error {
-	attr, err := elm.GetAttrData()
-	if err != nil {
-		return err
-	}
-	comp.Name = attr
-	return nil
-}
-
-func (comp *ComponentFunc) WriteShellParam(str string) error {
-	comp.Shell = strings.Replace(comp.Shell, "PARAM", str, 1)
-	return nil
-}
-
-func (comp *ComponentFunc) WriteShellName() error {
-	comp.Shell = strings.Replace(comp.Shell, "NAME", comp.Name, 1)
-	return nil
-}
-
-func (comp *ComponentFunc) WriteShellVars(str string) error {
-	comp.Shell = strings.Replace(comp.Shell, "VARS", str+"\n\t"+"VARS", 1)
-	return nil
-}
-
-func (comp *ComponentFunc) WriteShellBody(str string) error {
-	comp.Shell = strings.Replace(comp.Shell, "BODY", str+"\n\t"+"BODY", 1)
-	return nil
-}
-
-func (comp *ComponentFunc) SetVars(clone Element) error {
-	err := WalkUpElementBranches(clone, func(next Element) error {
-		if next.Type() == "for" {
-			forElm, _ := next.(*ForElement)
-			attrParts := forElm.ForAttrParts
-			varName := fmt.Sprintf("%sLoop", forElm.ForAttrParts[0])
-			builderName := fmt.Sprintf("%sLoop", forElm.ForAttrParts[0])
-			_ = fmt.Sprintf(`
-%s := collect(%s, func(i int, %s %s) string {
-	var %s strings.Builder
-	BODY
-	return %s.String()
-})`, varName, attrParts[2], attrParts[0], purse.RemoveAllSubStr(attrParts[3], "[]"), builderName, builderName)
-			clay := next.GetData()
-			props := purse.ScanBetweenSubStrs(clay, "{{", "}}")
-			for _, prop := range props {
-				val := purse.Squeeze(prop)
-				val = purse.RemoveAllSubStr(val, "{{", "}}")
-
-				clay = strings.Replace(clay, prop, val, 1)
-			}
-			fmt.Println(clay)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
+func (elm *ForElement) GetAttrData() string    { return elm.AttrData }
+func (elm *ForElement) Type() string           { return elm.ElementType }
+func (elm *ForElement) IsRoot() bool           { return elm.IsRootElement }
+func (elm *ForElement) Print()                 { fmt.Println(elm.Data) }
+func (elm *ForElement) GetProps() []string     { return elm.Props }
 
 // ##==================================================================
 

@@ -6,7 +6,7 @@ import (
 
 func main() {
 
-	elm, err := gtml.NewElement(`
+	_, err := gtml.NewElement(`
 		<div _component="GuestList">
 			<div _for="guest of guests []Guest">
 				<h1>{{ guest.Name }}</h1>
@@ -22,11 +22,6 @@ func main() {
 			</div>
 		</div>
 	`, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = gtml.NewComponentFunc(elm)
 	if err != nil {
 		panic(err)
 	}
