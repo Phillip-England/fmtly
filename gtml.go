@@ -257,61 +257,48 @@ func PrintGoFunc(fn GoFunc) {
 	fmt.Println(fn.GetData())
 }
 
-func GetGoFuncSkeleton() string {
-	return purse.RemoveFirstLine(`
-func NAME(PARAMS) RETURNTYPE {
-BODY
-RETURNVAL
-}`)
-}
-
-func writeGoFuncSkeleton(fn GoFunc, indicator string, leaveIndicator bool, write string) {
-	skeleton := fn.GetData()
-	if leaveIndicator {
-		skeleton = strings.Replace(skeleton, indicator, write+"\n"+indicator, 1)
-	} else {
-		skeleton = strings.Replace(skeleton, indicator, write, 1)
-	}
-	fn.SetData(skeleton)
-}
-
-func WriteGoFuncBody(fn GoFunc, leaveIndicator bool, write string) {
-	writeGoFuncSkeleton(fn, "BODY", leaveIndicator, write)
-}
-
-func WriteGoFuncReturnVal(fn GoFunc, write string) {
-	writeGoFuncSkeleton(fn, "RETURNVAL", false, write)
-}
-
-func WriteGoFuncReturnType(fn GoFunc, write string) {
-	writeGoFuncSkeleton(fn, "RETURNTYPE", false, write)
-}
-
-func WriteGoFuncName(fn GoFunc, write string) {
-	writeGoFuncSkeleton(fn, "NAME", false, write)
-}
-
-func WriteGoFuncParams(fn GoFunc, write string) {
-	writeGoFuncSkeleton(fn, "PARAMS", false, write)
-}
-
 // ##==================================================================
 type GoComponentFunc struct {
-	Vars []GoVar
-	Data string
+	Element Element
+	Vars    []GoVar
+	Data    string
+	VarStr  string
+	Name    string
+	Params  []string
 }
 
 func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
-	fn := &GoComponentFunc{}
-	fn.Data = GetGoFuncSkeleton()
-	WriteGoFuncBody(fn, true, "\tvar builder strings.Builder")
-	WriteGoFuncReturnType(fn, "string")
-	compAttr, err := ForceElementAttr(elm, "_component")
+	fn := &GoComponentFunc{
+		Element: elm,
+	}
+	err := fungi.Process(
+		func() error { return fn.initName() },
+		func() error { return fn.initVars() },
+		func() error { return fn.initVarStr() },
+		func() error { return fn.initData() },
+	)
 	if err != nil {
 		return nil, err
 	}
-	WriteGoFuncName(fn, compAttr)
-	err = WalkElementDirectChildren(elm, func(child Element) error {
+	fmt.Println(fn.Data)
+	return fn, nil
+}
+
+func (fn *GoComponentFunc) GetData() string    { return fn.Data }
+func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
+func (fn *GoComponentFunc) GetVars() []GoVar   { return fn.Vars }
+
+func (fn *GoComponentFunc) initName() error {
+	compAttr, err := ForceElementAttr(fn.Element, "_component")
+	if err != nil {
+		return err
+	}
+	fn.Name = compAttr
+	return nil
+}
+
+func (fn *GoComponentFunc) initVars() error {
+	err := WalkElementDirectChildren(fn.Element, func(child Element) error {
 		goVar, err := NewGoVar(child)
 		if err != nil {
 			return err
@@ -320,14 +307,40 @@ func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return fn, nil
+	return nil
 }
 
-func (fn *GoComponentFunc) GetData() string    { return fn.Data }
-func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
-func (fn *GoComponentFunc) GetVars() []GoVar   { return fn.Vars }
+func (fn *GoComponentFunc) initVarStr() error {
+	str := ""
+	for _, v := range fn.Vars {
+		data := v.GetData()
+		str += data + "\n"
+	}
+	str = purse.PrefixLines(str, "\t")
+	fn.VarStr = str
+	return nil
+}
+
+func (fn *GoComponentFunc) initData() error {
+	series, err := GetElementAsBuilderSeries(fn.Element, "builder")
+	if err != nil {
+		return err
+	}
+	series = purse.PrefixLines(series, "\t")
+	data := purse.RemoveFirstLine(fmt.Sprintf(`
+func %s(PARAMS) string {
+	var builder strings.Builder
+%s
+%s
+	return builder.String()
+}
+	`, fn.Name, fn.VarStr, series))
+	data = purse.RemoveEmptyLines(data)
+	fn.Data = data
+	return nil
+}
 
 // ##==================================================================
 type GoVar interface {
