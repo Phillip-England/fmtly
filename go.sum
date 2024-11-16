@@ -2,6 +2,12 @@ github.com/PuerkitoBio/goquery v1.10.0 h1:6fiXdLuUvYs2OJSvNRqlNPoBm6YABE226xrbav
 github.com/PuerkitoBio/goquery v1.10.0/go.mod h1:TjZZl68Q3eGHNBA8CWaxAN7rOU1EbDz3CWuolcO5Yu4=
 github.com/andybalholm/cascadia v1.3.2 h1:3Xi6Dw5lHF15JtdcmAHD3i1+T8plmv7BQ/nsViSLyss=
 github.com/andybalholm/cascadia v1.3.2/go.mod h1:7gtRlve5FxPPgIgX36uWBX58OdBsSS6lUvCFb+h7KvU=
+github.com/phillip-england/fungi v1.0.1 h1:57r4aypUZ7BfYm70DGGzP7ho3Cg5ZXysr9Ow7eKooUs=
+github.com/phillip-england/fungi v1.0.1/go.mod h1:WCVeUhFvQq7C7lLS+eczqmoeeK2UXgtisZ8ZQtOCbmk=
+github.com/phillip-england/gqpp v1.0.0 h1:TAuGz7i0QwXSU9d+8dkpv7n3QTsFuEzZmC7Ywp6JtwI=
+github.com/phillip-england/gqpp v1.0.0/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
+github.com/phillip-england/purse v1.0.1 h1:YQvG/1Mj7UiyQcgc5sMhh22U2wDmDb8+Fai9YZSYeLk=
+github.com/phillip-england/purse v1.0.1/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
