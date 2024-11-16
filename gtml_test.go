@@ -38,7 +38,7 @@ func TestGtml(t *testing.T) {
 		panic(err)
 	}
 
-	fn, err := gtml.NewGoFunc(root)
+	fn, err := gtml.NewFunc(root)
 	if err != nil {
 		panic(err)
 	}

@@ -10,15 +10,15 @@ import (
 )
 
 // ##==================================================================
-type GoVar interface {
+type Var interface {
 	GetData() string
 }
 
-func NewGoVar(elm Element) (GoVar, error) {
+func NewGoVar(elm Element) (Var, error) {
 	match := GetElementType(elm)
 	switch match {
 	case "for":
-		v, err := NewGoLoopVar(elm)
+		v, err := NewVarGoLoop(elm)
 		if err != nil {
 			return nil, err
 		}
@@ -31,11 +31,11 @@ func NewGoVar(elm Element) (GoVar, error) {
 	return nil, fmt.Errorf("element does not corrospond to a valid GoToken: %s", htmlStr)
 }
 
-func PrintGoVar(v GoVar) {
+func PrintGoVar(v Var) {
 	fmt.Println(v.GetData())
 }
 
-func GetGoVarName(v GoVar) (string, error) {
+func GetGoVarName(v Var) (string, error) {
 	parts := strings.Split(v.GetData(), ":=")
 	if len(parts) == 0 {
 		return "", fmt.Errorf("GoVar does not contain a := symbol, so we cannot parse the name: %s", v.GetData())
@@ -45,11 +45,11 @@ func GetGoVarName(v GoVar) (string, error) {
 }
 
 // ##==================================================================
-type GoLoopVar struct {
+type VarGoLoop struct {
 	Element     Element
 	VarName     string
 	BuilderName string
-	Vars        []GoVar
+	Vars        []Var
 	WriteVarsAs string
 	Data        string
 	IterItems   string
@@ -57,8 +57,8 @@ type GoLoopVar struct {
 	IterType    string
 }
 
-func NewGoLoopVar(elm Element) (*GoLoopVar, error) {
-	v := &GoLoopVar{
+func NewVarGoLoop(elm Element) (*VarGoLoop, error) {
+	v := &VarGoLoop{
 		Element: elm,
 	}
 	err := fungi.Process(
@@ -73,9 +73,9 @@ func NewGoLoopVar(elm Element) (*GoLoopVar, error) {
 	return v, nil
 }
 
-func (v *GoLoopVar) GetData() string { return v.Data }
+func (v *VarGoLoop) GetData() string { return v.Data }
 
-func (v *GoLoopVar) initBasicInfo() error {
+func (v *VarGoLoop) initBasicInfo() error {
 	attrParts, err := ForceElementAttrParts(v.Element, "_for", 4)
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func (v *GoLoopVar) initBasicInfo() error {
 	return nil
 }
 
-func (v *GoLoopVar) initVars() error {
+func (v *VarGoLoop) initVars() error {
 	err := WalkElementDirectChildren(v.Element, func(child Element) error {
 		innerVar, err := NewGoVar(child)
 		if err != nil {
@@ -103,7 +103,7 @@ func (v *GoLoopVar) initVars() error {
 	return nil
 }
 
-func (v *GoLoopVar) initWriteVarsAs() error {
+func (v *VarGoLoop) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
 		varsToWrite += "\t" + inner.GetData()
@@ -112,7 +112,7 @@ func (v *GoLoopVar) initWriteVarsAs() error {
 	return nil
 }
 
-func (v *GoLoopVar) initData() error {
+func (v *VarGoLoop) initData() error {
 	htmlStr, err := GetElementAsBuilderSeries(v.Element, v.BuilderName)
 	if err != nil {
 		return err

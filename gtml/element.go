@@ -24,9 +24,9 @@ func NewElement(sel *goquery.Selection) (Element, error) {
 	match := gqpp.GetFirstMatchingAttr(sel, "_component", "_for")
 	switch match {
 	case "_component":
-		return NewComponentElement(sel), nil
+		return NewElementComponent(sel), nil
 	case "_for":
-		return NewForElement(sel), nil
+		return NewElementFor(sel), nil
 	}
 	htmlStr, err := gqpp.NewHtmlFromSelection(sel)
 	if err != nil {
@@ -232,34 +232,34 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 }
 
 // ##==================================================================
-type ComponentElement struct {
+type ElementComponent struct {
 	Selection *goquery.Selection
 }
 
-func NewComponentElement(sel *goquery.Selection) *ComponentElement {
-	elm := &ComponentElement{
+func NewElementComponent(sel *goquery.Selection) *ElementComponent {
+	elm := &ElementComponent{
 		Selection: sel,
 	}
 	return elm
 }
 
-func (elm *ComponentElement) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ComponentElement) GetParam() (string, error)        { return "", nil }
+func (elm *ElementComponent) GetSelection() *goquery.Selection { return elm.Selection }
+func (elm *ElementComponent) GetParam() (string, error)        { return "", nil }
 
 // ##==================================================================
-type ForElement struct {
+type ElementFor struct {
 	Selection *goquery.Selection
 }
 
-func NewForElement(sel *goquery.Selection) *ForElement {
-	elm := &ForElement{
+func NewElementFor(sel *goquery.Selection) *ElementFor {
+	elm := &ElementFor{
 		Selection: sel,
 	}
 	return elm
 }
 
-func (elm *ForElement) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ForElement) GetParam() (string, error) {
+func (elm *ElementFor) GetSelection() *goquery.Selection { return elm.Selection }
+func (elm *ElementFor) GetParam() (string, error) {
 	parts, err := ForceElementAttrParts(elm, "_for", 4)
 	if err != nil {
 		return "", err

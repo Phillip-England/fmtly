@@ -9,13 +9,13 @@ import (
 )
 
 // ##==================================================================
-type GoFunc interface {
+type Func interface {
 	GetData() string
 	SetData(str string)
-	GetVars() []GoVar
+	GetVars() []Var
 }
 
-func NewGoFunc(elm Element) (GoFunc, error) {
+func NewFunc(elm Element) (Func, error) {
 	if GetElementType(elm) == "component" {
 		fn, err := NewGoComponentFunc(elm)
 		if err != nil {
@@ -30,14 +30,14 @@ func NewGoFunc(elm Element) (GoFunc, error) {
 	return nil, fmt.Errorf("provided element does not corrospond to a valid GoFunc: %s", htmlStr)
 }
 
-func PrintGoFunc(fn GoFunc) {
+func PrintGoFunc(fn Func) {
 	fmt.Println(fn.GetData())
 }
 
 // ##==================================================================
 type GoComponentFunc struct {
 	Element  Element
-	Vars     []GoVar
+	Vars     []Var
 	Data     string
 	VarStr   string
 	Name     string
@@ -67,7 +67,7 @@ func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
 
 func (fn *GoComponentFunc) GetData() string    { return fn.Data }
 func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
-func (fn *GoComponentFunc) GetVars() []GoVar   { return fn.Vars }
+func (fn *GoComponentFunc) GetVars() []Var     { return fn.Vars }
 
 func (fn *GoComponentFunc) initName() error {
 	compAttr, err := ForceElementAttr(fn.Element, "_component")
