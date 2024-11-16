@@ -292,3 +292,12 @@ func RandStr(length int) string {
 	}
 	return string(b)
 }
+
+func MustEqualOneOf(str string, options ...string) bool {
+	for _, option := range options {
+		if str == option {
+			return true
+		}
+	}
+	return false
+}

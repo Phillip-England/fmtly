@@ -6,6 +6,7 @@ import (
 	"gtml/internal/fungi"
 	"gtml/internal/gqpp"
 	"gtml/internal/purse"
+	"slices"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -14,6 +15,7 @@ import (
 // ##==================================================================
 type Element interface {
 	GetSelection() *goquery.Selection
+	GetParam() (string, error)
 }
 
 func GetChildElementList() []string {
@@ -50,13 +52,10 @@ func GetElementHtml(elm Element) (string, error) {
 
 func GetElementType(elm Element) string {
 	match := gqpp.GetFirstMatchingAttr(elm.GetSelection(), "_component", "_for")
-	switch match {
-	case "_component":
-		return "component"
-	case "_for":
-		return "for"
+	if match == "" {
+		return ""
 	}
-	return ""
+	return strings.Replace(match, "_", "", 1)
 }
 
 func WalkElementChildren(elm Element, fn func(child Element) error) error {
@@ -75,6 +74,37 @@ func WalkElementChildren(elm Element, fn func(child Element) error) error {
 		return potErr
 	}
 	return nil
+}
+
+func GetElementParams(elm Element) (string, error) {
+	elementSpecificParams := make([]string, 0)
+	err := WalkElementChildren(elm, func(child Element) error {
+		param, err := child.GetParam()
+		if err != nil {
+			return err
+		}
+		if !slices.Contains(elementSpecificParams, param) && param != "" {
+			elementSpecificParams = append(elementSpecificParams, param)
+		}
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	strParams := make([]string, 0)
+	err = WalkElementProps(elm, func(prop, val string) error {
+		strProp := val + " " + "string"
+		if !slices.Contains(strParams, strProp) && strings.Count(strProp, ".") == 0 {
+			strParams = append(strParams, strProp)
+		}
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	paramSlice := append(strParams, elementSpecificParams...)
+	params := strings.Join(paramSlice, ", ")
+	return params, nil
 }
 
 func WalkElementDirectChildren(elm Element, fn func(child Element) error) error {
@@ -216,6 +246,7 @@ func NewComponentElement(sel *goquery.Selection) *ComponentElement {
 }
 
 func (elm *ComponentElement) GetSelection() *goquery.Selection { return elm.Selection }
+func (elm *ComponentElement) GetParam() (string, error)        { return "", nil }
 
 // ##==================================================================
 type ForElement struct {
@@ -230,6 +261,18 @@ func NewForElement(sel *goquery.Selection) *ForElement {
 }
 
 func (elm *ForElement) GetSelection() *goquery.Selection { return elm.Selection }
+func (elm *ForElement) GetParam() (string, error) {
+	parts, err := ForceElementAttrParts(elm, "_for", 4)
+	if err != nil {
+		return "", err
+	}
+	iterItems := parts[2]
+	if strings.Contains(iterItems, ".") {
+		return "", nil
+	}
+	iterType := parts[3]
+	return iterItems + " " + iterType, nil
+}
 
 // ##==================================================================
 type GoFunc interface {
@@ -259,12 +302,12 @@ func PrintGoFunc(fn GoFunc) {
 
 // ##==================================================================
 type GoComponentFunc struct {
-	Element Element
-	Vars    []GoVar
-	Data    string
-	VarStr  string
-	Name    string
-	Params  []string
+	Element  Element
+	Vars     []GoVar
+	Data     string
+	VarStr   string
+	Name     string
+	ParamStr string
 }
 
 func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
@@ -275,12 +318,16 @@ func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
 		func() error { return fn.initName() },
 		func() error { return fn.initVars() },
 		func() error { return fn.initVarStr() },
+		func() error { return fn.initParamStr() },
 		func() error { return fn.initData() },
 	)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(fn.Data)
+	_, err = GetElementParams(fn.Element)
+	if err != nil {
+		return nil, err
+	}
 	return fn, nil
 }
 
@@ -323,6 +370,15 @@ func (fn *GoComponentFunc) initVarStr() error {
 	return nil
 }
 
+func (fn *GoComponentFunc) initParamStr() error {
+	params, err := GetElementParams(fn.Element)
+	if err != nil {
+		return err
+	}
+	fn.ParamStr = params
+	return nil
+}
+
 func (fn *GoComponentFunc) initData() error {
 	series, err := GetElementAsBuilderSeries(fn.Element, "builder")
 	if err != nil {
@@ -330,13 +386,13 @@ func (fn *GoComponentFunc) initData() error {
 	}
 	series = purse.PrefixLines(series, "\t")
 	data := purse.RemoveFirstLine(fmt.Sprintf(`
-func %s(PARAMS) string {
+func %s(%s) string {
 	var builder strings.Builder
 %s
 %s
 	return builder.String()
 }
-	`, fn.Name, fn.VarStr, series))
+	`, fn.Name, fn.ParamStr, fn.VarStr, series))
 	data = purse.RemoveEmptyLines(data)
 	fn.Data = data
 	return nil
