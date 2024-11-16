@@ -3,7 +3,6 @@ package gqpp
 import (
 	"fmt"
 	"gtml/internal/purse"
-	"html"
 	"os"
 	"strings"
 
@@ -73,16 +72,7 @@ func NewHtmlFromSelection(s *goquery.Selection) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	htmlStr = html.UnescapeString(htmlStr)
-	lastLine := purse.GetLastLine(htmlStr)
-	leadingSpaces := purse.CountLeadingSpaces(lastLine)
-	lines := purse.MakeLines(htmlStr)
-	for i, line := range lines {
-		if i == 0 {
-			lines[i] = strings.Repeat(" ", leadingSpaces) + line
-		}
-	}
-	return purse.JoinLines(lines), nil
+	return purse.Flatten(htmlStr), nil
 }
 
 func ClimbTreeUntil(s *goquery.Selection, cond func(parent *goquery.Selection) bool) error {
