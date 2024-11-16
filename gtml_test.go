@@ -36,9 +36,13 @@ func TestGtml(t *testing.T) {
 		panic(err)
 	}
 
-	_, err = NewGoFunc(root)
+	fn, err := NewGoFunc(root)
 	if err != nil {
 		panic(err)
+	}
+
+	for _, v := range fn.GetVars() {
+		PrintGoVar(v)
 	}
 
 	// PrintGoFunc(fn)

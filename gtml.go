@@ -3,6 +3,7 @@ package gtml
 import (
 	"fmt"
 	"go/format"
+	"gtml/internal/fungi"
 	"gtml/internal/gqpp"
 	"gtml/internal/purse"
 	"strings"
@@ -148,6 +149,60 @@ func ForceElementAttrParts(elm Element, attrToCheck string, partsExpected int) (
 	return parts, nil
 }
 
+func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) {
+	htmlStr, err := GetElementHtml(elm)
+	if err != nil {
+		return "", err
+	}
+	err = WalkElementChildren(elm, func(child Element) error {
+		childHtml, err := GetElementHtml(child)
+		if err != nil {
+			return err
+		}
+		goVar, err := NewGoVar(child)
+		if err != nil {
+			return err
+		}
+		varName, err := GetGoVarName(goVar)
+		if err != nil {
+			return err
+		}
+		htmlStr = strings.Replace(htmlStr, childHtml, fmt.Sprintf("%s.WriteString(%s)", builderName, varName), 1)
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	err = WalkElementProps(elm, func(prop, val string) error {
+		call := fmt.Sprintf("%s.WriteString(%s)", builderName, val)
+		htmlStr = strings.Replace(htmlStr, prop, call, 1)
+		return nil
+	})
+	finalCalls := ""
+	for {
+		index := strings.Index(htmlStr, builderName)
+		if index == -1 {
+			break
+		}
+		part := htmlStr[:index]
+		if part != "" && part != " " {
+			finalCalls += fmt.Sprintf("%s.WriteString(`%s`)\n", builderName, part)
+			htmlStr = strings.Replace(htmlStr, part, "", 1)
+		}
+		index = strings.Index(htmlStr, ")")
+		if index == -1 {
+			break
+		}
+		part = htmlStr[:index+1]
+		if part != "" && part != " " {
+			finalCalls += part + "\n"
+			htmlStr = strings.Replace(htmlStr, part, "", 1)
+		}
+	}
+	finalCalls += fmt.Sprintf("%s.WriteString(`%s`)\n", builderName, htmlStr)
+	return finalCalls, nil
+}
+
 // ##==================================================================
 type ComponentElement struct {
 	Selection *goquery.Selection
@@ -180,6 +235,7 @@ func (elm *ForElement) GetSelection() *goquery.Selection { return elm.Selection 
 type GoFunc interface {
 	GetData() string
 	SetData(str string)
+	GetVars() []GoVar
 }
 
 func NewGoFunc(elm Element) (GoFunc, error) {
@@ -271,6 +327,7 @@ func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
 
 func (fn *GoComponentFunc) GetData() string    { return fn.Data }
 func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
+func (fn *GoComponentFunc) GetVars() []GoVar   { return fn.Vars }
 
 // ##==================================================================
 type GoVar interface {
@@ -309,28 +366,50 @@ func GetGoVarName(v GoVar) (string, error) {
 
 // ##==================================================================
 type GoLoopVar struct {
-	Name             string
-	Data             string
-	IterItems        string
-	IterItem         string
-	IterType         string
-	Builder          string
-	Vars             []GoVar
-	WriteStringCalls []string
+	Element     Element
+	VarName     string
+	BuilderName string
+	Vars        []GoVar
+	WriteVarsAs string
+	Data        string
+	IterItems   string
+	IterItem    string
+	IterType    string
 }
 
 func NewGoLoopVar(elm Element) (*GoLoopVar, error) {
-	v := &GoLoopVar{}
-	attrParts, err := ForceElementAttrParts(elm, "_for", 4)
+	v := &GoLoopVar{
+		Element: elm,
+	}
+	err := fungi.Process(
+		func() error { return v.initBasicInfo() },
+		func() error { return v.initVars() },
+		func() error { return v.initWriteVarsAs() },
+		func() error { return v.initData() },
+	)
 	if err != nil {
 		return nil, err
 	}
-	v.Name = attrParts[0] + "Loop"
-	v.Builder = attrParts[0] + "Builder"
+	return v, nil
+}
+
+func (v *GoLoopVar) GetData() string { return v.Data }
+
+func (v *GoLoopVar) initBasicInfo() error {
+	attrParts, err := ForceElementAttrParts(v.Element, "_for", 4)
+	if err != nil {
+		return err
+	}
+	v.VarName = attrParts[0] + "Loop"
+	v.BuilderName = attrParts[0] + "Builder"
 	v.IterItems = attrParts[2]
 	v.IterItem = attrParts[0]
 	v.IterType = purse.RemoveAllSubStr(attrParts[3], "[]")
-	err = WalkElementDirectChildren(elm, func(child Element) error {
+	return nil
+}
+
+func (v *GoLoopVar) initVars() error {
+	err := WalkElementDirectChildren(v.Element, func(child Element) error {
 		innerVar, err := NewGoVar(child)
 		if err != nil {
 			return nil
@@ -338,84 +417,41 @@ func NewGoLoopVar(elm Element) (*GoLoopVar, error) {
 		v.Vars = append(v.Vars, innerVar)
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (v *GoLoopVar) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
 		varsToWrite += "\t" + inner.GetData()
 	}
+	v.WriteVarsAs = varsToWrite
+	return nil
+}
+
+func (v *GoLoopVar) initData() error {
+	htmlStr, err := GetElementAsBuilderSeries(v.Element, v.BuilderName)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	htmlStr, err := GetElementHtml(elm)
-	if err != nil {
-		return nil, err
-	}
-	err = WalkElementChildren(elm, func(child Element) error {
-		childHtml, err := GetElementHtml(child)
-		if err != nil {
-			return err
-		}
-		goVar, err := NewGoVar(child)
-		if err != nil {
-			return err
-		}
-		varName, err := GetGoVarName(goVar)
-		if err != nil {
-			return err
-		}
-		htmlStr = strings.Replace(htmlStr, childHtml, fmt.Sprintf("%s.WriteString(%s)", v.Builder, varName), 1)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	err = WalkElementProps(elm, func(prop, val string) error {
-		call := fmt.Sprintf("%s.WriteString(%s)", v.Builder, val)
-		htmlStr = strings.Replace(htmlStr, prop, call, 1)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	finalCalls := ""
-	for {
-		index := strings.Index(htmlStr, v.Builder)
-		if index == -1 {
-			break
-		}
-		part := htmlStr[:index]
-		if part != "" && part != " " {
-			finalCalls += fmt.Sprintf("%s.WriteString(`%s`)\n", v.Builder, part)
-			htmlStr = strings.Replace(htmlStr, part, "", 1)
-		}
-		index = strings.Index(htmlStr, ")")
-		if index == -1 {
-			break
-		}
-		part = htmlStr[:index+1]
-		if part != "" && part != " " {
-			finalCalls += part + "\n"
-			htmlStr = strings.Replace(htmlStr, part, "", 1)
-		}
-	}
-	finalCalls += fmt.Sprintf("%s.WriteString(`%s`)\n", v.Builder, htmlStr)
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := collect(%s, func(i int, %s %s) string {
 	var %s strings.Builder
 %s
 %s
 	return %s.String()
-})`, v.Name, v.IterItems, v.IterItem, v.IterType, v.Builder, varsToWrite, finalCalls, v.Builder))
+})`, v.VarName, v.IterItems, v.IterItem, v.IterType, v.BuilderName, v.WriteVarsAs, htmlStr, v.BuilderName))
 	code, err := format.Source([]byte(v.Data))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	v.Data = string(code)
 	v.Data = purse.RemoveEmptyLines(v.Data)
-	PrintGoVar(v)
-	return v, nil
+	return nil
 }
-
-func (v *GoLoopVar) GetData() string { return v.Data }
 
 // ##==================================================================
 
