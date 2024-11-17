@@ -14,6 +14,7 @@ import (
 type Element interface {
 	GetSelection() *goquery.Selection
 	GetParam() (string, error)
+	GetHtml() string
 }
 
 func GetChildElementList() []string {
@@ -24,9 +25,17 @@ func NewElement(sel *goquery.Selection) (Element, error) {
 	match := gqpp.GetFirstMatchingAttr(sel, "_component", "_for")
 	switch match {
 	case "_component":
-		return NewElementComponent(sel), nil
+		comp, err := NewElementComponent(sel)
+		if err != nil {
+			return nil, err
+		}
+		return comp, nil
 	case "_for":
-		return NewElementFor(sel), nil
+		comp, err := NewElementFor(sel)
+		if err != nil {
+			return nil, err
+		}
+		return comp, nil
 	}
 	htmlStr, err := gqpp.NewHtmlFromSelection(sel)
 	if err != nil {
@@ -181,6 +190,7 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 	if err != nil {
 		return "", err
 	}
+	calls := ""
 	err = WalkElementChildren(elm, func(child Element) error {
 		childHtml, err := GetElementHtml(child)
 		if err != nil {
@@ -190,13 +200,15 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 		if err != nil {
 			return err
 		}
-		htmlStr = strings.Replace(htmlStr, childHtml, fmt.Sprintf("%s.WriteString(%s)", builderName, goVar.GetVarName()), 1)
+		call := fmt.Sprintf("%s.WriteString(%s)", builderName, goVar.GetVarName())
+		calls += call + "\n"
+		htmlStr = strings.Replace(htmlStr, childHtml, call, 1)
 		return nil
 	})
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(htmlStr)
+	fmt.Println(calls)
 	err = WalkElementProps(elm, func(prop Prop) error {
 		call := PropAsWriteString(prop, builderName)
 		htmlStr = strings.Replace(htmlStr, prop.GetRaw(), call, 1)
@@ -230,28 +242,41 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 // ##==================================================================
 type ElementComponent struct {
 	Selection *goquery.Selection
+	Html      string
 }
 
-func NewElementComponent(sel *goquery.Selection) *ElementComponent {
+func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
+	htmlStr, err := gqpp.NewHtmlFromSelection(sel)
+	if err != nil {
+		return nil, err
+	}
 	elm := &ElementComponent{
 		Selection: sel,
+		Html:      htmlStr,
 	}
-	return elm
+	return elm, nil
 }
 
 func (elm *ElementComponent) GetSelection() *goquery.Selection { return elm.Selection }
 func (elm *ElementComponent) GetParam() (string, error)        { return "", nil }
+func (elm *ElementComponent) GetHtml() string                  { return elm.Html }
 
 // ##==================================================================
 type ElementFor struct {
 	Selection *goquery.Selection
+	Html      string
 }
 
-func NewElementFor(sel *goquery.Selection) *ElementFor {
+func NewElementFor(sel *goquery.Selection) (*ElementFor, error) {
+	htmlStr, err := gqpp.NewHtmlFromSelection(sel)
+	if err != nil {
+		return nil, err
+	}
 	elm := &ElementFor{
 		Selection: sel,
+		Html:      htmlStr,
 	}
-	return elm
+	return elm, nil
 }
 
 func (elm *ElementFor) GetSelection() *goquery.Selection { return elm.Selection }
@@ -267,3 +292,4 @@ func (elm *ElementFor) GetParam() (string, error) {
 	iterType := parts[3]
 	return iterItems + " " + iterType, nil
 }
+func (elm *ElementFor) GetHtml() string { return elm.Html }
