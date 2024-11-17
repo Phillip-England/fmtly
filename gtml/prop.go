@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/phillip-england/gqpp"
 	"github.com/phillip-england/purse"
 )
 
@@ -15,17 +16,13 @@ type Prop interface {
 }
 
 func NewProps(elm Element) ([]Prop, error) {
-	htmlStr, err := GetElementHtml(elm)
-	if err != nil {
-		return nil, err
-	}
-	strProps := purse.ScanBetweenSubStrs(htmlStr, "{{", "}}")
+	strProps := purse.ScanBetweenSubStrs(elm.GetHtml(), "{{", "}}")
 	props := make([]Prop, 0)
 	for _, prop := range strProps {
 		val := purse.Squeeze(prop)
 		val = purse.RemoveAllSubStr(val, "{{", "}}")
 		if val == "" {
-			return nil, fmt.Errorf("empty prop tag provided: %s", htmlStr)
+			return nil, fmt.Errorf("empty prop tag provided: %s", elm.GetHtml())
 		}
 		if strings.Count(val, ".") == 1 && len(strings.Split(val, ".")) == 2 {
 			propForType, err := NewPropForType(prop, val)
@@ -45,8 +42,8 @@ func NewProps(elm Element) ([]Prop, error) {
 	for _, prop := range props {
 		if prop.GetType() == "STR" {
 			err := WalkElementChildren(elm, func(child Element) error {
-				if GetElementType(elm) == "for" {
-					attrParts, err := ForceElementAttrParts(elm, "_for", 4)
+				if elm.GetType() == "FOR" {
+					attrParts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), "_for", 4)
 					if err != nil {
 						return err
 					}

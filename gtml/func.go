@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/phillip-england/fungi"
+	"github.com/phillip-england/gqpp"
 
 	"github.com/phillip-england/purse"
 )
@@ -16,18 +17,14 @@ type Func interface {
 }
 
 func NewFunc(elm Element) (Func, error) {
-	if GetElementType(elm) == "component" {
+	if elm.GetType() == "COMPONENT" {
 		fn, err := NewGoComponentFunc(elm)
 		if err != nil {
 			return nil, err
 		}
 		return fn, nil
 	}
-	htmlStr, err := GetElementHtml(elm)
-	if err != nil {
-		return nil, err
-	}
-	return nil, fmt.Errorf("provided element does not corrospond to a valid GoFunc: %s", htmlStr)
+	return nil, fmt.Errorf("provided element does not corrospond to a valid GoFunc: %s", elm.GetHtml())
 }
 
 func PrintGoFunc(fn Func) {
@@ -70,7 +67,7 @@ func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
 func (fn *GoComponentFunc) GetVars() []Var     { return fn.Vars }
 
 func (fn *GoComponentFunc) initName() error {
-	compAttr, err := ForceElementAttr(fn.Element, "_component")
+	compAttr, err := gqpp.ForceElementAttr(fn.Element.GetSelection(), "_component")
 	if err != nil {
 		return err
 	}

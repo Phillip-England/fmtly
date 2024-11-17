@@ -11,26 +11,42 @@ import (
 )
 
 // ##==================================================================
+const (
+	KeyElementComponent       = "COMPONENT"
+	IndicatorElementComponent = "_component"
+	KeyElementFor             = "FOR"
+	IndicatorElementFor       = "_for"
+)
+
+// ##==================================================================
 type Element interface {
 	GetSelection() *goquery.Selection
 	GetParam() (string, error)
 	GetHtml() string
+	Print()
+	GetType() string
+}
+
+func GetFullElementList() []string {
+	childList := GetChildElementList()
+	full := append(childList, IndicatorElementComponent)
+	return full
 }
 
 func GetChildElementList() []string {
-	return []string{"_for"}
+	return []string{IndicatorElementFor}
 }
 
 func NewElement(sel *goquery.Selection) (Element, error) {
-	match := gqpp.GetFirstMatchingAttr(sel, "_component", "_for")
+	match := gqpp.GetFirstMatchingAttr(sel, GetFullElementList()...)
 	switch match {
-	case "_component":
+	case IndicatorElementComponent:
 		comp, err := NewElementComponent(sel)
 		if err != nil {
 			return nil, err
 		}
 		return comp, nil
-	case "_for":
+	case IndicatorElementFor:
 		comp, err := NewElementFor(sel)
 		if err != nil {
 			return nil, err
@@ -42,27 +58,6 @@ func NewElement(sel *goquery.Selection) (Element, error) {
 		return nil, err
 	}
 	return nil, fmt.Errorf("provided selection is not a valid element: %s", htmlStr)
-}
-
-func PrintElement(elm Element) {
-	htmlStr, _ := GetElementHtml(elm)
-	fmt.Println(purse.Flatten(htmlStr))
-}
-
-func GetElementHtml(elm Element) (string, error) {
-	htmlStr, err := goquery.OuterHtml(elm.GetSelection())
-	if err != nil {
-		return "", err
-	}
-	return purse.Flatten(htmlStr), nil
-}
-
-func GetElementType(elm Element) string {
-	match := gqpp.GetFirstMatchingAttr(elm.GetSelection(), "_component", "_for")
-	if match == "" {
-		return ""
-	}
-	return strings.Replace(match, "_", "", 1)
 }
 
 func WalkElementChildren(elm Element, fn func(child Element) error) error {
@@ -131,11 +126,7 @@ func WalkElementDirectChildren(elm Element, fn func(child Element) error) error 
 }
 
 func GetElementProps(elm Element) ([]string, error) {
-	htmlStr, err := GetElementHtml(elm)
-	if err != nil {
-		return nil, err
-	}
-	props := purse.ScanBetweenSubStrs(htmlStr, "{{", "}}")
+	props := purse.ScanBetweenSubStrs(elm.GetHtml(), "{{", "}}")
 	return props, nil
 }
 
@@ -157,45 +148,11 @@ func WalkElementProps(elm Element, fn func(prop Prop) error) error {
 	return nil
 }
 
-func ForceElementAttr(elm Element, attrToCheck string) (string, error) {
-	attr, exists := elm.GetSelection().Attr(attrToCheck)
-	if !exists {
-		htmlStr, err := GetElementHtml(elm)
-		if err != nil {
-			return "", err
-		}
-		return "", fmt.Errorf("element is required to have the '%s' attribute: %s", attrToCheck, htmlStr)
-	}
-	return attr, nil
-}
-
-func ForceElementAttrParts(elm Element, attrToCheck string, partsExpected int) ([]string, error) {
-	attr, err := ForceElementAttr(elm, attrToCheck)
-	if err != nil {
-		return make([]string, 0), nil
-	}
-	parts := strings.Split(attr, " ")
-	if len(parts) != partsExpected {
-		htmlStr, err := GetElementHtml(elm)
-		if err != nil {
-			return make([]string, 0), err
-		}
-		return make([]string, 0), fmt.Errorf("attribute '%s' expects %d distinct parts in element: %s", attrToCheck, partsExpected, htmlStr)
-	}
-	return parts, nil
-}
-
 func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) {
-	htmlStr, err := GetElementHtml(elm)
-	if err != nil {
-		return "", err
-	}
+	htmlStr := elm.GetHtml()
 	calls := ""
-	err = WalkElementChildren(elm, func(child Element) error {
-		childHtml, err := GetElementHtml(child)
-		if err != nil {
-			return err
-		}
+	err := WalkElementChildren(elm, func(child Element) error {
+		childHtml := child.GetHtml()
 		goVar, err := NewGoVar(child)
 		if err != nil {
 			return err
@@ -208,7 +165,6 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(calls)
 	err = WalkElementProps(elm, func(prop Prop) error {
 		call := PropAsWriteString(prop, builderName)
 		htmlStr = strings.Replace(htmlStr, prop.GetRaw(), call, 1)
@@ -243,6 +199,8 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 type ElementComponent struct {
 	Selection *goquery.Selection
 	Html      string
+	Type      string
+	Attr      string
 }
 
 func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
@@ -253,6 +211,7 @@ func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
 	elm := &ElementComponent{
 		Selection: sel,
 		Html:      htmlStr,
+		Type:      KeyElementComponent,
 	}
 	return elm, nil
 }
@@ -260,11 +219,15 @@ func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
 func (elm *ElementComponent) GetSelection() *goquery.Selection { return elm.Selection }
 func (elm *ElementComponent) GetParam() (string, error)        { return "", nil }
 func (elm *ElementComponent) GetHtml() string                  { return elm.Html }
+func (elm *ElementComponent) Print()                           { fmt.Println(elm.Html) }
+func (elm *ElementComponent) GetType() string                  { return elm.Type }
 
 // ##==================================================================
 type ElementFor struct {
 	Selection *goquery.Selection
 	Html      string
+	Type      string
+	Attr      string
 }
 
 func NewElementFor(sel *goquery.Selection) (*ElementFor, error) {
@@ -275,13 +238,14 @@ func NewElementFor(sel *goquery.Selection) (*ElementFor, error) {
 	elm := &ElementFor{
 		Selection: sel,
 		Html:      htmlStr,
+		Type:      KeyElementFor,
 	}
 	return elm, nil
 }
 
 func (elm *ElementFor) GetSelection() *goquery.Selection { return elm.Selection }
 func (elm *ElementFor) GetParam() (string, error) {
-	parts, err := ForceElementAttrParts(elm, "_for", 4)
+	parts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), IndicatorElementFor, 4)
 	if err != nil {
 		return "", err
 	}
@@ -293,3 +257,5 @@ func (elm *ElementFor) GetParam() (string, error) {
 	return iterItems + " " + iterType, nil
 }
 func (elm *ElementFor) GetHtml() string { return elm.Html }
+func (elm *ElementFor) Print()          { fmt.Println(elm.Html) }
+func (elm *ElementFor) GetType() string { return elm.Type }

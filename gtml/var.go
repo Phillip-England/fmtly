@@ -5,6 +5,7 @@ import (
 	"go/format"
 
 	"github.com/phillip-england/fungi"
+	"github.com/phillip-england/gqpp"
 	"github.com/phillip-england/purse"
 )
 
@@ -15,20 +16,15 @@ type Var interface {
 }
 
 func NewGoVar(elm Element) (Var, error) {
-	match := GetElementType(elm)
-	switch match {
-	case "for":
+	switch elm.GetType() {
+	case KeyElementFor:
 		v, err := NewVarGoLoop(elm)
 		if err != nil {
 			return nil, err
 		}
 		return v, nil
 	}
-	htmlStr, err := GetElementHtml(elm)
-	if err != nil {
-		return nil, err
-	}
-	return nil, fmt.Errorf("element does not corrospond to a valid GoToken: %s", htmlStr)
+	return nil, fmt.Errorf("element does not corrospond to a valid GoVar: %s", elm.GetHtml())
 }
 
 func PrintGoVar(v Var) {
@@ -68,7 +64,7 @@ func (v *VarGoLoop) GetData() string    { return v.Data }
 func (v *VarGoLoop) GetVarName() string { return v.VarName }
 
 func (v *VarGoLoop) initBasicInfo() error {
-	attrParts, err := ForceElementAttrParts(v.Element, "_for", 4)
+	attrParts, err := gqpp.ForceElementAttrParts(v.Element.GetSelection(), "_for", 4)
 	if err != nil {
 		return err
 	}

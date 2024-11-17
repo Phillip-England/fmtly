@@ -38,11 +38,11 @@ func TestGtml(t *testing.T) {
 		panic(err)
 	}
 
-	_, err = gtml.NewFunc(root)
+	fn, err := gtml.NewFunc(root)
 	if err != nil {
 		panic(err)
 	}
 
-	// gtml.PrintGoFunc(fn)
+	gtml.PrintGoFunc(fn)
 
 }

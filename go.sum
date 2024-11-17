@@ -6,6 +6,8 @@ github.com/phillip-england/fungi v1.0.1 h1:57r4aypUZ7BfYm70DGGzP7ho3Cg5ZXysr9Ow7
 github.com/phillip-england/fungi v1.0.1/go.mod h1:WCVeUhFvQq7C7lLS+eczqmoeeK2UXgtisZ8ZQtOCbmk=
 github.com/phillip-england/gqpp v1.0.0 h1:TAuGz7i0QwXSU9d+8dkpv7n3QTsFuEzZmC7Ywp6JtwI=
 github.com/phillip-england/gqpp v1.0.0/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
+github.com/phillip-england/gqpp v1.0.1 h1:cQTELz7oyi1dGFsIYGyRliWpIQqD01Pijbm0iHSu09w=
+github.com/phillip-england/gqpp v1.0.1/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
 github.com/phillip-england/purse v1.0.1 h1:YQvG/1Mj7UiyQcgc5sMhh22U2wDmDb8+Fai9YZSYeLk=
 github.com/phillip-england/purse v1.0.1/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
