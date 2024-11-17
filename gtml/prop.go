@@ -20,6 +20,7 @@ type Prop interface {
 	GetRaw() string
 	GetValue() string
 	GetType() string
+	Print()
 }
 
 func NewProps(elm Element) ([]Prop, error) {
@@ -50,7 +51,7 @@ func NewProps(elm Element) ([]Prop, error) {
 		if prop.GetType() == KeyPropStr {
 			err := WalkElementChildren(elm, func(child Element) error {
 				if elm.GetType() == KeyElementFor {
-					attrParts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), IndicatorElementFor, 4)
+					attrParts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), KeyElementFor, 4)
 					if err != nil {
 						return err
 					}
@@ -101,6 +102,9 @@ func NewPropForType(raw string, val string) (*PropForType, error) {
 func (prop *PropForType) GetRaw() string   { return prop.Raw }
 func (prop *PropForType) GetValue() string { return prop.Value }
 func (prop *PropForType) GetType() string  { return prop.Type }
+func (prop *PropForType) Print() {
+	fmt.Println(fmt.Sprintf("raw: %s\nvalue: %s", prop.Raw, prop.Value))
+}
 
 // ##==================================================================
 type PropForStr struct {
@@ -121,6 +125,9 @@ func NewPropForStr(raw string, val string) (*PropForStr, error) {
 func (prop *PropForStr) GetRaw() string   { return prop.Raw }
 func (prop *PropForStr) GetValue() string { return prop.Value }
 func (prop *PropForStr) GetType() string  { return prop.Type }
+func (prop *PropForStr) Print() {
+	fmt.Println(fmt.Sprintf("raw: %s\nvalue: %s", prop.Raw, prop.Value))
+}
 
 // ##==================================================================
 type PropStr struct {
@@ -141,6 +148,9 @@ func NewPropStr(raw string, val string) (*PropStr, error) {
 func (prop *PropStr) GetRaw() string   { return prop.Raw }
 func (prop *PropStr) GetValue() string { return prop.Value }
 func (prop *PropStr) GetType() string  { return prop.Type }
+func (prop *PropStr) Print() {
+	fmt.Println(fmt.Sprintf("raw: %s\nvalue: %s", prop.Raw, prop.Value))
+}
 
 // ##==================================================================
 

@@ -17,7 +17,7 @@ type Func interface {
 }
 
 func NewFunc(elm Element) (Func, error) {
-	if elm.GetType() == "COMPONENT" {
+	if elm.GetType() == KeyElementComponent {
 		fn, err := NewGoComponentFunc(elm)
 		if err != nil {
 			return nil, err
@@ -55,10 +55,6 @@ func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = GetElementParams(fn.Element)
-	if err != nil {
-		return nil, err
-	}
 	return fn, nil
 }
 
@@ -67,7 +63,7 @@ func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
 func (fn *GoComponentFunc) GetVars() []Var     { return fn.Vars }
 
 func (fn *GoComponentFunc) initName() error {
-	compAttr, err := gqpp.ForceElementAttr(fn.Element.GetSelection(), "_component")
+	compAttr, err := gqpp.ForceElementAttr(fn.Element.GetSelection(), KeyElementComponent)
 	if err != nil {
 		return err
 	}

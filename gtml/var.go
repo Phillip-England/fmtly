@@ -27,10 +27,6 @@ func NewGoVar(elm Element) (Var, error) {
 	return nil, fmt.Errorf("element does not corrospond to a valid GoVar: %s", elm.GetHtml())
 }
 
-func PrintGoVar(v Var) {
-	fmt.Println(v.GetData())
-}
-
 // ##==================================================================
 type VarGoLoop struct {
 	Element     Element
@@ -62,6 +58,11 @@ func NewVarGoLoop(elm Element) (*VarGoLoop, error) {
 
 func (v *VarGoLoop) GetData() string    { return v.Data }
 func (v *VarGoLoop) GetVarName() string { return v.VarName }
+
+func (v *VarGoLoop) initVarName() error {
+	v.VarName = v.Element.GetAttrParts()[0]
+	return nil
+}
 
 func (v *VarGoLoop) initBasicInfo() error {
 	attrParts, err := gqpp.ForceElementAttrParts(v.Element.GetSelection(), "_for", 4)
