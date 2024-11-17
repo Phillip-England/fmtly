@@ -9,6 +9,13 @@ import (
 )
 
 // ##==================================================================
+const (
+	KeyPropForType = "FORTYPE"
+	KeyPropForStr  = "FORSTR"
+	KeyPropStr     = "STR"
+)
+
+// ##==================================================================
 type Prop interface {
 	GetRaw() string
 	GetValue() string
@@ -38,21 +45,26 @@ func NewProps(elm Element) ([]Prop, error) {
 		}
 		props = append(props, propStr)
 	}
-	filtered := make([]Prop, 0)
+	morphed := make([]Prop, 0)
 	for _, prop := range props {
-		if prop.GetType() == "STR" {
+		if prop.GetType() == KeyPropStr {
 			err := WalkElementChildren(elm, func(child Element) error {
-				if elm.GetType() == "FOR" {
-					attrParts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), "_for", 4)
+				if elm.GetType() == KeyElementFor {
+					attrParts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), IndicatorElementFor, 4)
 					if err != nil {
 						return err
 					}
 					iterItem := attrParts[0]
-					// here, we filter out any PropStr which is found to be in a _for="str of strs []string"
+					// if a for element of _for="item of items []string" exists, and a StrProp has the value of "item", then it is a ForStrProp
 					if prop.GetValue() == iterItem {
+						forStrProp, err := NewPropForStr(prop.GetRaw(), prop.GetValue())
+						if err != nil {
+							return err
+						}
+						morphed = append(morphed, forStrProp)
 						return nil
 					}
-					filtered = append(filtered, prop)
+					morphed = append(morphed, prop)
 				}
 				return nil
 			})
@@ -61,9 +73,9 @@ func NewProps(elm Element) ([]Prop, error) {
 			}
 			continue
 		}
-		filtered = append(filtered, prop)
+		morphed = append(morphed, prop)
 	}
-	return filtered, nil
+	return morphed, nil
 }
 
 func PropAsWriteString(prop Prop, builderName string) string {
@@ -81,7 +93,7 @@ func NewPropForType(raw string, val string) (*PropForType, error) {
 	prop := &PropForType{
 		Raw:   raw,
 		Value: val,
-		Type:  "FORTYPE",
+		Type:  KeyPropForType,
 	}
 	return prop, nil
 }
@@ -101,7 +113,7 @@ func NewPropForStr(raw string, val string) (*PropForStr, error) {
 	prop := &PropForStr{
 		Raw:   raw,
 		Value: val,
-		Type:  "FORSTR",
+		Type:  KeyPropForStr,
 	}
 	return prop, nil
 }
@@ -121,7 +133,7 @@ func NewPropStr(raw string, val string) (*PropStr, error) {
 	prop := &PropStr{
 		Raw:   raw,
 		Value: val,
-		Type:  "STR",
+		Type:  KeyPropStr,
 	}
 	return prop, nil
 }
