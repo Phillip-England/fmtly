@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/phillip-england/gqpp"
 	"github.com/phillip-england/purse"
 )
 
@@ -49,12 +48,10 @@ func NewProps(elm Element) ([]Prop, error) {
 	morphed := make([]Prop, 0)
 	for _, prop := range props {
 		if prop.GetType() == KeyPropStr {
+			// check if an Element's children are _for
 			err := WalkElementChildren(elm, func(child Element) error {
-				if elm.GetType() == KeyElementFor {
-					attrParts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), KeyElementFor, 4)
-					if err != nil {
-						return err
-					}
+				if child.GetType() == KeyElementFor {
+					attrParts := child.GetAttrParts()
 					iterItem := attrParts[0]
 					// if a for element of _for="item of items []string" exists, and a StrProp has the value of "item", then it is a ForStrProp
 					if prop.GetValue() == iterItem {

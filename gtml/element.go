@@ -127,6 +127,9 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 	calls := ""
 	err := WalkElementChildren(elm, func(child Element) error {
 		childHtml := child.GetHtml()
+		if childHtml == "" {
+			return nil
+		}
 		goVar, err := NewGoVar(child)
 		if err != nil {
 			return err
