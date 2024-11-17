@@ -90,7 +90,7 @@ func GetElementParams(elm Element) (string, error) {
 		return "", err
 	}
 	strParams := make([]string, 0)
-	err = WalkElementProps(elm, func(prop, val string) error {
+	err = WalkElementStrProps(elm, func(prop, val string) error {
 		strProp := val + " " + "string"
 		if !slices.Contains(strParams, strProp) && strings.Count(strProp, ".") == 0 {
 			strParams = append(strParams, strProp)
@@ -134,7 +134,7 @@ func GetPropValue(prop string) string {
 	return purse.Squeeze(purse.RemoveAllSubStr(prop, "{{", "}}"))
 }
 
-func WalkElementProps(elm Element, fn func(prop string, val string) error) error {
+func WalkElementStrProps(elm Element, fn func(prop string, val string) error) error {
 	props, err := GetElementProps(elm)
 	if err != nil {
 		return err
@@ -142,6 +142,20 @@ func WalkElementProps(elm Element, fn func(prop string, val string) error) error
 	for _, prop := range props {
 		val := GetPropValue(prop)
 		err := fn(prop, val)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func WalkElementProps(elm Element, fn func(prop Prop) error) error {
+	props, err := NewProps(elm)
+	if err != nil {
+		return err
+	}
+	for _, prop := range props {
+		err := fn(prop)
 		if err != nil {
 			return err
 		}
@@ -201,11 +215,12 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	err = WalkElementProps(elm, func(prop, val string) error {
+	err = WalkElementStrProps(elm, func(prop, val string) error {
 		call := fmt.Sprintf("%s.WriteString(%s)", builderName, val)
 		htmlStr = strings.Replace(htmlStr, prop, call, 1)
 		return nil
 	})
+	fmt.Println(htmlStr)
 	finalCalls := ""
 	for {
 		index := strings.Index(htmlStr, builderName)
