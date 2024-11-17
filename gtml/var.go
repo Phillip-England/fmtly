@@ -3,7 +3,6 @@ package gtml
 import (
 	"fmt"
 	"go/format"
-	"strings"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/purse"
@@ -12,6 +11,7 @@ import (
 // ##==================================================================
 type Var interface {
 	GetData() string
+	GetVarName() string
 }
 
 func NewGoVar(elm Element) (Var, error) {
@@ -33,15 +33,6 @@ func NewGoVar(elm Element) (Var, error) {
 
 func PrintGoVar(v Var) {
 	fmt.Println(v.GetData())
-}
-
-func GetGoVarName(v Var) (string, error) {
-	parts := strings.Split(v.GetData(), ":=")
-	if len(parts) == 0 {
-		return "", fmt.Errorf("GoVar does not contain a := symbol, so we cannot parse the name: %s", v.GetData())
-	}
-	firstPart := purse.Squeeze(parts[0])
-	return firstPart, nil
 }
 
 // ##==================================================================
@@ -73,7 +64,8 @@ func NewVarGoLoop(elm Element) (*VarGoLoop, error) {
 	return v, nil
 }
 
-func (v *VarGoLoop) GetData() string { return v.Data }
+func (v *VarGoLoop) GetData() string    { return v.Data }
+func (v *VarGoLoop) GetVarName() string { return v.VarName }
 
 func (v *VarGoLoop) initBasicInfo() error {
 	attrParts, err := ForceElementAttrParts(v.Element, "_for", 4)

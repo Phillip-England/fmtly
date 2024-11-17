@@ -190,22 +190,18 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 		if err != nil {
 			return err
 		}
-		varName, err := GetGoVarName(goVar)
-		if err != nil {
-			return err
-		}
-		htmlStr = strings.Replace(htmlStr, childHtml, fmt.Sprintf("%s.WriteString(%s)", builderName, varName), 1)
+		htmlStr = strings.Replace(htmlStr, childHtml, fmt.Sprintf("%s.WriteString(%s)", builderName, goVar.GetVarName()), 1)
 		return nil
 	})
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(htmlStr)
 	err = WalkElementProps(elm, func(prop Prop) error {
 		call := PropAsWriteString(prop, builderName)
 		htmlStr = strings.Replace(htmlStr, prop.GetRaw(), call, 1)
 		return nil
 	})
-	fmt.Println(htmlStr)
 	finalCalls := ""
 	for {
 		index := strings.Index(htmlStr, builderName)
