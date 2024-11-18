@@ -22,8 +22,8 @@ const TemplateForLoop = `
 			</div>
 		</div>
 		<div _for="color of colors []string">
-			<p>{{ color }}</p>
-			<p>{{ color }}</p>
+			<p>{{ .color }}</p>
+			<p>{{ .color }}</p>
 		</div>
 	</div>
 `
@@ -40,11 +40,16 @@ func TestGtml(t *testing.T) {
 		panic(err)
 	}
 
-	fn, err := gtml.NewFunc(elm)
+	_, err = gtml.NewFunc(elm)
 	if err != nil {
 		panic(err)
 	}
 
-	gtml.PrintGoFunc(fn)
+	// fn, err := gtml.NewFunc(elm)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// gtml.PrintGoFunc(fn)
 
 }

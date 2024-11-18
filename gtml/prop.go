@@ -22,59 +22,32 @@ type Prop interface {
 	Print()
 }
 
-func NewProps(elm Element) ([]Prop, error) {
-	props := make([]Prop, 0)
-	// elements must only reference props within themselves, not OTHER elements, so we must remove all other child elements
-	strProps := purse.ScanBetweenSubStrs(elm.GetHtml(), "{{", "}}")
-	for _, prop := range strProps {
-		val := purse.Squeeze(prop)
-		val = purse.RemoveAllSubStr(val, "{{", "}}")
-		if val == "" {
-			return nil, fmt.Errorf("empty prop tag provided: %s", elm.GetHtml())
-		}
-		if strings.Count(val, ".") == 1 && len(strings.Split(val, ".")) == 2 {
-			propForType, err := NewPropForType(prop, val)
-			if err != nil {
-				return nil, err
-			}
-			props = append(props, propForType)
-			continue
-		}
-		propStr, err := NewPropStr(prop, val)
+func NewProp(str string) (Prop, error) {
+	val := purse.Squeeze(str)
+	val = purse.RemoveAllSubStr(val, "{{", "}}")
+	if val == "" {
+		return nil, fmt.Errorf("empty prop tag provided: %s", str)
+	}
+	if len(val) > 1 && val[0] == '.' {
+		val = strings.Replace(val, ".", "", 1)
+		prop, err := NewPropForStr(str, val)
 		if err != nil {
 			return nil, err
 		}
-		props = append(props, propStr)
+		return prop, nil
 	}
-	morphed := make([]Prop, 0)
-	for _, prop := range props {
-		if prop.GetType() == KeyPropStr {
-			// check if an Element's children are _for
-			err := WalkElementChildren(elm, func(child Element) error {
-				if child.GetType() == KeyElementFor {
-					attrParts := child.GetAttrParts()
-					iterItem := attrParts[0]
-					// if a for element of _for="item of items []string" exists, and a StrProp has the value of "item", then it is a ForStrProp
-					if prop.GetValue() == iterItem {
-						forStrProp, err := NewPropForStr(prop.GetRaw(), prop.GetValue())
-						if err != nil {
-							return err
-						}
-						morphed = append(morphed, forStrProp)
-						return nil
-					}
-					morphed = append(morphed, prop)
-				}
-				return nil
-			})
-			if err != nil {
-				return nil, err
-			}
-			continue
+	if strings.Count(val, ".") == 1 && len(strings.Split(val, ".")) == 2 {
+		prop, err := NewPropForType(str, val)
+		if err != nil {
+			return nil, err
 		}
-		morphed = append(morphed, prop)
+		return prop, nil
 	}
-	return morphed, nil
+	prop, err := NewPropStr(str, val)
+	if err != nil {
+		return nil, err
+	}
+	return prop, nil
 }
 
 func PropAsWriteString(prop Prop, builderName string) string {

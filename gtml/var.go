@@ -3,9 +3,9 @@ package gtml
 import (
 	"fmt"
 	"go/format"
+	"strings"
 
 	"github.com/phillip-england/fungi"
-	"github.com/phillip-england/gqpp"
 	"github.com/phillip-england/purse"
 )
 
@@ -65,10 +65,7 @@ func (v *VarGoLoop) initVarName() error {
 }
 
 func (v *VarGoLoop) initBasicInfo() error {
-	attrParts, err := gqpp.ForceElementAttrParts(v.Element.GetSelection(), "_for", 4)
-	if err != nil {
-		return err
-	}
+	attrParts := v.Element.GetAttrParts()
 	v.VarName = attrParts[0] + "Loop"
 	v.BuilderName = attrParts[0] + "Builder"
 	v.IterItems = attrParts[2]
@@ -102,17 +99,26 @@ func (v *VarGoLoop) initWriteVarsAs() error {
 }
 
 func (v *VarGoLoop) initData() error {
-	htmlStr, err := GetElementAsBuilderSeries(v.Element, v.BuilderName)
+	clay := v.Element.GetHtml()
+	calls := make([]string, 0)
+	err := WalkElementProps(v.Element, func(prop Prop) error {
+		call := fmt.Sprintf(`%s.WriteString(%s)`, v.BuilderName, prop.GetValue())
+		calls = append(calls, call)
+		// trying to get this html string to a be a builder string
+		clay = strings.Replace(clay, prop.GetRaw(), call, 1)
+		return nil
+	})
 	if err != nil {
 		return err
 	}
+	fmt.Println(calls)
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := collect(%s, func(i int, %s %s) string {
 	var %s strings.Builder
 %s
 %s
 	return %s.String()
-})`, v.VarName, v.IterItems, v.IterItem, v.IterType, v.BuilderName, v.WriteVarsAs, htmlStr, v.BuilderName))
+})`, v.VarName, v.IterItems, v.IterItem, v.IterType, v.BuilderName, v.WriteVarsAs, "", v.BuilderName))
 	code, err := format.Source([]byte(v.Data))
 	if err != nil {
 		return err

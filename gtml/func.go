@@ -107,11 +107,11 @@ func (fn *GoComponentFunc) initParamStr() error {
 }
 
 func (fn *GoComponentFunc) initData() error {
-	series, err := GetElementAsBuilderSeries(fn.Element, "builder")
-	if err != nil {
-		return err
-	}
-	series = purse.PrefixLines(series, "\t")
+	// series, err := GetElementAsBuilderSeries(fn.Element, "builder")
+	// if err != nil {
+	// 	return err
+	// }
+	// series = purse.PrefixLines(series, "\t")
 	data := purse.RemoveFirstLine(fmt.Sprintf(`
 func %s(%s) string {
 	var builder strings.Builder
@@ -119,7 +119,7 @@ func %s(%s) string {
 %s
 	return builder.String()
 }
-	`, fn.Name, fn.ParamStr, fn.VarStr, series))
+	`, fn.Name, fn.ParamStr, fn.VarStr, ""))
 	data = purse.RemoveEmptyLines(data)
 	fn.Data = data
 	return nil

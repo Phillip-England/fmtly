@@ -8,6 +8,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/gqpp"
+	"github.com/phillip-england/purse"
 )
 
 // ##==================================================================
@@ -123,74 +124,27 @@ func WalkElementDirectChildren(elm Element, fn func(child Element) error) error 
 	return nil
 }
 
-func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) {
-	htmlStr := elm.GetHtml()
-	calls := ""
+func WalkElementProps(elm Element, fn func(prop Prop) error) error {
+	allProps := make([]Prop, 0)
+	for _, prop := range elm.GetProps() {
+		allProps = append(allProps, prop)
+	}
 	err := WalkElementChildren(elm, func(child Element) error {
-		childHtml := child.GetHtml()
-		if childHtml == "" {
-			return nil
+		for _, prop := range child.GetProps() {
+			allProps = append(allProps, prop)
 		}
-		goVar, err := NewGoVar(child)
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	for _, prop := range allProps {
+		err := fn(prop)
 		if err != nil {
 			return err
 		}
-		call := fmt.Sprintf("%s.WriteString(%s)", builderName, goVar.GetVarName())
-		calls += call + "\n"
-		htmlStr = strings.Replace(htmlStr, childHtml, call, 1)
-		return nil
-	})
-	if err != nil {
-		return "", err
 	}
-	for _, prop := range elm.GetProps() {
-		call := PropAsWriteString(prop, builderName)
-		htmlStr = strings.Replace(htmlStr, prop.GetRaw(), call, 1)
-	}
-	finalCalls := ""
-	for {
-		index := strings.Index(htmlStr, builderName)
-		if index == -1 {
-			break
-		}
-		part := htmlStr[:index]
-		if part != "" && part != " " {
-			finalCalls += fmt.Sprintf("%s.WriteString(`%s`)\n", builderName, part)
-			htmlStr = strings.Replace(htmlStr, part, "", 1)
-		}
-		index = strings.Index(htmlStr, ")")
-		if index == -1 {
-			break
-		}
-		part = htmlStr[:index+1]
-		if part != "" && part != " " {
-			finalCalls += part + "\n"
-			htmlStr = strings.Replace(htmlStr, part, "", 1)
-		}
-	}
-	finalCalls += fmt.Sprintf("%s.WriteString(`%s`)\n", builderName, htmlStr)
-	return finalCalls, nil
-}
-
-func RemoveElementChildren(elm Element) (Element, error) {
-	elmHtml := elm.GetHtml()
-	err := WalkElementDirectChildren(elm, func(child Element) error {
-		childHtml := child.GetHtml()
-		elmHtml = strings.Replace(elmHtml, childHtml, "", 1)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	newSel, err := gqpp.NewSelectionFromStr(elmHtml)
-	if err != nil {
-		return nil, err
-	}
-	newElm, err := NewElement(newSel)
-	if err != nil {
-		return nil, err
-	}
-	return newElm, nil
+	return nil
 }
 
 // ##==================================================================
@@ -212,15 +166,11 @@ func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
 		func() error { return elm.initHtml() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initName() },
+		func() error { return elm.initProps() },
 	)
 	if err != nil {
 		return nil, err
 	}
-	props, err := NewProps(elm)
-	if err != nil {
-		return nil, err
-	}
-	elm.Props = props
 	return elm, nil
 }
 
@@ -272,6 +222,27 @@ func (elm *ElementComponent) initName() error {
 	return nil
 }
 
+func (elm *ElementComponent) initProps() error {
+	elmHtml := elm.GetHtml()
+	err := WalkElementDirectChildren(elm, func(child Element) error {
+		childHtml := child.GetHtml()
+		elmHtml = strings.Replace(elmHtml, childHtml, "", 1)
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	strProps := purse.ScanBetweenSubStrs(elmHtml, "{{", "}}")
+	for _, strProp := range strProps {
+		prop, err := NewProp(strProp)
+		if err != nil {
+			return err
+		}
+		elm.Props = append(elm.Props, prop)
+	}
+	return nil
+}
+
 // ##==================================================================
 type ElementFor struct {
 	Selection *goquery.Selection
@@ -291,15 +262,11 @@ func NewElementFor(sel *goquery.Selection) (*ElementFor, error) {
 		func() error { return elm.initHtml() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initName() },
+		func() error { return elm.initProps() },
 	)
 	if err != nil {
 		return nil, err
 	}
-	props, err := NewProps(elm)
-	if err != nil {
-		return nil, err
-	}
-	elm.Props = props
 	return elm, nil
 }
 
@@ -359,5 +326,26 @@ func (elm *ElementFor) initAttr() error {
 
 func (elm *ElementFor) initName() error {
 	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
+	return nil
+}
+
+func (elm *ElementFor) initProps() error {
+	elmHtml := elm.GetHtml()
+	err := WalkElementDirectChildren(elm, func(child Element) error {
+		childHtml := child.GetHtml()
+		elmHtml = strings.Replace(elmHtml, childHtml, "", 1)
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	strProps := purse.ScanBetweenSubStrs(elmHtml, "{{", "}}")
+	for _, strProp := range strProps {
+		prop, err := NewProp(strProp)
+		if err != nil {
+			return err
+		}
+		elm.Props = append(elm.Props, prop)
+	}
 	return nil
 }
