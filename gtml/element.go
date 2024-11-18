@@ -205,26 +205,17 @@ type ElementComponent struct {
 }
 
 func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
-	htmlStr, err := gqpp.NewHtmlFromSelection(sel)
+	elm := &ElementComponent{}
+	err := fungi.Process(
+		func() error { return elm.initSelection(sel) },
+		func() error { return elm.initType() },
+		func() error { return elm.initHtml() },
+		func() error { return elm.initAttr() },
+		func() error { return elm.initName() },
+	)
 	if err != nil {
 		return nil, err
 	}
-	attr, err := gqpp.ForceElementAttr(sel, KeyElementComponent)
-	if err != nil {
-		return nil, err
-	}
-	parts, err := gqpp.ForceElementAttrParts(sel, KeyElementComponent, 1)
-	if err != nil {
-		return nil, err
-	}
-	elm := &ElementComponent{
-		Selection: sel,
-		Html:      htmlStr,
-		Type:      KeyElementComponent,
-		Attr:      attr,
-		AttrParts: parts,
-	}
-	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
 	props, err := NewProps(elm)
 	if err != nil {
 		return nil, err
@@ -242,6 +233,44 @@ func (elm *ElementComponent) GetAttr() string                  { return elm.Attr
 func (elm *ElementComponent) GetAttrParts() []string           { return elm.AttrParts }
 func (elm *ElementComponent) GetName() string                  { return elm.Name }
 func (elm *ElementComponent) GetProps() []Prop                 { return elm.Props }
+
+func (elm *ElementComponent) initSelection(sel *goquery.Selection) error {
+	elm.Selection = sel
+	return nil
+}
+
+func (elm *ElementComponent) initType() error {
+	elm.Type = KeyElementComponent
+	return nil
+}
+
+func (elm *ElementComponent) initHtml() error {
+	htmlStr, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
+	if err != nil {
+		return err
+	}
+	elm.Html = htmlStr
+	return nil
+}
+
+func (elm *ElementComponent) initAttr() error {
+	attr, err := gqpp.ForceElementAttr(elm.GetSelection(), KeyElementComponent)
+	if err != nil {
+		return err
+	}
+	parts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), KeyElementComponent, 1)
+	if err != nil {
+		return err
+	}
+	elm.Attr = attr
+	elm.AttrParts = parts
+	return nil
+}
+
+func (elm *ElementComponent) initName() error {
+	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
+	return nil
+}
 
 // ##==================================================================
 type ElementFor struct {
@@ -263,6 +292,9 @@ func NewElementFor(sel *goquery.Selection) (*ElementFor, error) {
 		func() error { return elm.initAttr() },
 		func() error { return elm.initName() },
 	)
+	if err != nil {
+		return nil, err
+	}
 	props, err := NewProps(elm)
 	if err != nil {
 		return nil, err
