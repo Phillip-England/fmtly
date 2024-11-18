@@ -25,12 +25,25 @@ type Prop interface {
 func NewProps(elm Element) ([]Prop, error) {
 	props := make([]Prop, 0)
 	// elements must only reference props within themselves, not OTHER elements, so we must remove all other child elements
-	strProps := purse.ScanBetweenSubStrs(elm.GetHtml(), "{{", "}}")
+	clone, err := elm.Clone()
+	if err != nil {
+		return props, err
+	}
+	cloneHtml := clone.GetHtml()
+	err = WalkElementDirectChildren(clone, func(child Element) error {
+		childHtml := child.GetHtml()
+		cloneHtml = strings.Replace(cloneHtml, childHtml, "", 1)
+		return nil
+	})
+	if err != nil {
+		return props, err
+	}
+	strProps := purse.ScanBetweenSubStrs(cloneHtml, "{{", "}}")
 	for _, prop := range strProps {
 		val := purse.Squeeze(prop)
 		val = purse.RemoveAllSubStr(val, "{{", "}}")
 		if val == "" {
-			return nil, fmt.Errorf("empty prop tag provided: %s", elm.GetHtml())
+			return nil, fmt.Errorf("empty prop tag provided: %s", cloneHtml)
 		}
 		if strings.Count(val, ".") == 1 && len(strings.Split(val, ".")) == 2 {
 			propForType, err := NewPropForType(prop, val)

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/gqpp"
 )
 
@@ -26,6 +25,7 @@ type Element interface {
 	GetAttr() string
 	GetAttrParts() []string
 	GetProps() []Prop
+	Clone() (Element, error)
 }
 
 func GetFullElementList() []string {
@@ -172,27 +172,6 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 	return finalCalls, nil
 }
 
-func RemoveElementChildren(elm Element) (Element, error) {
-	elmHtml := elm.GetHtml()
-	err := WalkElementDirectChildren(elm, func(child Element) error {
-		childHtml := child.GetHtml()
-		elmHtml = strings.Replace(elmHtml, childHtml, "", 1)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	newSel, err := gqpp.NewSelectionFromStr(elmHtml)
-	if err != nil {
-		return nil, err
-	}
-	newElm, err := NewElement(newSel)
-	if err != nil {
-		return nil, err
-	}
-	return newElm, nil
-}
-
 // ##==================================================================
 type ElementComponent struct {
 	Selection *goquery.Selection
@@ -242,6 +221,14 @@ func (elm *ElementComponent) GetAttr() string                  { return elm.Attr
 func (elm *ElementComponent) GetAttrParts() []string           { return elm.AttrParts }
 func (elm *ElementComponent) GetName() string                  { return elm.Name }
 func (elm *ElementComponent) GetProps() []Prop                 { return elm.Props }
+func (elm *ElementComponent) Clone() (Element, error) {
+	selClone := elm.GetSelection().Clone()
+	newElm, err := NewElement(selClone)
+	if err != nil {
+		return nil, err
+	}
+	return newElm, nil
+}
 
 // ##==================================================================
 type ElementFor struct {
@@ -255,14 +242,26 @@ type ElementFor struct {
 }
 
 func NewElementFor(sel *goquery.Selection) (*ElementFor, error) {
-	elm := &ElementFor{}
-	err := fungi.Process(
-		func() error { return elm.initSelection(sel) },
-		func() error { return elm.initType() },
-		func() error { return elm.initHtml() },
-		func() error { return elm.initAttr() },
-		func() error { return elm.initName() },
-	)
+	htmlStr, err := gqpp.NewHtmlFromSelection(sel)
+	if err != nil {
+		return nil, err
+	}
+	attr, err := gqpp.ForceElementAttr(sel, KeyElementFor)
+	if err != nil {
+		return nil, err
+	}
+	parts, err := gqpp.ForceElementAttrParts(sel, KeyElementFor, 4)
+	if err != nil {
+		return nil, err
+	}
+	elm := &ElementFor{
+		Selection: sel,
+		Html:      htmlStr,
+		Type:      KeyElementFor,
+		Attr:      attr,
+		AttrParts: parts,
+	}
+	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
 	props, err := NewProps(elm)
 	if err != nil {
 		return nil, err
@@ -291,41 +290,11 @@ func (elm *ElementFor) GetAttr() string        { return elm.Attr }
 func (elm *ElementFor) GetAttrParts() []string { return elm.AttrParts }
 func (elm *ElementFor) GetName() string        { return elm.Name }
 func (elm *ElementFor) GetProps() []Prop       { return elm.Props }
-
-func (elm *ElementFor) initSelection(sel *goquery.Selection) error {
-	elm.Selection = sel
-	return nil
-}
-
-func (elm *ElementFor) initType() error {
-	elm.Type = KeyElementFor
-	return nil
-}
-
-func (elm *ElementFor) initHtml() error {
-	htmlStr, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
+func (elm *ElementFor) Clone() (Element, error) {
+	selClone := elm.GetSelection().Clone()
+	newElm, err := NewElement(selClone)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	elm.Html = htmlStr
-	return nil
-}
-
-func (elm *ElementFor) initAttr() error {
-	attr, err := gqpp.ForceElementAttr(elm.GetSelection(), KeyElementFor)
-	if err != nil {
-		return err
-	}
-	parts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), KeyElementFor, 4)
-	if err != nil {
-		return err
-	}
-	elm.Attr = attr
-	elm.AttrParts = parts
-	return nil
-}
-
-func (elm *ElementFor) initName() error {
-	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
-	return nil
+	return newElm, nil
 }
