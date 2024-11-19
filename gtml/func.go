@@ -74,7 +74,7 @@ func (fn *GoComponentFunc) initName() error {
 
 func (fn *GoComponentFunc) initVars() error {
 	err := WalkElementDirectChildren(fn.Element, func(child Element) error {
-		goVar, err := NewGoVar(child)
+		goVar, err := NewVar(child)
 		if err != nil {
 			return err
 		}

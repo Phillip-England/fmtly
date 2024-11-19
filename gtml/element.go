@@ -15,6 +15,7 @@ import (
 const (
 	KeyElementComponent = "_component"
 	KeyElementFor       = "_for"
+	KeyElementIf        = "_if"
 )
 
 // ##==================================================================
@@ -36,7 +37,7 @@ func GetFullElementList() []string {
 }
 
 func GetChildElementList() []string {
-	return []string{KeyElementFor}
+	return []string{KeyElementFor, KeyElementIf}
 }
 func NewElement(sel *goquery.Selection) (Element, error) {
 	match := gqpp.GetFirstMatchingAttr(sel, GetFullElementList()...)
@@ -49,6 +50,12 @@ func NewElement(sel *goquery.Selection) (Element, error) {
 		return elm, nil
 	case KeyElementFor:
 		elm, err := NewElementFor(sel)
+		if err != nil {
+			return nil, err
+		}
+		return elm, nil
+	case KeyElementIf:
+		elm, err := NewElementIf(sel)
 		if err != nil {
 			return nil, err
 		}
@@ -169,16 +176,34 @@ func GetElementProps(elm Element) ([]Prop, error) {
 	return props, nil
 }
 
+func GetElementVars(elm Element) ([]Var, error) {
+	vars := make([]Var, 0)
+	err := WalkElementDirectChildren(elm, func(child Element) error {
+		innerVar, err := NewVar(child)
+		if err != nil {
+			return nil
+		}
+		vars = append(vars, innerVar)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return vars, nil
+}
+
 func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) {
 	clay := elm.GetHtml()
 	err := WalkElementDirectChildren(elm, func(child Element) error {
 		childHtml := child.GetHtml()
-		loopVar, err := NewGoVar(child)
+		newVar, err := NewVar(child)
 		if err != nil {
 			return err
 		}
-		call := fmt.Sprintf("%s.WriteString(%s)", builderName, loopVar.GetVarName())
-		clay = strings.Replace(clay, childHtml, call, 1)
+		if newVar.GetType() == KeyVarGoLoop {
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, newVar.GetVarName())
+			clay = strings.Replace(clay, childHtml, call, 1)
+		}
 		return nil
 	})
 	if err != nil {
@@ -408,6 +433,79 @@ type ElementIf struct {
 	AttrParts []string
 	Name      string
 	Props     []Prop
+}
+
+func NewElementIf(sel *goquery.Selection) (*ElementIf, error) {
+	elm := &ElementIf{}
+	err := fungi.Process(
+		func() error { return elm.initSelection(sel) },
+		func() error { return elm.initType() },
+		func() error { return elm.initHtml() },
+		func() error { return elm.initAttr() },
+		func() error { return elm.initName() },
+		func() error { return elm.initProps() },
+	)
+	if err != nil {
+		return nil, err
+	}
+	return elm, nil
+}
+
+func (elm *ElementIf) GetSelection() *goquery.Selection { return elm.Selection }
+func (elm *ElementIf) GetParam() (string, error)        { return elm.Attr, nil }
+func (elm *ElementIf) GetHtml() string                  { return elm.Html }
+func (elm *ElementIf) Print()                           { fmt.Println(elm.Html) }
+func (elm *ElementIf) GetType() string                  { return elm.Type }
+func (elm *ElementIf) GetAttr() string                  { return elm.Attr }
+func (elm *ElementIf) GetAttrParts() []string           { return elm.AttrParts }
+func (elm *ElementIf) GetName() string                  { return elm.Name }
+func (elm *ElementIf) GetProps() []Prop                 { return elm.Props }
+
+func (elm *ElementIf) initSelection(sel *goquery.Selection) error {
+	elm.Selection = sel
+	return nil
+}
+
+func (elm *ElementIf) initType() error {
+	elm.Type = KeyElementIf
+	return nil
+}
+
+func (elm *ElementIf) initHtml() error {
+	htmlStr, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
+	if err != nil {
+		return err
+	}
+	elm.Html = htmlStr
+	return nil
+}
+
+func (elm *ElementIf) initAttr() error {
+	attr, err := gqpp.ForceElementAttr(elm.GetSelection(), KeyElementIf)
+	if err != nil {
+		return err
+	}
+	parts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), KeyElementIf, 1)
+	if err != nil {
+		return err
+	}
+	elm.Attr = attr
+	elm.AttrParts = parts
+	return nil
+}
+
+func (elm *ElementIf) initName() error {
+	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
+	return nil
+}
+
+func (elm *ElementIf) initProps() error {
+	props, err := GetElementProps(elm)
+	if err != nil {
+		return err
+	}
+	elm.Props = props
+	return nil
 }
 
 // ##==================================================================

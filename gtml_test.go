@@ -60,13 +60,25 @@ func TestMain(t *testing.T) {
 	ifElseTemplate := purse.Flatten(`
         <div _component="HomePage">
             <div _if="loggedIn">
-                <h1>Welcome Back!</h1>
-            </div>
-            <div _else="loggedIn">
-                <h1>Welcome Guest!</h1>
+                <div _if="loggedIn">
             </div>
         </div>
     `)
+
+	_ = `
+        func HomePage(loggedIn bool) string {
+            var builder strings.Builder
+            loggedInIf := gtmlIf(loggedIn, func() string {
+                var loggedInBuilder strings.Builder
+                loggedInBuilder.WriteString('<div _if="loggedIn"><div _if="loggedIn"></div>')
+                return loggedInBuilder.String()
+            })
+            builder.WriteString('<div _component="HomePage">')
+            builder.WriteString(loggedInIf)
+            builder.WriteString('</div>')
+        }
+
+    `
 
 	sel, err := gqpp.NewSelectionFromStr(ifElseTemplate)
 	if err != nil {
@@ -78,6 +90,11 @@ func TestMain(t *testing.T) {
 		panic(err)
 	}
 
-	elm.Print()
+	fn, err := gtml.NewFunc(elm)
+	if err != nil {
+		panic(err)
+	}
+
+	gtml.PrintGoFunc(fn)
 
 }
