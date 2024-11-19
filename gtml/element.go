@@ -147,6 +147,28 @@ func WalkElementProps(elm Element, fn func(prop Prop) error) error {
 	return nil
 }
 
+func GetElementProps(elm Element) ([]Prop, error) {
+	props := make([]Prop, 0)
+	elmHtml := elm.GetHtml()
+	err := WalkElementDirectChildren(elm, func(child Element) error {
+		childHtml := child.GetHtml()
+		elmHtml = strings.Replace(elmHtml, childHtml, "", 1)
+		return nil
+	})
+	if err != nil {
+		return props, err
+	}
+	strProps := purse.ScanBetweenSubStrs(elmHtml, "{{", "}}")
+	for _, strProp := range strProps {
+		prop, err := NewProp(strProp)
+		if err != nil {
+			return props, err
+		}
+		props = append(props, prop)
+	}
+	return props, nil
+}
+
 func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) {
 	clay := elm.GetHtml()
 	err := WalkElementDirectChildren(elm, func(child Element) error {
@@ -274,23 +296,11 @@ func (elm *ElementComponent) initName() error {
 }
 
 func (elm *ElementComponent) initProps() error {
-	elmHtml := elm.GetHtml()
-	err := WalkElementDirectChildren(elm, func(child Element) error {
-		childHtml := child.GetHtml()
-		elmHtml = strings.Replace(elmHtml, childHtml, "", 1)
-		return nil
-	})
+	props, err := GetElementProps(elm)
 	if err != nil {
 		return err
 	}
-	strProps := purse.ScanBetweenSubStrs(elmHtml, "{{", "}}")
-	for _, strProp := range strProps {
-		prop, err := NewProp(strProp)
-		if err != nil {
-			return err
-		}
-		elm.Props = append(elm.Props, prop)
-	}
+	elm.Props = props
 	return nil
 }
 
@@ -381,22 +391,35 @@ func (elm *ElementFor) initName() error {
 }
 
 func (elm *ElementFor) initProps() error {
-	elmHtml := elm.GetHtml()
-	err := WalkElementDirectChildren(elm, func(child Element) error {
-		childHtml := child.GetHtml()
-		elmHtml = strings.Replace(elmHtml, childHtml, "", 1)
-		return nil
-	})
+	props, err := GetElementProps(elm)
 	if err != nil {
 		return err
 	}
-	strProps := purse.ScanBetweenSubStrs(elmHtml, "{{", "}}")
-	for _, strProp := range strProps {
-		prop, err := NewProp(strProp)
-		if err != nil {
-			return err
-		}
-		elm.Props = append(elm.Props, prop)
-	}
+	elm.Props = props
 	return nil
 }
+
+// ##==================================================================
+type ElementIf struct {
+	Selection *goquery.Selection
+	Html      string
+	Type      string
+	Attr      string
+	AttrParts []string
+	Name      string
+	Props     []Prop
+}
+
+// ##==================================================================
+
+// ##==================================================================
+
+// ##==================================================================
+
+// ##==================================================================
+
+// ##==================================================================
+
+// ##==================================================================
+
+// ##==================================================================
