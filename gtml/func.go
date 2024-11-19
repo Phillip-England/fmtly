@@ -120,7 +120,7 @@ func %s(%s) string {
 %s
 	return builder.String()
 }
-	`, fn.Name, fn.ParamStr, fn.VarStr, ""))
+	`, fn.Name, fn.ParamStr, fn.VarStr, series))
 	code, err := format.Source([]byte(data))
 	if err != nil {
 		return err

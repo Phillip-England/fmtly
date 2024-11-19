@@ -99,7 +99,7 @@ func GetElementParams(elm Element) (string, error) {
 	strParams := make([]string, 0)
 	for _, prop := range elm.GetProps() {
 		strProp := prop.GetValue() + " " + "string"
-		if !slices.Contains(strParams, strProp) && strings.Count(strProp, ".") == 0 {
+		if !slices.Contains(strParams, strProp) && prop.GetType() == KeyPropStr {
 			strParams = append(strParams, strProp)
 		}
 	}
@@ -181,13 +181,14 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 			break
 		}
 		htmlPart := clay[:builderIndex]
-		htmlCall := fmt.Sprintf("%s.WriteString(`%s`)", builderName, htmlPart)
-		series += htmlCall + "\n"
-		clay = strings.Replace(clay, htmlPart, "", 1)
+		if htmlPart != "" {
+			htmlCall := fmt.Sprintf("%s.WriteString(`%s`)", builderName, htmlPart)
+			series += htmlCall + "\n"
+			clay = strings.Replace(clay, htmlPart, "", 1)
+		}
 		endBuilderIndex := strings.Index(clay, ")")
 		builderPart := clay[:endBuilderIndex+1]
-		builderCall := fmt.Sprintf("%s.WriteString(%s)", builderName, builderPart)
-		series += builderCall + "\n"
+		series += builderPart + "\n"
 		clay = strings.Replace(clay, builderPart, "", 1)
 	}
 	if len(clay) > 0 {
