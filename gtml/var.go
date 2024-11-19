@@ -2,7 +2,6 @@ package gtml
 
 import (
 	"fmt"
-	"go/format"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/purse"
@@ -116,11 +115,6 @@ func (v *VarGoLoop) initData() error {
 %s
 	return %s.String()
 })`, v.VarName, v.IterItems, v.IterItem, v.IterType, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
-	code, err := format.Source([]byte(v.Data))
-	if err != nil {
-		return err
-	}
-	v.Data = string(code)
 	v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }
