@@ -40,16 +40,16 @@ func TestGtml(t *testing.T) {
 		panic(err)
 	}
 
-	_, err = gtml.NewFunc(elm)
-	if err != nil {
-		panic(err)
-	}
-
-	// fn, err := gtml.NewFunc(elm)
+	// _, err = gtml.NewFunc(elm)
 	// if err != nil {
 	// 	panic(err)
 	// }
 
-	// gtml.PrintGoFunc(fn)
+	fn, err := gtml.NewFunc(elm)
+	if err != nil {
+		panic(err)
+	}
+
+	gtml.PrintGoFunc(fn)
 
 }

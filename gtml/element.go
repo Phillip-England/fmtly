@@ -147,6 +147,56 @@ func WalkElementProps(elm Element, fn func(prop Prop) error) error {
 	return nil
 }
 
+func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) {
+	clay := elm.GetHtml()
+	err := WalkElementDirectChildren(elm, func(child Element) error {
+		childHtml := child.GetHtml()
+		loopVar, err := NewGoVar(child)
+		if err != nil {
+			return err
+		}
+		call := fmt.Sprintf("%s.WriteString(%s)", builderName, loopVar.GetVarName())
+		clay = strings.Replace(clay, childHtml, call, 1)
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	err = WalkElementProps(elm, func(prop Prop) error {
+		call := fmt.Sprintf("%s.WriteString(%s)", builderName, prop.GetValue())
+		clay = strings.Replace(clay, prop.GetRaw(), call, 1)
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	if strings.Index(clay, builderName) == -1 {
+		singleCall := fmt.Sprintf("%s.WriteString(%s)", builderName, clay)
+		return singleCall, nil
+	}
+	series := ""
+	for {
+		builderIndex := strings.Index(clay, builderName)
+		if builderIndex == -1 {
+			break
+		}
+		htmlPart := clay[:builderIndex]
+		htmlCall := fmt.Sprintf("%s.WriteString(`%s`)", builderName, htmlPart)
+		series += htmlCall + "\n"
+		clay = strings.Replace(clay, htmlPart, "", 1)
+		endBuilderIndex := strings.Index(clay, ")")
+		builderPart := clay[:endBuilderIndex+1]
+		builderCall := fmt.Sprintf("%s.WriteString(%s)", builderName, builderPart)
+		series += builderCall + "\n"
+		clay = strings.Replace(clay, builderPart, "", 1)
+	}
+	if len(clay) > 0 {
+		htmlCall := fmt.Sprintf("%s.WriteString(`%s`)", builderName, clay)
+		series += htmlCall + "\n"
+	}
+	return series, nil
+}
+
 // ##==================================================================
 type ElementComponent struct {
 	Selection *goquery.Selection

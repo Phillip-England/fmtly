@@ -50,7 +50,7 @@ func NewProp(str string) (Prop, error) {
 	return prop, nil
 }
 
-func PropAsWriteString(prop Prop, builderName string) string {
+func PropAsWriteStringCall(prop Prop, builderName string) string {
 	return fmt.Sprintf("%s.WriteString(%s)", builderName, prop.GetValue())
 }
 

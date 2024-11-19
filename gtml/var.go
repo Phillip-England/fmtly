@@ -3,7 +3,6 @@ package gtml
 import (
 	"fmt"
 	"go/format"
-	"strings"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/purse"
@@ -29,15 +28,16 @@ func NewGoVar(elm Element) (Var, error) {
 
 // ##==================================================================
 type VarGoLoop struct {
-	Element     Element
-	VarName     string
-	BuilderName string
-	Vars        []Var
-	WriteVarsAs string
-	Data        string
-	IterItems   string
-	IterItem    string
-	IterType    string
+	Element       Element
+	VarName       string
+	BuilderName   string
+	Vars          []Var
+	WriteVarsAs   string
+	Data          string
+	IterItems     string
+	IterItem      string
+	IterType      string
+	BuilderSeries string
 }
 
 func NewVarGoLoop(elm Element) (*VarGoLoop, error) {
@@ -48,6 +48,7 @@ func NewVarGoLoop(elm Element) (*VarGoLoop, error) {
 		func() error { return v.initBasicInfo() },
 		func() error { return v.initVars() },
 		func() error { return v.initWriteVarsAs() },
+		func() error { return v.initBuilderSeries() },
 		func() error { return v.initData() },
 	)
 	if err != nil {
@@ -98,27 +99,23 @@ func (v *VarGoLoop) initWriteVarsAs() error {
 	return nil
 }
 
-func (v *VarGoLoop) initData() error {
-	clay := v.Element.GetHtml()
-	calls := make([]string, 0)
-	err := WalkElementProps(v.Element, func(prop Prop) error {
-		call := fmt.Sprintf(`%s.WriteString(%s)`, v.BuilderName, prop.GetValue())
-		calls = append(calls, call)
-		// trying to get this html string to a be a builder string
-		clay = strings.Replace(clay, prop.GetRaw(), call, 1)
-		return nil
-	})
+func (v *VarGoLoop) initBuilderSeries() error {
+	series, err := GetElementAsBuilderSeries(v.Element, v.BuilderName)
 	if err != nil {
 		return err
 	}
-	fmt.Println(calls)
+	v.BuilderSeries = series
+	return nil
+}
+
+func (v *VarGoLoop) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := collect(%s, func(i int, %s %s) string {
 	var %s strings.Builder
 %s
 %s
 	return %s.String()
-})`, v.VarName, v.IterItems, v.IterItem, v.IterType, v.BuilderName, v.WriteVarsAs, "", v.BuilderName))
+})`, v.VarName, v.IterItems, v.IterItem, v.IterType, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
 	code, err := format.Source([]byte(v.Data))
 	if err != nil {
 		return err

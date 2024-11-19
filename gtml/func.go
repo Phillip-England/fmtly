@@ -2,6 +2,7 @@ package gtml
 
 import (
 	"fmt"
+	"go/format"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/gqpp"
@@ -107,11 +108,11 @@ func (fn *GoComponentFunc) initParamStr() error {
 }
 
 func (fn *GoComponentFunc) initData() error {
-	// series, err := GetElementAsBuilderSeries(fn.Element, "builder")
-	// if err != nil {
-	// 	return err
-	// }
-	// series = purse.PrefixLines(series, "\t")
+	series, err := GetElementAsBuilderSeries(fn.Element, "builder")
+	if err != nil {
+		return err
+	}
+	series = purse.PrefixLines(series, "\t")
 	data := purse.RemoveFirstLine(fmt.Sprintf(`
 func %s(%s) string {
 	var builder strings.Builder
@@ -120,6 +121,11 @@ func %s(%s) string {
 	return builder.String()
 }
 	`, fn.Name, fn.ParamStr, fn.VarStr, ""))
+	code, err := format.Source([]byte(data))
+	if err != nil {
+		return err
+	}
+	data = string(code)
 	data = purse.RemoveEmptyLines(data)
 	fn.Data = data
 	return nil
