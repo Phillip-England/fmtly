@@ -1,8 +1,6 @@
 # gtml
 Let's be reel 🎣, html in Go sucks. But it doesn't *have* to. Introducing... 🥁 gtml.
 
-<img src="./static/huh.webp" alt="Alt text" height="300">
-
 ## Html Attributes
 gtml allows us to use html attributes to determine the structure of our components. For example, to define a for loop we may do something like this:
 
