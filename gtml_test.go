@@ -51,6 +51,7 @@ func TestAll(t *testing.T) {
 		func() error { return runTestByNameDirName(t, "mesh") },
 		func() error { return runTestByNameDirName(t, "if") },
 		func() error { return runTestByNameDirName(t, "for") },
+		func() error { return runTestByNameDirName(t, "else") },
 	)
 	if err != nil {
 		panic(err)

@@ -9,8 +9,9 @@ import (
 
 // ##==================================================================
 const (
-	KeyVarGoFor = "VARGOFOR"
-	KeyVarGoIf  = "VARGOIF"
+	KeyVarGoFor  = "VARGOFOR"
+	KeyVarGoIf   = "VARGOIF"
+	KeyVarGoElse = "VARGOELSE"
 )
 
 // ##==================================================================
@@ -30,6 +31,12 @@ func NewVar(elm Element) (Var, error) {
 		return v, nil
 	case KeyElementIf:
 		v, err := NewVarGoIf(elm)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
+	case KeyElementElse:
+		v, err := NewVarGoElse(elm)
 		if err != nil {
 			return nil, err
 		}
@@ -215,6 +222,89 @@ func (v *VarGoIf) initData() error {
 }
 
 // ##==================================================================
+type VarGoElse struct {
+	Element       Element
+	VarName       string
+	BuilderName   string
+	Vars          []Var
+	WriteVarsAs   string
+	Data          string
+	BuilderSeries string
+	BoolToCheck   string
+	Type          string
+}
+
+func NewVarGoElse(elm Element) (*VarGoElse, error) {
+	v := &VarGoElse{
+		Element: elm,
+	}
+	err := fungi.Process(
+		func() error { return v.initBasicInfo() },
+		func() error { return v.initVars() },
+		func() error { return v.initWriteVarsAs() },
+		func() error { return v.initBuilderSeries() },
+		func() error { return v.initData() },
+	)
+	if err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+func (v *VarGoElse) GetData() string    { return v.Data }
+func (v *VarGoElse) GetVarName() string { return v.VarName }
+func (v *VarGoElse) GetType() string    { return v.Type }
+
+func (v *VarGoElse) initBasicInfo() error {
+	attr := v.Element.GetAttr()
+	v.VarName = attr + "Else"
+	v.BuilderName = attr + "Builder"
+	v.BoolToCheck = attr
+	v.Type = KeyVarGoElse
+	return nil
+}
+
+func (v *VarGoElse) initVars() error {
+	vars, err := GetElementVars(v.Element)
+	if err != nil {
+		return err
+	}
+	v.Vars = vars
+	return nil
+}
+
+func (v *VarGoElse) initWriteVarsAs() error {
+	varsToWrite := ""
+	for _, inner := range v.Vars {
+		varsToWrite += "\t" + inner.GetData()
+	}
+	v.WriteVarsAs = varsToWrite
+	return nil
+}
+
+func (v *VarGoElse) initBuilderSeries() error {
+	series, err := GetElementAsBuilderSeries(v.Element, v.BuilderName)
+	if err != nil {
+		return err
+	}
+	v.BuilderSeries = series
+	return nil
+}
+
+func (v *VarGoElse) initData() error {
+	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
+%s := gtmlElse(%s, func() string {
+	var %s strings.Builder
+%s
+%s
+	if !%s {
+		return %s.String()
+	}
+	return ""
+})`, v.VarName, v.BoolToCheck, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BoolToCheck, v.BuilderName))
+	v.Data = purse.RemoveEmptyLines(v.Data)
+	return nil
+}
 
 // ##==================================================================
 

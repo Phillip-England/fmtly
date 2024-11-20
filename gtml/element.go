@@ -16,6 +16,7 @@ const (
 	KeyElementComponent = "_component"
 	KeyElementFor       = "_for"
 	KeyElementIf        = "_if"
+	KeyElementElse      = "_else"
 )
 
 // ##==================================================================
@@ -37,7 +38,7 @@ func GetFullElementList() []string {
 }
 
 func GetChildElementList() []string {
-	return []string{KeyElementFor, KeyElementIf}
+	return []string{KeyElementFor, KeyElementIf, KeyElementElse}
 }
 func NewElement(sel *goquery.Selection) (Element, error) {
 	match := gqpp.GetFirstMatchingAttr(sel, GetFullElementList()...)
@@ -56,6 +57,12 @@ func NewElement(sel *goquery.Selection) (Element, error) {
 		return elm, nil
 	case KeyElementIf:
 		elm, err := NewElementIf(sel)
+		if err != nil {
+			return nil, err
+		}
+		return elm, nil
+	case KeyElementElse:
+		elm, err := NewElementElse(sel)
 		if err != nil {
 			return nil, err
 		}
@@ -200,7 +207,8 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 		if err != nil {
 			return err
 		}
-		if newVar.GetType() == KeyVarGoFor || newVar.GetType() == KeyVarGoIf {
+		varType := newVar.GetType()
+		if purse.MustEqualOneOf(varType, KeyVarGoElse, KeyVarGoFor, KeyVarGoIf) {
 			call := fmt.Sprintf("%s.WriteString(%s)", builderName, newVar.GetVarName())
 			clay = strings.Replace(clay, childHtml, call, 1)
 		}
@@ -509,6 +517,88 @@ func (elm *ElementIf) initProps() error {
 }
 
 // ##==================================================================
+type ElementElse struct {
+	Selection *goquery.Selection
+	Html      string
+	Type      string
+	Attr      string
+	AttrParts []string
+	Name      string
+	Props     []Prop
+}
+
+func NewElementElse(sel *goquery.Selection) (*ElementElse, error) {
+	elm := &ElementElse{}
+	err := fungi.Process(
+		func() error { return elm.initSelection(sel) },
+		func() error { return elm.initType() },
+		func() error { return elm.initHtml() },
+		func() error { return elm.initAttr() },
+		func() error { return elm.initName() },
+		func() error { return elm.initProps() },
+	)
+	if err != nil {
+		return nil, err
+	}
+	return elm, nil
+}
+
+func (elm *ElementElse) GetSelection() *goquery.Selection { return elm.Selection }
+func (elm *ElementElse) GetParam() (string, error)        { return elm.Attr + " bool", nil }
+func (elm *ElementElse) GetHtml() string                  { return elm.Html }
+func (elm *ElementElse) Print()                           { fmt.Println(elm.Html) }
+func (elm *ElementElse) GetType() string                  { return elm.Type }
+func (elm *ElementElse) GetAttr() string                  { return elm.Attr }
+func (elm *ElementElse) GetAttrParts() []string           { return elm.AttrParts }
+func (elm *ElementElse) GetName() string                  { return elm.Name }
+func (elm *ElementElse) GetProps() []Prop                 { return elm.Props }
+
+func (elm *ElementElse) initSelection(sel *goquery.Selection) error {
+	elm.Selection = sel
+	return nil
+}
+
+func (elm *ElementElse) initType() error {
+	elm.Type = KeyElementElse
+	return nil
+}
+
+func (elm *ElementElse) initHtml() error {
+	htmlStr, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
+	if err != nil {
+		return err
+	}
+	elm.Html = htmlStr
+	return nil
+}
+
+func (elm *ElementElse) initAttr() error {
+	attr, err := gqpp.ForceElementAttr(elm.GetSelection(), KeyElementElse)
+	if err != nil {
+		return err
+	}
+	parts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), KeyElementElse, 1)
+	if err != nil {
+		return err
+	}
+	elm.Attr = attr
+	elm.AttrParts = parts
+	return nil
+}
+
+func (elm *ElementElse) initName() error {
+	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
+	return nil
+}
+
+func (elm *ElementElse) initProps() error {
+	props, err := GetElementProps(elm)
+	if err != nil {
+		return err
+	}
+	elm.Props = props
+	return nil
+}
 
 // ##==================================================================
 
