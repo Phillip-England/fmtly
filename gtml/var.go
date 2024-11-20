@@ -205,10 +205,12 @@ func (v *VarGoIf) initData() error {
 	var %s strings.Builder
 %s
 %s
-	return %s.String()
-})`, v.VarName, v.BoolToCheck, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
+	if %s {
+		return %s.String()
+	}
+	return ""
+})`, v.VarName, v.BoolToCheck, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BoolToCheck, v.BuilderName))
 	v.Data = purse.RemoveEmptyLines(v.Data)
-	fmt.Println(v.Data)
 	return nil
 }
 

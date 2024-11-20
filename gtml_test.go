@@ -19,17 +19,14 @@ func runTestByNameDirName(t *testing.T, testDir string) error {
 		return err
 	}
 	fStr := string(f)
-
 	sel, err := gqpp.NewSelectionFromStr(fStr)
 	if err != nil {
 		return err
 	}
-
 	elm, err := gtml.NewElement(sel)
 	if err != nil {
 		return err
 	}
-
 	fn, err := gtml.NewFunc(elm)
 	if err != nil {
 		return err
@@ -52,49 +49,10 @@ func runTestByNameDirName(t *testing.T, testDir string) error {
 func TestMain(t *testing.T) {
 	err := fungi.Process(
 		func() error { return runTestByNameDirName(t, "for") },
+		func() error { return runTestByNameDirName(t, "if") },
 	)
 	if err != nil {
 		panic(err)
 	}
-
-	ifElseTemplate := purse.Flatten(`
-        <div _component="HomePage">
-            <div _if="loggedIn">
-                <div _if="loggedIn">
-            </div>
-        </div>
-    `)
-
-	_ = `
-        func HomePage(loggedIn bool) string {
-            var builder strings.Builder
-            loggedInIf := gtmlIf(loggedIn, func() string {
-                var loggedInBuilder strings.Builder
-                loggedInBuilder.WriteString('<div _if="loggedIn"><div _if="loggedIn"></div>')
-                return loggedInBuilder.String()
-            })
-            builder.WriteString('<div _component="HomePage">')
-            builder.WriteString(loggedInIf)
-            builder.WriteString('</div>')
-        }
-
-    `
-
-	sel, err := gqpp.NewSelectionFromStr(ifElseTemplate)
-	if err != nil {
-		panic(err)
-	}
-
-	elm, err := gtml.NewElement(sel)
-	if err != nil {
-		panic(err)
-	}
-
-	fn, err := gtml.NewFunc(elm)
-	if err != nil {
-		panic(err)
-	}
-
-	gtml.PrintGoFunc(fn)
 
 }

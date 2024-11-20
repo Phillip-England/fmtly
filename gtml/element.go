@@ -200,7 +200,7 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 		if err != nil {
 			return err
 		}
-		if newVar.GetType() == KeyVarGoLoop {
+		if newVar.GetType() == KeyVarGoLoop || newVar.GetType() == KeyVarGoIf {
 			call := fmt.Sprintf("%s.WriteString(%s)", builderName, newVar.GetVarName())
 			clay = strings.Replace(clay, childHtml, call, 1)
 		}
@@ -218,7 +218,7 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 		return "", err
 	}
 	if strings.Index(clay, builderName) == -1 {
-		singleCall := fmt.Sprintf("%s.WriteString(%s)", builderName, clay)
+		singleCall := fmt.Sprintf("%s.WriteString(`%s`)", builderName, clay)
 		return singleCall, nil
 	}
 	series := ""
@@ -452,7 +452,7 @@ func NewElementIf(sel *goquery.Selection) (*ElementIf, error) {
 }
 
 func (elm *ElementIf) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ElementIf) GetParam() (string, error)        { return elm.Attr, nil }
+func (elm *ElementIf) GetParam() (string, error)        { return elm.Attr + " bool", nil }
 func (elm *ElementIf) GetHtml() string                  { return elm.Html }
 func (elm *ElementIf) Print()                           { fmt.Println(elm.Html) }
 func (elm *ElementIf) GetType() string                  { return elm.Type }
