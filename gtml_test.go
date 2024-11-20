@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"gtml/gtml"
 	"os"
+	"strings"
 	"testing"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/gqpp"
 	"github.com/phillip-england/purse"
@@ -60,27 +62,29 @@ func TestAll(t *testing.T) {
 
 func TestOne(t *testing.T) {
 
-	template := `
-        <div _component="UserGate">
-            <div _else="isBlocked">
-                <p>you are not blocked!</p>
-            </div>
-        </div>
+	formFile := `
+        <form _component="LoginForm">
+            <label>Username</label>
+            <input type='text' />
+            <label>Password</label>
+            <input type='password' />
+            <SubmitButton text="Submit" />
+        </form>
+
+        <button _component="SubmitButton">{{ text }}</button>
     `
 
-	sel, err := gqpp.NewSelectionFromStr(template)
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(formFile))
 	if err != nil {
 		panic(err)
 	}
 
-	elm, err := gtml.NewElement(sel)
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = gtml.NewFunc(elm)
-	if err != nil {
-		panic(err)
-	}
+	doc.Find("*[_component]").Each(func(i int, s *goquery.Selection) {
+		compElm, err := gtml.NewElement(s)
+		if err != nil {
+			panic(err)
+		}
+		compElm.Print()
+	})
 
 }
