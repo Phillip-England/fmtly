@@ -9,8 +9,8 @@ import (
 
 // ##==================================================================
 const (
-	KeyVarGoLoop = "VARGOLOOP"
-	KeyVarGoIf   = "VARGOIF"
+	KeyVarGoFor = "VARGOFOR"
+	KeyVarGoIf  = "VARGOIF"
 )
 
 // ##==================================================================
@@ -23,7 +23,7 @@ type Var interface {
 func NewVar(elm Element) (Var, error) {
 	switch elm.GetType() {
 	case KeyElementFor:
-		v, err := NewVarGoLoop(elm)
+		v, err := NewVarGoFor(elm)
 		if err != nil {
 			return nil, err
 		}
@@ -39,7 +39,7 @@ func NewVar(elm Element) (Var, error) {
 }
 
 // ##==================================================================
-type VarGoLoop struct {
+type VarGoFor struct {
 	Element       Element
 	VarName       string
 	BuilderName   string
@@ -53,8 +53,8 @@ type VarGoLoop struct {
 	Type          string
 }
 
-func NewVarGoLoop(elm Element) (*VarGoLoop, error) {
-	v := &VarGoLoop{
+func NewVarGoFor(elm Element) (*VarGoFor, error) {
+	v := &VarGoFor{
 		Element: elm,
 	}
 	err := fungi.Process(
@@ -70,27 +70,27 @@ func NewVarGoLoop(elm Element) (*VarGoLoop, error) {
 	return v, nil
 }
 
-func (v *VarGoLoop) GetData() string    { return v.Data }
-func (v *VarGoLoop) GetVarName() string { return v.VarName }
-func (v *VarGoLoop) GetType() string    { return v.Type }
+func (v *VarGoFor) GetData() string    { return v.Data }
+func (v *VarGoFor) GetVarName() string { return v.VarName }
+func (v *VarGoFor) GetType() string    { return v.Type }
 
-func (v *VarGoLoop) initVarName() error {
+func (v *VarGoFor) initVarName() error {
 	v.VarName = v.Element.GetAttrParts()[0]
 	return nil
 }
 
-func (v *VarGoLoop) initBasicInfo() error {
+func (v *VarGoFor) initBasicInfo() error {
 	attrParts := v.Element.GetAttrParts()
-	v.VarName = attrParts[0] + "Loop"
+	v.VarName = attrParts[0] + "For"
 	v.BuilderName = attrParts[0] + "Builder"
 	v.IterItems = attrParts[2]
 	v.IterItem = attrParts[0]
 	v.IterType = purse.RemoveAllSubStr(attrParts[3], "[]")
-	v.Type = KeyVarGoLoop
+	v.Type = KeyVarGoFor
 	return nil
 }
 
-func (v *VarGoLoop) initVars() error {
+func (v *VarGoFor) initVars() error {
 	vars, err := GetElementVars(v.Element)
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (v *VarGoLoop) initVars() error {
 	return nil
 }
 
-func (v *VarGoLoop) initWriteVarsAs() error {
+func (v *VarGoFor) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
 		varsToWrite += "\t" + inner.GetData()
@@ -108,7 +108,7 @@ func (v *VarGoLoop) initWriteVarsAs() error {
 	return nil
 }
 
-func (v *VarGoLoop) initBuilderSeries() error {
+func (v *VarGoFor) initBuilderSeries() error {
 	series, err := GetElementAsBuilderSeries(v.Element, v.BuilderName)
 	if err != nil {
 		return err
@@ -117,9 +117,9 @@ func (v *VarGoLoop) initBuilderSeries() error {
 	return nil
 }
 
-func (v *VarGoLoop) initData() error {
+func (v *VarGoFor) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
-%s := collect(%s, func(i int, %s %s) string {
+%s := gtmlFor(%s, func(i int, %s %s) string {
 	var %s strings.Builder
 %s
 %s

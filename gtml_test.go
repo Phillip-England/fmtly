@@ -50,6 +50,7 @@ func TestMain(t *testing.T) {
 	err := fungi.Process(
 		func() error { return runTestByNameDirName(t, "mesh") },
 		func() error { return runTestByNameDirName(t, "if") },
+		func() error { return runTestByNameDirName(t, "for") },
 	)
 	if err != nil {
 		panic(err)

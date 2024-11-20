@@ -200,7 +200,7 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 		if err != nil {
 			return err
 		}
-		if newVar.GetType() == KeyVarGoLoop || newVar.GetType() == KeyVarGoIf {
+		if newVar.GetType() == KeyVarGoFor || newVar.GetType() == KeyVarGoIf {
 			call := fmt.Sprintf("%s.WriteString(%s)", builderName, newVar.GetVarName())
 			clay = strings.Replace(clay, childHtml, call, 1)
 		}

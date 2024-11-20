@@ -1,10 +1,10 @@
 func GuestList(someTitle string, guests []Guest, isAdmin bool, colors []string, loggedIn bool) string {
 	var builder strings.Builder
-	guestLoop := collect(guests, func(i int, guest Guest) string {
+	guestFor := gtmlFor(guests, func(i int, guest Guest) string {
 		var guestBuilder strings.Builder
-		itemLoop := collect(guest.Items, func(i int, item Item) string {
+		itemFor := gtmlFor(guest.Items, func(i int, item Item) string {
 			var itemBuilder strings.Builder
-			colorLoop := collect(item.Colors, func(i int, color Color) string {
+			colorFor := gtmlFor(item.Colors, func(i int, color Color) string {
 				var colorBuilder strings.Builder
                 isAdminIf := gtmlIf(isAdmin, func() string {
                     var isAdminBuilder strings.Builder
@@ -28,18 +28,18 @@ func GuestList(someTitle string, guests []Guest, isAdmin bool, colors []string, 
 			itemBuilder.WriteString(`</p><p>`)
 			itemBuilder.WriteString(item.Price)
 			itemBuilder.WriteString(`</p>`)
-			itemBuilder.WriteString(colorLoop)
+			itemBuilder.WriteString(colorFor)
 			itemBuilder.WriteString(`</div>`)
 			return itemBuilder.String()
 		})
 		guestBuilder.WriteString(`<div _for="guest of guests []Guest"><h1>`)
 		guestBuilder.WriteString(guest.Name)
 		guestBuilder.WriteString(`</h1><p>The guest has brought the following items:</p>`)
-		guestBuilder.WriteString(itemLoop)
+		guestBuilder.WriteString(itemFor)
 		guestBuilder.WriteString(`</div>`)
 		return guestBuilder.String()
 	})
-	colorLoop := collect(colors, func(i int, color string) string {
+	colorFor := gtmlFor(colors, func(i int, color string) string {
 		var colorBuilder strings.Builder
 		colorBuilder.WriteString(`<div _for="color of colors []string"><p>`)
 		colorBuilder.WriteString(color)
@@ -59,8 +59,8 @@ func GuestList(someTitle string, guests []Guest, isAdmin bool, colors []string, 
 	builder.WriteString(`<div _component="GuestList"><h1>`)
 	builder.WriteString(someTitle)
 	builder.WriteString(`</h1>`)
-	builder.WriteString(guestLoop)
-	builder.WriteString(colorLoop)
+	builder.WriteString(guestFor)
+	builder.WriteString(colorFor)
 	builder.WriteString(loggedInIf)
 	builder.WriteString(`</div>`)
 	return builder.String()
