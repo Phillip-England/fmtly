@@ -1,5 +1,6 @@
 # gtml
 Let's be reel 🎣, html in Go sucks. But it doesn't *have* to. Introducing... 🥁 gtml.
+
 <img src="./static/huh.webp" alt="Alt text" height="300">
 
 ## _component
