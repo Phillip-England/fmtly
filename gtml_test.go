@@ -41,14 +41,14 @@ func runTestByNameDirName(t *testing.T, testDir string) error {
 	expect := purse.Squeeze(purse.Flatten(fStr))
 
 	if out != expect {
-		t.Errorf("output does not meet expectations:\n\n %s", out)
+		t.Errorf("output does not meet expectations:\n\nexpected:\n\n%s\n\ngot:\n\n%s", fStr, fn.GetData())
 	}
 	return nil
 }
 
 func TestMain(t *testing.T) {
 	err := fungi.Process(
-		func() error { return runTestByNameDirName(t, "for") },
+		func() error { return runTestByNameDirName(t, "mesh") },
 		func() error { return runTestByNameDirName(t, "if") },
 	)
 	if err != nil {

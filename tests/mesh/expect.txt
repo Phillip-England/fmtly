@@ -1,4 +1,4 @@
-func GuestList(someTitle string, guests []Guest, colors []string) string {
+func GuestList(someTitle string, guests []Guest, colors []string, loggedIn bool) string {
 	var builder strings.Builder
 	guestLoop := collect(guests, func(i int, guest Guest) string {
 		var guestBuilder strings.Builder
@@ -38,11 +38,20 @@ func GuestList(someTitle string, guests []Guest, colors []string) string {
 		colorBuilder.WriteString(`</p></div>`)
 		return colorBuilder.String()
 	})
+    loggedInIf := gtmlIf(loggedIn, func() string {
+		var loggedInBuilder strings.Builder
+		loggedInBuilder.WriteString(`<div _if="loggedIn"><p>Logged in!</p></div>`)
+		if loggedIn {
+			return loggedInBuilder.String()
+		}
+		return ""
+	})
 	builder.WriteString(`<div _component="GuestList"><h1>`)
 	builder.WriteString(someTitle)
 	builder.WriteString(`</h1>`)
 	builder.WriteString(guestLoop)
 	builder.WriteString(colorLoop)
+	builder.WriteString(loggedInIf)
 	builder.WriteString(`</div>`)
 	return builder.String()
 }

@@ -35,7 +35,7 @@ func NewVar(elm Element) (Var, error) {
 		}
 		return v, nil
 	}
-	return nil, fmt.Errorf("element does not corrospond to a valid GoVar: %s", elm.GetHtml())
+	return nil, fmt.Errorf("element does not corrospond to a valid Var: %s", elm.GetHtml())
 }
 
 // ##==================================================================
