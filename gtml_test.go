@@ -89,31 +89,16 @@ func TestOne(t *testing.T) {
 		compElms = append(compElms, compElm)
 	})
 
-	for _, comp := range compElms {
+	for _, elm := range compElms {
 
-		_ = comp.GetHtml()
-
-		err := gtml.WalkAllElementNodes(comp, func(sel *goquery.Selection) error {
-			nodeName := goquery.NodeName(sel)
-			nodeHtml, err := gqpp.NewHtmlFromSelection(sel)
-			if err != nil {
-				return err
-			}
-			for _, siblingComp := range compElms {
-				if comp == siblingComp {
-					continue
-				}
-				if strings.ToLower(siblingComp.GetAttr()) == nodeName {
-					// compHtml = strings.Replace(compHtml, nodeHtml, siblingComp.GetHtml(), 1)
-					slot := gtml.NewSlot(nodeName, nodeHtml, siblingComp)
-					slot.Print()
-
-				}
-			}
-			return nil
-		})
+		placeholders, err := gtml.GetElementPlaceholders(elm, compElms)
 		if err != nil {
 			panic(err)
+		}
+
+		for _, place := range placeholders {
+			elm.Print()
+			place.Print()
 		}
 
 		// _, err = gtml.NewFunc(elm)

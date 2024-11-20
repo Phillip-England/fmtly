@@ -3,31 +3,33 @@ package gtml
 import "fmt"
 
 // ##==================================================================
-type Slot interface {
+type Placeholder interface {
 	Print()
+	GetElement() Element
 }
 
 // ##==================================================================
-type SlotComponent struct {
+type PlaceholderComponent struct {
 	Name    string
 	FoundAs string
 	Element Element
 }
 
-func NewSlot(name string, foundAs string, elm Element) Slot {
-	slot := &SlotComponent{
+func NewPlaceholder(name string, foundAs string, elm Element) Placeholder {
+	place := &PlaceholderComponent{
 		Name:    name,
 		FoundAs: foundAs,
 		Element: elm,
 	}
-	return slot
+	return place
 }
 
-func (slot *SlotComponent) Print() {
+func (place *PlaceholderComponent) Print() {
 	fmt.Println(fmt.Sprintf(`Name: %s
 FoundAs: %s
-Element: %s`, slot.Name, slot.FoundAs, slot.Element.GetHtml()))
+Element: %s`, place.Name, place.FoundAs, place.Element.GetHtml()))
 }
+func (place *PlaceholderComponent) GetElement() Element { return place.Element }
 
 // ##==================================================================
 

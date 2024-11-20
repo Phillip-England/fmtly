@@ -270,16 +270,39 @@ func WalkAllElementNodes(elm Element, fn func(sel *goquery.Selection) error) err
 	return nil
 }
 
+func GetElementPlaceholders(component Element, allGtmlComponents []Element) ([]Placeholder, error) {
+	placeholders := make([]Placeholder, 0)
+	for _, sibling := range allGtmlComponents {
+		err := WalkAllElementNodes(component, func(sel *goquery.Selection) error {
+			nodeName := goquery.NodeName(sel)
+			nodeHtml, err := gqpp.NewHtmlFromSelection(sel)
+			if err != nil {
+				return err
+			}
+			if nodeName == strings.ToLower(sibling.GetAttr()) {
+				sibling.Print()
+				place := NewPlaceholder(nodeName, nodeHtml, sibling)
+				placeholders = append(placeholders, place)
+			}
+			return nil
+		})
+		if err != nil {
+			panic(err)
+		}
+	}
+	return placeholders, nil
+}
+
 // ##==================================================================
 type ElementComponent struct {
-	Selection *goquery.Selection
-	Html      string
-	Type      string
-	Attr      string
-	AttrParts []string
-	Name      string
-	Props     []Prop
-	Slots     []Slot
+	Selection    *goquery.Selection
+	Html         string
+	Type         string
+	Attr         string
+	AttrParts    []string
+	Name         string
+	Props        []Prop
+	Placeholders []Placeholder
 }
 
 func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
@@ -308,6 +331,9 @@ func (elm *ElementComponent) GetAttr() string                  { return elm.Attr
 func (elm *ElementComponent) GetAttrParts() []string           { return elm.AttrParts }
 func (elm *ElementComponent) GetName() string                  { return elm.Name }
 func (elm *ElementComponent) GetProps() []Prop                 { return elm.Props }
+func (elm *ElementComponent) SetPlaceholders(placeholders []Placeholder) {
+	elm.Placeholders = placeholders
+}
 
 func (elm *ElementComponent) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
@@ -358,13 +384,14 @@ func (elm *ElementComponent) initProps() error {
 
 // ##==================================================================
 type ElementFor struct {
-	Selection *goquery.Selection
-	Html      string
-	Type      string
-	Attr      string
-	AttrParts []string
-	Name      string
-	Props     []Prop
+	Selection    *goquery.Selection
+	Html         string
+	Type         string
+	Attr         string
+	AttrParts    []string
+	Name         string
+	Props        []Prop
+	Placeholders []Placeholder
 }
 
 func NewElementFor(sel *goquery.Selection) (*ElementFor, error) {
@@ -404,6 +431,9 @@ func (elm *ElementFor) GetAttr() string        { return elm.Attr }
 func (elm *ElementFor) GetAttrParts() []string { return elm.AttrParts }
 func (elm *ElementFor) GetName() string        { return elm.Name }
 func (elm *ElementFor) GetProps() []Prop       { return elm.Props }
+func (elm *ElementFor) SetPlaceholders(placeholders []Placeholder) {
+	elm.Placeholders = placeholders
+}
 
 func (elm *ElementFor) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
@@ -454,13 +484,14 @@ func (elm *ElementFor) initProps() error {
 
 // ##==================================================================
 type ElementIf struct {
-	Selection *goquery.Selection
-	Html      string
-	Type      string
-	Attr      string
-	AttrParts []string
-	Name      string
-	Props     []Prop
+	Selection    *goquery.Selection
+	Html         string
+	Type         string
+	Attr         string
+	AttrParts    []string
+	Name         string
+	Props        []Prop
+	Placeholders []Placeholder
 }
 
 func NewElementIf(sel *goquery.Selection) (*ElementIf, error) {
@@ -489,6 +520,9 @@ func (elm *ElementIf) GetAttr() string                  { return elm.Attr }
 func (elm *ElementIf) GetAttrParts() []string           { return elm.AttrParts }
 func (elm *ElementIf) GetName() string                  { return elm.Name }
 func (elm *ElementIf) GetProps() []Prop                 { return elm.Props }
+func (elm *ElementIf) SetPlaceholders(placeholders []Placeholder) {
+	elm.Placeholders = placeholders
+}
 
 func (elm *ElementIf) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
