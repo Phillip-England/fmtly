@@ -31,10 +31,7 @@ func GuestList(guests []Guest) string {
 }
 ```
 
-When using gtml, we simply place our components in a `.html` file, and gtml will take care of generating the output.
-
-
-## Element _component
+## _component
 _component elements are used to register a new component. gtml will convert all _component elements into their own corrosponding Go function.
 
 ### input

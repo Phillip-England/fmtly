@@ -46,12 +46,38 @@ func runTestByNameDirName(t *testing.T, testDir string) error {
 	return nil
 }
 
-func TestMain(t *testing.T) {
+func TestAll(t *testing.T) {
 	err := fungi.Process(
 		func() error { return runTestByNameDirName(t, "mesh") },
 		func() error { return runTestByNameDirName(t, "if") },
 		func() error { return runTestByNameDirName(t, "for") },
 	)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestOne(t *testing.T) {
+
+	template := `
+        <div _component="UserGate">
+            <div _else="isBlocked">
+                <p>you are not blocked!</p>
+            </div>
+        </div>
+    `
+
+	sel, err := gqpp.NewSelectionFromStr(template)
+	if err != nil {
+		panic(err)
+	}
+
+	elm, err := gtml.NewElement(sel)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = gtml.NewFunc(elm)
 	if err != nil {
 		panic(err)
 	}
