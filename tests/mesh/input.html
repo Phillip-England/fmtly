@@ -9,6 +9,9 @@
             <div _for="color of item.Colors []Color">
                 <p>{{ color.Shade }}</p>
                 <p>{{ color.Hue }}</p>
+                <div _if="isAdmin">
+                    <p>Hello Admin!</p>
+                </div>
             </div>
         </div>
     </div>

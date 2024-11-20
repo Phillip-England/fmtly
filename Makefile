@@ -11,4 +11,4 @@ tw:
 
 # prepare my files to be fed to ai for questions
 gpt:
-	cat *.go > gpt.txt
+	cat ./gtml/*.go > gpt.txt

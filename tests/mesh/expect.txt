@@ -1,4 +1,4 @@
-func GuestList(someTitle string, guests []Guest, colors []string, loggedIn bool) string {
+func GuestList(someTitle string, guests []Guest, isAdmin bool, colors []string, loggedIn bool) string {
 	var builder strings.Builder
 	guestLoop := collect(guests, func(i int, guest Guest) string {
 		var guestBuilder strings.Builder
@@ -6,11 +6,21 @@ func GuestList(someTitle string, guests []Guest, colors []string, loggedIn bool)
 			var itemBuilder strings.Builder
 			colorLoop := collect(item.Colors, func(i int, color Color) string {
 				var colorBuilder strings.Builder
+                isAdminIf := gtmlIf(isAdmin, func() string {
+                    var isAdminBuilder strings.Builder
+                    isAdminBuilder.WriteString(`<div _if="isAdmin"><p>Hello Admin!</p></div>`)
+                    if isAdmin {
+                        return isAdminBuilder.String()
+                    }
+                    return ""
+                })
 				colorBuilder.WriteString(`<div _for="color of item.Colors []Color"><p>`)
 				colorBuilder.WriteString(color.Shade)
 				colorBuilder.WriteString(`</p><p>`)
 				colorBuilder.WriteString(color.Hue)
-				colorBuilder.WriteString(`</p></div>`)
+				colorBuilder.WriteString(`</p>`)
+                colorBuilder.WriteString(isAdminIf)
+				colorBuilder.WriteString(`</div>`)
 				return colorBuilder.String()
 			})
 			itemBuilder.WriteString(`<div _for="item of guest.Items []Item"><p>`)
