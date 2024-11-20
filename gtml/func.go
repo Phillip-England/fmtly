@@ -15,6 +15,7 @@ type Func interface {
 	GetData() string
 	SetData(str string)
 	GetVars() []Var
+	Print()
 }
 
 func NewFunc(elm Element) (Func, error) {
@@ -62,6 +63,7 @@ func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
 func (fn *GoComponentFunc) GetData() string    { return fn.Data }
 func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
 func (fn *GoComponentFunc) GetVars() []Var     { return fn.Vars }
+func (fn *GoComponentFunc) Print()             { fmt.Println(fn.GetData()) }
 
 func (fn *GoComponentFunc) initName() error {
 	compAttr, err := gqpp.ForceElementAttr(fn.Element.GetSelection(), KeyElementComponent)
