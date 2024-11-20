@@ -1,5 +1,6 @@
 # gtml
 Let's be reel 🎣, html in Go sucks. But it doesn't *have* to. Introducing... 🥁 gtml.
+![huh](./static/huh.webp)
 
 ## _component
 _component elements are used to register a new component. Gtml will convert all _component elements into their own corrosponding Go function.
