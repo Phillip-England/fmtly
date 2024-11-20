@@ -23,6 +23,7 @@ const (
 type Element interface {
 	GetSelection() *goquery.Selection
 	GetParam() (string, error)
+	SetHtml(htmlStr string)
 	GetHtml() string
 	Print()
 	GetType() string
@@ -40,6 +41,7 @@ func GetFullElementList() []string {
 func GetChildElementList() []string {
 	return []string{KeyElementFor, KeyElementIf, KeyElementElse}
 }
+
 func NewElement(sel *goquery.Selection) (Element, error) {
 	match := gqpp.GetFirstMatchingAttr(sel, GetFullElementList()...)
 	switch match {
@@ -253,6 +255,21 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 	return series, nil
 }
 
+func WalkAllElementNodes(elm Element, fn func(sel *goquery.Selection) error) error {
+	var potErr error
+	elm.GetSelection().Find("*").Each(func(i int, s *goquery.Selection) {
+		err := fn(s)
+		if err != nil {
+			potErr = err
+			return
+		}
+	})
+	if potErr != nil {
+		return potErr
+	}
+	return nil
+}
+
 // ##==================================================================
 type ElementComponent struct {
 	Selection *goquery.Selection
@@ -262,6 +279,7 @@ type ElementComponent struct {
 	AttrParts []string
 	Name      string
 	Props     []Prop
+	Slots     []Slot
 }
 
 func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
@@ -283,6 +301,7 @@ func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
 func (elm *ElementComponent) GetSelection() *goquery.Selection { return elm.Selection }
 func (elm *ElementComponent) GetParam() (string, error)        { return "", nil }
 func (elm *ElementComponent) GetHtml() string                  { return elm.Html }
+func (elm *ElementComponent) SetHtml(htmlStr string)           { elm.Html = htmlStr }
 func (elm *ElementComponent) Print()                           { fmt.Println(elm.Html) }
 func (elm *ElementComponent) GetType() string                  { return elm.Type }
 func (elm *ElementComponent) GetAttr() string                  { return elm.Attr }
@@ -378,6 +397,7 @@ func (elm *ElementFor) GetParam() (string, error) {
 	return iterItems + " " + iterType, nil
 }
 func (elm *ElementFor) GetHtml() string        { return elm.Html }
+func (elm *ElementFor) SetHtml(htmlStr string) { elm.Html = htmlStr }
 func (elm *ElementFor) Print()                 { fmt.Println(elm.Html) }
 func (elm *ElementFor) GetType() string        { return elm.Type }
 func (elm *ElementFor) GetAttr() string        { return elm.Attr }
@@ -462,6 +482,7 @@ func NewElementIf(sel *goquery.Selection) (*ElementIf, error) {
 func (elm *ElementIf) GetSelection() *goquery.Selection { return elm.Selection }
 func (elm *ElementIf) GetParam() (string, error)        { return elm.Attr + " bool", nil }
 func (elm *ElementIf) GetHtml() string                  { return elm.Html }
+func (elm *ElementIf) SetHtml(htmlStr string)           { elm.Html = htmlStr }
 func (elm *ElementIf) Print()                           { fmt.Println(elm.Html) }
 func (elm *ElementIf) GetType() string                  { return elm.Type }
 func (elm *ElementIf) GetAttr() string                  { return elm.Attr }
@@ -546,6 +567,7 @@ func NewElementElse(sel *goquery.Selection) (*ElementElse, error) {
 func (elm *ElementElse) GetSelection() *goquery.Selection { return elm.Selection }
 func (elm *ElementElse) GetParam() (string, error)        { return elm.Attr + " bool", nil }
 func (elm *ElementElse) GetHtml() string                  { return elm.Html }
+func (elm *ElementElse) SetHtml(htmlStr string)           { elm.Html = htmlStr }
 func (elm *ElementElse) Print()                           { fmt.Println(elm.Html) }
 func (elm *ElementElse) GetType() string                  { return elm.Type }
 func (elm *ElementElse) GetAttr() string                  { return elm.Attr }

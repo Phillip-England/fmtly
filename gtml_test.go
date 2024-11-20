@@ -68,7 +68,7 @@ func TestOne(t *testing.T) {
             <input type='text' />
             <label>Password</label>
             <input type='password' />
-            <SubmitButton text="Submit" />
+            <SubmitButton text="Submit!"></SubmitButton>
         </form>
 
         <button _component="SubmitButton">{{ text }}</button>
@@ -79,12 +79,47 @@ func TestOne(t *testing.T) {
 		panic(err)
 	}
 
+	compElms := make([]gtml.Element, 0)
+
 	doc.Find("*[_component]").Each(func(i int, s *goquery.Selection) {
 		compElm, err := gtml.NewElement(s)
 		if err != nil {
 			panic(err)
 		}
-		compElm.Print()
+		compElms = append(compElms, compElm)
 	})
+
+	for _, comp := range compElms {
+
+		_ = comp.GetHtml()
+
+		err := gtml.WalkAllElementNodes(comp, func(sel *goquery.Selection) error {
+			nodeName := goquery.NodeName(sel)
+			nodeHtml, err := gqpp.NewHtmlFromSelection(sel)
+			if err != nil {
+				return err
+			}
+			for _, siblingComp := range compElms {
+				if comp == siblingComp {
+					continue
+				}
+				if strings.ToLower(siblingComp.GetAttr()) == nodeName {
+					// compHtml = strings.Replace(compHtml, nodeHtml, siblingComp.GetHtml(), 1)
+					slot := gtml.NewSlot(nodeName, nodeHtml, siblingComp)
+					slot.Print()
+
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		// _, err = gtml.NewFunc(elm)
+		// if err != nil {
+		// 	panic(err)
+		// }
+	}
 
 }
