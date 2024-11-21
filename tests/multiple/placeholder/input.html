@@ -1,9 +1,6 @@
-<form _component="LoginForm">
-    <label>Username</label>
-    <input type='text' />
-    <label>Password</label>
-    <input type='password' />
-    <SubmitButton text="Submit!"></SubmitButton>
-</form>
+<div _component="Greeting">
+    <GreetingCard name="{{ firstGuestName }}"></GreetingCard>
+    <GreetingCard name="{{ secondGuestName }}"></GreetingCard>
+</div>
 
-<button _component="SubmitButton">{{ text }}</button>
+<div _component="GreetingCard">Hello, {{ name }}!</div>

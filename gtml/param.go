@@ -5,6 +5,8 @@ import "fmt"
 // ##==================================================================
 type Param interface {
 	GetStr() string
+	GetName() string
+	GetType() string
 	Print()
 }
 
@@ -26,8 +28,10 @@ func NewParamGoFunc(name string, typeof string) *ParamGoFunc {
 	}
 }
 
-func (param *ParamGoFunc) GetStr() string { return param.Name + " " + param.Type }
-func (param *ParamGoFunc) Print()         { fmt.Println(param.GetStr()) }
+func (param *ParamGoFunc) GetStr() string  { return param.Name + " " + param.Type }
+func (param *ParamGoFunc) GetName() string { return param.Name }
+func (param *ParamGoFunc) GetType() string { return param.Type }
+func (param *ParamGoFunc) Print()          { fmt.Println(param.GetStr()) }
 
 // ##==================================================================
 
