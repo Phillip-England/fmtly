@@ -3,6 +3,7 @@ package gtml
 import (
 	"fmt"
 	"go/format"
+	"strings"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/gqpp"
@@ -105,7 +106,11 @@ func (fn *GoComponentFunc) initParamStr() error {
 	if err != nil {
 		return err
 	}
-	fn.ParamStr = params
+	paramStrs := make([]string, 0)
+	for _, param := range params {
+		paramStrs = append(paramStrs, param.GetStr())
+	}
+	fn.ParamStr = strings.Join(paramStrs, ",")
 	return nil
 }
 

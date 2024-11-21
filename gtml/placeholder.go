@@ -18,7 +18,9 @@ func NewPlaceholder(foundAsHtml string, pointingTo Element) (Placeholder, error)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(params)
+	for _, param := range params {
+		param.Print()
+	}
 	place := &PlaceholderComponent{
 		Name:       nameAttr,
 		FoundAs:    foundAsHtml,
@@ -39,7 +41,6 @@ func (place *PlaceholderComponent) Print() {
 	fmt.Println("FoundAs: " + place.FoundAs)
 	fmt.Print("PointingTo: ")
 	place.PointingTo.Print()
-
 }
 func (place *PlaceholderComponent) GetFoundAs() string     { return place.FoundAs }
 func (place *PlaceholderComponent) GetPointingTo() Element { return place.PointingTo }

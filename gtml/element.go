@@ -23,7 +23,7 @@ const (
 // ##==================================================================
 type Element interface {
 	GetSelection() *goquery.Selection
-	GetParam() (string, error)
+	GetParam() (Param, error)
 	SetHtml(htmlStr string)
 	GetHtml() string
 	Print()
@@ -98,30 +98,33 @@ func WalkElementChildren(elm Element, fn func(child Element) error) error {
 	return nil
 }
 
-func GetElementParams(elm Element) (string, error) {
-	elementSpecificParams := make([]string, 0)
+func GetElementParams(elm Element) ([]Param, error) {
+	params := make([]Param, 0)
+	elementSpecificParams := make([]Param, 0)
 	err := WalkElementChildren(elm, func(child Element) error {
 		param, err := child.GetParam()
 		if err != nil {
 			return err
 		}
-		if !slices.Contains(elementSpecificParams, param) && param != "" {
+		if !slices.Contains(elementSpecificParams, param) && param != nil {
 			elementSpecificParams = append(elementSpecificParams, param)
 		}
 		return nil
 	})
 	if err != nil {
-		return "", err
+		return params, err
 	}
-	strParams := make([]string, 0)
+	strParams := make([]Param, 0)
 	for _, prop := range elm.GetProps() {
-		strProp := prop.GetValue() + " " + "string"
-		if !slices.Contains(strParams, strProp) && prop.GetType() == KeyPropStr {
-			strParams = append(strParams, strProp)
+		param, err := NewParam(prop.GetValue(), "string")
+		if err != nil {
+			return params, err
+		}
+		if !slices.Contains(strParams, param) && prop.GetType() == KeyPropStr {
+			strParams = append(strParams, param)
 		}
 	}
-	paramSlice := append(strParams, elementSpecificParams...)
-	params := strings.Join(paramSlice, ", ")
+	params = append(strParams, elementSpecificParams...)
 	return params, nil
 }
 
@@ -355,15 +358,17 @@ func NewElementComponent(sel *goquery.Selection) (*ElementComponent, error) {
 }
 
 func (elm *ElementComponent) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ElementComponent) GetParam() (string, error)        { return "", nil }
-func (elm *ElementComponent) GetHtml() string                  { return elm.Html }
-func (elm *ElementComponent) SetHtml(htmlStr string)           { elm.Html = htmlStr }
-func (elm *ElementComponent) Print()                           { fmt.Println(elm.Html) }
-func (elm *ElementComponent) GetType() string                  { return elm.Type }
-func (elm *ElementComponent) GetAttr() string                  { return elm.Attr }
-func (elm *ElementComponent) GetAttrParts() []string           { return elm.AttrParts }
-func (elm *ElementComponent) GetName() string                  { return elm.Name }
-func (elm *ElementComponent) GetProps() []Prop                 { return elm.Props }
+func (elm *ElementComponent) GetParam() (Param, error) {
+	return nil, nil
+}
+func (elm *ElementComponent) GetHtml() string        { return elm.Html }
+func (elm *ElementComponent) SetHtml(htmlStr string) { elm.Html = htmlStr }
+func (elm *ElementComponent) Print()                 { fmt.Println(elm.Html) }
+func (elm *ElementComponent) GetType() string        { return elm.Type }
+func (elm *ElementComponent) GetAttr() string        { return elm.Attr }
+func (elm *ElementComponent) GetAttrParts() []string { return elm.AttrParts }
+func (elm *ElementComponent) GetName() string        { return elm.Name }
+func (elm *ElementComponent) GetProps() []Prop       { return elm.Props }
 func (elm *ElementComponent) SetPlaceholders(placeholders []Placeholder) {
 	elm.Placeholders = placeholders
 }
@@ -444,17 +449,18 @@ func NewElementFor(sel *goquery.Selection) (*ElementFor, error) {
 }
 
 func (elm *ElementFor) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ElementFor) GetParam() (string, error) {
-	parts, err := gqpp.ForceElementAttrParts(elm.GetSelection(), KeyElementFor, 4)
-	if err != nil {
-		return "", err
-	}
+func (elm *ElementFor) GetParam() (Param, error) {
+	parts := elm.GetAttrParts()
 	iterItems := parts[2]
 	if strings.Contains(iterItems, ".") {
-		return "", nil
+		return nil, nil
 	}
 	iterType := parts[3]
-	return iterItems + " " + iterType, nil
+	param, err := NewParam(iterItems, iterType)
+	if err != nil {
+		return nil, err
+	}
+	return param, nil
 }
 func (elm *ElementFor) GetHtml() string        { return elm.Html }
 func (elm *ElementFor) SetHtml(htmlStr string) { elm.Html = htmlStr }
@@ -544,15 +550,21 @@ func NewElementIf(sel *goquery.Selection) (*ElementIf, error) {
 }
 
 func (elm *ElementIf) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ElementIf) GetParam() (string, error)        { return elm.Attr + " bool", nil }
-func (elm *ElementIf) GetHtml() string                  { return elm.Html }
-func (elm *ElementIf) SetHtml(htmlStr string)           { elm.Html = htmlStr }
-func (elm *ElementIf) Print()                           { fmt.Println(elm.Html) }
-func (elm *ElementIf) GetType() string                  { return elm.Type }
-func (elm *ElementIf) GetAttr() string                  { return elm.Attr }
-func (elm *ElementIf) GetAttrParts() []string           { return elm.AttrParts }
-func (elm *ElementIf) GetName() string                  { return elm.Name }
-func (elm *ElementIf) GetProps() []Prop                 { return elm.Props }
+func (elm *ElementIf) GetParam() (Param, error) {
+	param, err := NewParam(elm.Attr, "bool")
+	if err != nil {
+		return nil, err
+	}
+	return param, nil
+}
+func (elm *ElementIf) GetHtml() string        { return elm.Html }
+func (elm *ElementIf) SetHtml(htmlStr string) { elm.Html = htmlStr }
+func (elm *ElementIf) Print()                 { fmt.Println(elm.Html) }
+func (elm *ElementIf) GetType() string        { return elm.Type }
+func (elm *ElementIf) GetAttr() string        { return elm.Attr }
+func (elm *ElementIf) GetAttrParts() []string { return elm.AttrParts }
+func (elm *ElementIf) GetName() string        { return elm.Name }
+func (elm *ElementIf) GetProps() []Prop       { return elm.Props }
 func (elm *ElementIf) SetPlaceholders(placeholders []Placeholder) {
 	elm.Placeholders = placeholders
 }
@@ -632,15 +644,21 @@ func NewElementElse(sel *goquery.Selection) (*ElementElse, error) {
 }
 
 func (elm *ElementElse) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ElementElse) GetParam() (string, error)        { return elm.Attr + " bool", nil }
-func (elm *ElementElse) GetHtml() string                  { return elm.Html }
-func (elm *ElementElse) SetHtml(htmlStr string)           { elm.Html = htmlStr }
-func (elm *ElementElse) Print()                           { fmt.Println(elm.Html) }
-func (elm *ElementElse) GetType() string                  { return elm.Type }
-func (elm *ElementElse) GetAttr() string                  { return elm.Attr }
-func (elm *ElementElse) GetAttrParts() []string           { return elm.AttrParts }
-func (elm *ElementElse) GetName() string                  { return elm.Name }
-func (elm *ElementElse) GetProps() []Prop                 { return elm.Props }
+func (elm *ElementElse) GetParam() (Param, error) {
+	param, err := NewParam(elm.Attr, "bool")
+	if err != nil {
+		return nil, err
+	}
+	return param, nil
+}
+func (elm *ElementElse) GetHtml() string        { return elm.Html }
+func (elm *ElementElse) SetHtml(htmlStr string) { elm.Html = htmlStr }
+func (elm *ElementElse) Print()                 { fmt.Println(elm.Html) }
+func (elm *ElementElse) GetType() string        { return elm.Type }
+func (elm *ElementElse) GetAttr() string        { return elm.Attr }
+func (elm *ElementElse) GetAttrParts() []string { return elm.AttrParts }
+func (elm *ElementElse) GetName() string        { return elm.Name }
+func (elm *ElementElse) GetProps() []Prop       { return elm.Props }
 
 func (elm *ElementElse) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
