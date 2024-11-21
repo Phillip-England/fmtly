@@ -284,7 +284,6 @@ func GetElementPlaceholders(elm Element, allElements []Element) ([]Placeholder, 
 				return err
 			}
 			if nodeName == strings.ToLower(sibling.GetAttr()) {
-				sibling.Print()
 				place, err := NewPlaceholder(nodeHtml, sibling)
 				if err != nil {
 					return err
