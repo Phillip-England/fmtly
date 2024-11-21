@@ -4,18 +4,16 @@ import (
 	"fmt"
 	"gtml/gtml"
 	"os"
-	"strings"
 	"testing"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/gqpp"
 	"github.com/phillip-england/purse"
 )
 
-func runTestByNameDirName(t *testing.T, testDir string) error {
-	inputPath := fmt.Sprintf("./tests/%s/input.html", testDir)
-	expectPath := fmt.Sprintf("./tests/%s/expect.txt", testDir)
+func testSingle(t *testing.T, testDir string) error {
+	inputPath := fmt.Sprintf("./tests/single/%s/input.html", testDir)
+	expectPath := fmt.Sprintf("./tests/single/%s/expect.txt", testDir)
 	f, err := os.ReadFile(inputPath)
 	if err != nil {
 		return err
@@ -50,10 +48,10 @@ func runTestByNameDirName(t *testing.T, testDir string) error {
 
 func TestAll(t *testing.T) {
 	err := fungi.Process(
-		func() error { return runTestByNameDirName(t, "mesh") },
-		func() error { return runTestByNameDirName(t, "if") },
-		func() error { return runTestByNameDirName(t, "for") },
-		func() error { return runTestByNameDirName(t, "else") },
+		func() error { return testSingle(t, "mesh") },
+		func() error { return testSingle(t, "if") },
+		func() error { return testSingle(t, "for") },
+		func() error { return testSingle(t, "else") },
 	)
 	if err != nil {
 		panic(err)
@@ -62,32 +60,15 @@ func TestAll(t *testing.T) {
 
 func TestOne(t *testing.T) {
 
-	formFile := `
-        <form _component="LoginForm">
-            <label>Username</label>
-            <input type='text' />
-            <label>Password</label>
-            <input type='password' />
-            <SubmitButton text="Submit!"></SubmitButton>
-        </form>
+	// put the placeholder into a prop {{ SubmitButton("Submit!") }}
+	// then when we scan each element to get the props
+	// the placeholders will show up, get sorted, and then they will
+	// end up in our string builder series in the end
 
-        <button _component="SubmitButton">{{ text }}</button>
-    `
-
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(formFile))
+	compElms, err := gtml.ReadComponentElementsFromFile("./tests/multiple/placeholder/input.html")
 	if err != nil {
 		panic(err)
 	}
-
-	compElms := make([]gtml.Element, 0)
-
-	doc.Find("*[_component]").Each(func(i int, s *goquery.Selection) {
-		compElm, err := gtml.NewElement(s)
-		if err != nil {
-			panic(err)
-		}
-		compElms = append(compElms, compElm)
-	})
 
 	for _, elm := range compElms {
 

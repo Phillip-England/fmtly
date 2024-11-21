@@ -2,6 +2,7 @@ package gtml
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"strings"
 
@@ -270,10 +271,10 @@ func WalkAllElementNodes(elm Element, fn func(sel *goquery.Selection) error) err
 	return nil
 }
 
-func GetElementPlaceholders(component Element, allGtmlComponents []Element) ([]Placeholder, error) {
+func GetElementPlaceholders(elm Element, allElements []Element) ([]Placeholder, error) {
 	placeholders := make([]Placeholder, 0)
-	for _, sibling := range allGtmlComponents {
-		err := WalkAllElementNodes(component, func(sel *goquery.Selection) error {
+	for _, sibling := range allElements {
+		err := WalkAllElementNodes(elm, func(sel *goquery.Selection) error {
 			nodeName := goquery.NodeName(sel)
 			nodeHtml, err := gqpp.NewHtmlFromSelection(sel)
 			if err != nil {
@@ -281,7 +282,10 @@ func GetElementPlaceholders(component Element, allGtmlComponents []Element) ([]P
 			}
 			if nodeName == strings.ToLower(sibling.GetAttr()) {
 				sibling.Print()
-				place := NewPlaceholder(nodeName, nodeHtml, sibling)
+				place, err := NewPlaceholder(nodeHtml, sibling)
+				if err != nil {
+					return err
+				}
 				placeholders = append(placeholders, place)
 			}
 			return nil
@@ -291,6 +295,35 @@ func GetElementPlaceholders(component Element, allGtmlComponents []Element) ([]P
 		}
 	}
 	return placeholders, nil
+}
+
+func ReadComponentElementsFromFile(path string) ([]Element, error) {
+	elms := make([]Element, 0)
+	f, err := os.ReadFile(path)
+	if err != nil {
+		return elms, err
+	}
+	fStr := string(f)
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(fStr))
+	if err != nil {
+		return elms, err
+	}
+	var potErr error
+	doc.Find("*").Each(func(i int, sel *goquery.Selection) {
+		_, exists := sel.Attr(KeyElementComponent)
+		if exists {
+			elm, err := NewElement(sel)
+			if err != nil {
+				potErr = err
+				return
+			}
+			elms = append(elms, elm)
+		}
+	})
+	if potErr != nil {
+		return elms, potErr
+	}
+	return elms, nil
 }
 
 // ##==================================================================
