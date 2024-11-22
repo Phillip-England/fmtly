@@ -142,11 +142,32 @@ func GetElementParams(elm Element) ([]Param, error) {
 	}
 	strParams := make([]Param, 0)
 	for _, prop := range elm.GetProps() {
+		if prop.GetType() == KeyPropPlaceholder {
+			val := prop.GetValue()
+			openIndex := strings.Index(val, "(")
+			val = val[openIndex+1:]
+			val = purse.ReplaceLastInstanceOf(val, ")", "")
+			val = purse.Squeeze(val)
+			parts := strings.Split(val, ",")
+			for _, part := range parts {
+				if strings.Contains(part, "PARAM.") {
+					part = strings.Replace(part, "PARAM.", "", 1)
+					param, err := NewParam(part, "string")
+					if err != nil {
+						return params, err
+					}
+					if !slices.Contains(strParams, param) && purse.MustEqualOneOf(prop.GetType(), KeyPropForStr, KeyPropPlaceholder) {
+						strParams = append(strParams, param)
+					}
+				}
+			}
+			continue
+		}
 		param, err := NewParam(prop.GetValue(), "string")
 		if err != nil {
 			return params, err
 		}
-		if !slices.Contains(strParams, param) && prop.GetType() == KeyPropStr {
+		if !slices.Contains(strParams, param) && purse.MustEqualOneOf(prop.GetType(), KeyPropStr, KeyPropPlaceholder) {
 			strParams = append(strParams, param)
 		}
 	}
@@ -242,7 +263,7 @@ func GetElementProps(elm Element) ([]Prop, error) {
 	}
 	strProps := purse.ScanBetweenSubStrs(elmHtml, "{{", "}}")
 	for _, strProp := range strProps {
-		prop, err := NewProp(strProp)
+		prop, err := NewProp(strProp, elm.GetCompNames())
 		if err != nil {
 			return props, err
 		}
@@ -286,6 +307,12 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 		return "", err
 	}
 	err = WalkElementProps(elm, func(prop Prop) error {
+		if prop.GetType() == KeyPropPlaceholder {
+			val := strings.ReplaceAll(prop.GetValue(), "PARAM.", "")
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, val)
+			clay = strings.Replace(clay, prop.GetRaw(), call, 1)
+			return nil
+		}
 		call := fmt.Sprintf("%s.WriteString(%s)", builderName, prop.GetValue())
 		clay = strings.Replace(clay, prop.GetRaw(), call, 1)
 		return nil
@@ -310,6 +337,16 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 			clay = strings.Replace(clay, htmlPart, "", 1)
 		}
 		endBuilderIndex := strings.Index(clay, ")")
+		loopCount := 0
+		for {
+			loopCount++
+			nextChar := string(clay[endBuilderIndex+loopCount])
+			if nextChar == ")" {
+				endBuilderIndex = endBuilderIndex + loopCount
+				continue
+			}
+			break
+		}
 		builderPart := clay[:endBuilderIndex+1]
 		series += builderPart + "\n"
 		clay = strings.Replace(clay, builderPart, "", 1)
@@ -436,7 +473,7 @@ func ReadComponentElementNamesFromFile(path string) ([]string, error) {
 func ReplaceElementPlaceholders(elm Element) (Element, error) {
 	elmHtml := elm.GetHtml()
 	err := WalkElementPlaceholders(elm, func(placeholder Placeholder) error {
-		elmHtml = strings.Replace(elmHtml, placeholder.GetHtml(), placeholder.GetFuncCall(), 1)
+		elmHtml = strings.Replace(elmHtml, placeholder.GetHtml(), "{{ "+placeholder.GetFuncCall()+" }}", 1)
 		return nil
 	})
 	newSel, err := gqpp.NewSelectionFromStr(elmHtml)

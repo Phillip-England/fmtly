@@ -77,7 +77,11 @@ func TestOne(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		elm.Print()
+		fn, err := gtml.NewFunc(elm)
+		if err != nil {
+			panic(err)
+		}
+		fn.Print()
 	}
 
 }

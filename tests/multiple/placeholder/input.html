@@ -1,11 +1,12 @@
 <div _component="GreetingCard">
-    <Greeting name="{{ firstGuestName }}"></Greeting>
-    <Greeting name="{{ secondGuestName }}"></Greeting>
+    <h1>{{ name }}</h1>
+    <Greeting name="{{ firstGuestName }}" age="20"></Greeting>
+    <Greeting name="{{ secondGuestName }}" age="22"></Greeting>
     <div _for="guest of guests []string">
-        <Greeting name="@guest.Name"></Greeting>
+        <Greeting name="@guest.Name" age="20"></Greeting>
     </div>
 </div>
 
-<div _component="Greeting">Hello, {{ name }}!</div>
+<div _component="Greeting">Hello, {{ name }}! {{ age }}</div>
 
 <GreetingCard _component="GreetJackAndBob" firstGuestName="bob" secondGuestName="jack"></GreetingCard>

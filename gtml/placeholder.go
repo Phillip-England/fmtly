@@ -102,15 +102,15 @@ func (place *PlaceholderComponent) initFuncParamSlice() error {
 		}
 		if attr.GetType() == KeyAttrPlaceholder {
 			sqVal := purse.Squeeze(attr.GetValue())
-			sqVal = strings.Replace(sqVal, "{{", "{{ "+KeyPropPlaceholder+" ", 1)
-			sqVal = strings.Replace(sqVal, "}}", " }}", 1)
-			funcParamSlice = append(funcParamSlice, sqVal)
+			sqVal = strings.Replace(sqVal, "{{", "", 1)
+			sqVal = strings.Replace(sqVal, "}}", "", 1)
+			funcParamSlice = append(funcParamSlice, "PARAM."+sqVal)
 			continue
 		}
 		funcParamSlice = append(funcParamSlice, attr.GetValue())
 	}
 	place.FuncParamSlice = funcParamSlice
-	place.FuncParamStr = strings.Join(funcParamSlice, ",")
+	place.FuncParamStr = strings.Join(funcParamSlice, ", ")
 	return nil
 }
 
