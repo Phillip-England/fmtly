@@ -13,15 +13,12 @@ import (
 // ##==================================================================
 type Placeholder interface {
 	Print()
-	GetFoundAs() string
-	GetPointingTo() Element
+	GetHtml() string
+	GetFuncCall() string
 }
 
-func NewPlaceholder(foundAsHtml string, pointingTo Element) (Placeholder, error) {
-	if pointingTo.GetType() != KeyElementComponent {
-		return nil, fmt.Errorf("a placeholder must point to a valid _component element: %s", pointingTo.GetHtml())
-	}
-	place, err := NewPlaceholderComponent(foundAsHtml, pointingTo)
+func NewPlaceholder(foundAsHtml string, name string) (Placeholder, error) {
+	place, err := NewPlaceholderComponent(foundAsHtml, name)
 	if err != nil {
 		return nil, err
 	}
@@ -30,34 +27,28 @@ func NewPlaceholder(foundAsHtml string, pointingTo Element) (Placeholder, error)
 
 // ##==================================================================
 type PlaceholderComponent struct {
-	Name              string
-	NodeName          string
-	Html              string
-	PointingTo        Element
-	Params            []Param
-	Attrs             []Attr
-	FuncParamSlice    []string
-	ComponentFuncCall string
+	Name           string
+	NodeName       string
+	Html           string
+	Attrs          []Attr
+	FuncParamSlice []string
+	FuncParamStr   string
+	FuncCall       string
 }
 
-func NewPlaceholderComponent(foundAsHtml string, pointingTo Element) (*PlaceholderComponent, error) {
+func NewPlaceholderComponent(foundAsHtml string, name string) (*PlaceholderComponent, error) {
 	place := &PlaceholderComponent{
-		PointingTo: pointingTo,
+		Name: name,
 	}
 	err := fungi.Process(
 		func() error { return place.initNodeName(foundAsHtml) },
-		func() error { return place.initName() },
 		func() error { return place.initHtml(foundAsHtml) },
-		func() error { return place.initParamNames() },
 		func() error { return place.initAttrs() },
 		func() error { return place.initFuncParamSlice() },
 		func() error { return place.initComponentFuncCall() },
 	)
 	if err != nil {
 		return nil, err
-	}
-	for _, attr := range place.Attrs {
-		fmt.Println(attr.GetType())
 	}
 	return place, nil
 }
@@ -72,27 +63,8 @@ func (place *PlaceholderComponent) initNodeName(foundAsHtml string) error {
 	return nil
 }
 
-func (place *PlaceholderComponent) initName() error {
-	nameAttr := place.PointingTo.GetAttr()
-	place.Name = nameAttr
-	return nil
-}
-
 func (place *PlaceholderComponent) initHtml(foundAsHtml string) error {
-	htmlStr := purse.ReplaceFirstInstanceOf(foundAsHtml, place.NodeName, place.Name)
-	htmlStr = purse.ReplaceLastInstanceOf(htmlStr, place.NodeName, place.Name)
-	place.Html = htmlStr
-	return nil
-}
-
-func (place *PlaceholderComponent) initParamNames() error {
-	params, err := GetElementParams(place.PointingTo)
-	if err != nil {
-		return err
-	}
-	for _, param := range params {
-		place.Params = append(place.Params, param)
-	}
+	place.Html = foundAsHtml
 	return nil
 }
 
@@ -115,20 +87,41 @@ func (place *PlaceholderComponent) initAttrs() error {
 
 func (place *PlaceholderComponent) initFuncParamSlice() error {
 	funcParamSlice := make([]string, 0)
-
+	for _, attr := range place.Attrs {
+		if attr.GetType() == KeyAttrEmpty {
+			continue
+		}
+		if attr.GetType() == KeyAttrStr {
+			funcParamSlice = append(funcParamSlice, `"`+attr.GetValue()+`"`)
+			continue
+		}
+		if attr.GetType() == KeyAttrAtParam {
+			val := attr.GetValue()[1:]
+			funcParamSlice = append(funcParamSlice, val)
+			continue
+		}
+		if attr.GetType() == KeyAttrPlaceholder {
+			sqVal := purse.Squeeze(attr.GetValue())
+			sqVal = strings.Replace(sqVal, "{{", "{{ "+KeyPropPlaceholder+" ", 1)
+			sqVal = strings.Replace(sqVal, "}}", " }}", 1)
+			funcParamSlice = append(funcParamSlice, sqVal)
+			continue
+		}
+		funcParamSlice = append(funcParamSlice, attr.GetValue())
+	}
 	place.FuncParamSlice = funcParamSlice
+	place.FuncParamStr = strings.Join(funcParamSlice, ",")
 	return nil
 }
 
 func (place *PlaceholderComponent) initComponentFuncCall() error {
-	paramStr := strings.Join(place.FuncParamSlice, ", ")
-	call := fmt.Sprintf("%s(%s)", place.Name, paramStr)
-	place.ComponentFuncCall = call
+	call := fmt.Sprintf("%s(%s)", place.Name, place.FuncParamStr)
+	place.FuncCall = call
 	return nil
 }
-func (place *PlaceholderComponent) Print()                 { fmt.Println(place.Html) }
-func (place *PlaceholderComponent) GetFoundAs() string     { return place.Html }
-func (place *PlaceholderComponent) GetPointingTo() Element { return place.PointingTo }
+func (place *PlaceholderComponent) Print()              { fmt.Println(place.Html) }
+func (place *PlaceholderComponent) GetHtml() string     { return place.Html }
+func (place *PlaceholderComponent) GetFuncCall() string { return place.FuncCall }
 
 // ##==================================================================
 

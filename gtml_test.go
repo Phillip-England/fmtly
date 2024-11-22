@@ -23,7 +23,7 @@ func testSingle(t *testing.T, testDir string) error {
 	if err != nil {
 		return err
 	}
-	elm, err := gtml.NewElement(sel)
+	elm, err := gtml.NewElement(sel, []string{})
 	if err != nil {
 		return err
 	}
@@ -60,27 +60,24 @@ func TestAll(t *testing.T) {
 
 func TestOne(t *testing.T) {
 
-	// put the placeholder into a prop {{ SubmitButton("Submit!") }}
-	// then when we scan each element to get the props
-	// the placeholders will show up, get sorted, and then they will
-	// end up in our string builder series in the end
+	path := "./tests/multiple/placeholder/input.html"
 
-	compElms, err := gtml.ReadComponentElementsFromFile("./tests/multiple/placeholder/input.html")
+	compNames, err := gtml.ReadComponentElementNamesFromFile(path)
 	if err != nil {
 		panic(err)
 	}
 
-	err = gtml.InitElementPlaceholders(compElms)
+	compElms, err := gtml.ReadComponentElementsFromFile(path, compNames)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, elm := range compElms {
-		fn, err := gtml.NewFunc(elm)
+		elm, err := gtml.ReplaceElementPlaceholders(elm)
 		if err != nil {
 			panic(err)
 		}
-		fn.Print()
+		elm.Print()
 	}
 
 }

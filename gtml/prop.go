@@ -9,9 +9,10 @@ import (
 
 // ##==================================================================
 const (
-	KeyPropForType = "FORTYPE"
-	KeyPropForStr  = "FORSTR"
-	KeyPropStr     = "STR"
+	KeyPropForType     = "FORTYPE"
+	KeyPropForStr      = "FORSTR"
+	KeyPropStr         = "STR"
+	KeyPropPlaceholder = "PROPPLACEHOLDER"
 )
 
 // ##==================================================================
