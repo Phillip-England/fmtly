@@ -30,10 +30,6 @@ func NewFunc(elm Element) (Func, error) {
 	return nil, fmt.Errorf("provided element does not corrospond to a valid GoFunc: %s", elm.GetHtml())
 }
 
-func PrintGoFunc(fn Func) {
-	fmt.Println(fn.GetData())
-}
-
 // ##==================================================================
 type GoComponentFunc struct {
 	Element  Element

@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/gqpp"
+	"github.com/phillip-england/purse"
 )
 
 // ##==================================================================
@@ -29,6 +31,7 @@ func NewPlaceholder(foundAsHtml string, pointingTo Element) (Placeholder, error)
 // ##==================================================================
 type PlaceholderComponent struct {
 	Name              string
+	NodeName          string
 	Html              string
 	PointingTo        Element
 	Params            []Param
@@ -39,11 +42,12 @@ type PlaceholderComponent struct {
 
 func NewPlaceholderComponent(foundAsHtml string, pointingTo Element) (*PlaceholderComponent, error) {
 	place := &PlaceholderComponent{
-		Html:       foundAsHtml,
 		PointingTo: pointingTo,
 	}
 	err := fungi.Process(
+		func() error { return place.initNodeName(foundAsHtml) },
 		func() error { return place.initName() },
+		func() error { return place.initHtml(foundAsHtml) },
 		func() error { return place.initParamNames() },
 		func() error { return place.initAttrs() },
 		func() error { return place.initFuncParamSlice() },
@@ -52,13 +56,32 @@ func NewPlaceholderComponent(foundAsHtml string, pointingTo Element) (*Placehold
 	if err != nil {
 		return nil, err
 	}
-	place.Print()
+	for _, attr := range place.Attrs {
+		fmt.Println(attr.GetType())
+	}
 	return place, nil
+}
+
+func (place *PlaceholderComponent) initNodeName(foundAsHtml string) error {
+	sel, err := gqpp.NewSelectionFromStr(foundAsHtml)
+	if err != nil {
+		return err
+	}
+	nodeName := goquery.NodeName(sel)
+	place.NodeName = nodeName
+	return nil
 }
 
 func (place *PlaceholderComponent) initName() error {
 	nameAttr := place.PointingTo.GetAttr()
 	place.Name = nameAttr
+	return nil
+}
+
+func (place *PlaceholderComponent) initHtml(foundAsHtml string) error {
+	htmlStr := purse.ReplaceFirstInstanceOf(foundAsHtml, place.NodeName, place.Name)
+	htmlStr = purse.ReplaceLastInstanceOf(htmlStr, place.NodeName, place.Name)
+	place.Html = htmlStr
 	return nil
 }
 
@@ -103,14 +126,7 @@ func (place *PlaceholderComponent) initComponentFuncCall() error {
 	place.ComponentFuncCall = call
 	return nil
 }
-
-func (place *PlaceholderComponent) Print() {
-	fmt.Println("Name: " + place.Name)
-	fmt.Println("Html: " + place.Html)
-	fmt.Print("PointingTo: ")
-	place.PointingTo.Print()
-	fmt.Println("ComponentFuncCall: " + place.ComponentFuncCall)
-}
+func (place *PlaceholderComponent) Print()                 { fmt.Println(place.Html) }
 func (place *PlaceholderComponent) GetFoundAs() string     { return place.Html }
 func (place *PlaceholderComponent) GetPointingTo() Element { return place.PointingTo }
 

@@ -10,6 +10,8 @@ github.com/phillip-england/gqpp v1.0.1 h1:cQTELz7oyi1dGFsIYGyRliWpIQqD01Pijbm0iH
 github.com/phillip-england/gqpp v1.0.1/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
 github.com/phillip-england/purse v1.0.1 h1:YQvG/1Mj7UiyQcgc5sMhh22U2wDmDb8+Fai9YZSYeLk=
 github.com/phillip-england/purse v1.0.1/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
+github.com/phillip-england/purse v1.0.2 h1:NGO24e68WkOEM8b71kLiu7z509B3/xEkxB3iovl8JpA=
+github.com/phillip-england/purse v1.0.2/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=

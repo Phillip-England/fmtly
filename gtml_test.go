@@ -70,22 +70,17 @@ func TestOne(t *testing.T) {
 		panic(err)
 	}
 
-	for _, elm := range compElms {
+	err = gtml.InitElementPlaceholders(compElms)
+	if err != nil {
+		panic(err)
+	}
 
-		_, err = gtml.GetElementPlaceholders(elm, compElms)
+	for _, elm := range compElms {
+		fn, err := gtml.NewFunc(elm)
 		if err != nil {
 			panic(err)
 		}
-
-		// for _, place := range placeholders {
-		// 	elm.Print()
-		// 	place.Print()
-		// }
-
-		// _, err = gtml.NewFunc(elm)
-		// if err != nil {
-		// 	panic(err)
-		// }
+		fn.Print()
 	}
 
 }

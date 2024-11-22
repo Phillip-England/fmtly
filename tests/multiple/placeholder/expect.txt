@@ -1,0 +1,17 @@
+func GreetingCard(firstGuestName string, secondGuestName string) string {
+    var builder strings.builder
+    builder.WriteString(`<div _component="GreetingCard">`)
+    builder.WriteString(Greeting(firstName))
+    builder.WriteString(Greeting(secondName))
+    builder.WriteString(secondGuestName)
+    builder.WriteString(`</div>`)
+    return builder.String()
+}
+
+func Greeting(name string) string {
+    var builder strings.builder
+    builder.WriteString(`<div _component="Greeting">Hello, `)
+    builder.WriteString(name)
+    builder.WriteString(`!</div>`)
+    return builder.String()
+}
