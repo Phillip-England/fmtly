@@ -10,3 +10,18 @@
 <div _component="Greeting">Hello, {{ name }}! {{ age }}</div>
 
 <GreetingCard _component="GreetJackAndBob" firstGuestName="bob" secondGuestName="jack"></GreetingCard>
+
+
+NEED TO CATCH THIS KIND OF OUTPUT:
+
+
+func GreetJackAndBob() string {
+    var builder strings.Builder
+    
+    ==========================================// 
+
+    THE LINE BELOW SHOULD ALSO BE RENDERED AS A FUNC CALL TO GreetingCard
+
+    builder.WriteString(`<greetingcard _component="GreetJackAndBob" firstguestname="bob" secondguestname="jack"></greetingcard>`)
+    return builder.String()
+}
