@@ -554,7 +554,7 @@ func (v *VarGoSlot) initData() error {
 %s
 %s
 	return %s.String()
-})`, v.VarName, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
+});`, v.VarName, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
 	v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }

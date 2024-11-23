@@ -10,12 +10,12 @@ import (
 
 // ##==================================================================
 const (
-	KeyAttrPlaceholder = "ATTRPLACEHOLDER"
-	KeyAttrEmpty       = "ATTREMPTY"
-	KeyAttrInt         = "ATTRINT"
-	KeyAttrBool        = "ATTRBOOL"
-	KeyAttrStr         = "ATTRSTR"
-	KeyAttrAtParam     = "ATTRATPARAM"
+	KeyAttrEmpty     = "ATTREMPTY"
+	KeyAttrInt       = "ATTRINT"
+	KeyAttrBool      = "ATTRBOOL"
+	KeyAttrStr       = "ATTRSTR"
+	KeyAttrAtParam   = "ATTRATPARAM"
+	KeyAttrInitParam = "ATTRINITPARAM"
 )
 
 // ##==================================================================
@@ -44,15 +44,15 @@ func NewAttr(key string, value string) (Attr, error) {
 		}
 		return attr, nil
 	}
-	if strings.HasPrefix(sqValue, "{{") && strings.HasSuffix(sqValue, "}}") {
-		attr, err := NewAttrPlaceholder(key, value)
+	if sqValue == "true" || sqValue == "false" {
+		attr, err := NewAttrBool(key, value)
 		if err != nil {
 			return nil, err
 		}
 		return attr, nil
 	}
-	if sqValue == "true" || sqValue == "false" {
-		attr, err := NewAttrBool(key, value)
+	if strings.HasPrefix(sqValue, "{{") && strings.HasSuffix(sqValue, "}}") {
+		attr, err := NewAttrInitParam(key, value)
 		if err != nil {
 			return nil, err
 		}
@@ -73,28 +73,6 @@ func NewAttr(key string, value string) (Attr, error) {
 	}
 	return attr, nil
 }
-
-// ##==================================================================
-type AttrPlaceholder struct {
-	Key   string
-	Value string
-	Type  string
-}
-
-func NewAttrPlaceholder(key string, value string) (*AttrPlaceholder, error) {
-	attr := &AttrPlaceholder{
-		Key:   key,
-		Value: value,
-		Type:  KeyAttrPlaceholder,
-	}
-	return attr, nil
-}
-
-func (attr *AttrPlaceholder) Print()                            { fmt.Println(attr.Key + ":" + attr.Value) }
-func (attr *AttrPlaceholder) GetKey() string                    { return attr.Key }
-func (attr *AttrPlaceholder) GetValue() string                  { return attr.Value }
-func (attr *AttrPlaceholder) GetKeyValuePair() (string, string) { return attr.Key, attr.Value }
-func (attr *AttrPlaceholder) GetType() string                   { return attr.Type }
 
 // ##==================================================================
 type AttrEmpty struct {
@@ -125,8 +103,8 @@ type AttrAtParam struct {
 	Type  string
 }
 
-func NewAttrAtParam(key string, value string) (*AttrEmpty, error) {
-	attr := &AttrEmpty{
+func NewAttrAtParam(key string, value string) (*AttrAtParam, error) {
+	attr := &AttrAtParam{
 		Key:   key,
 		Value: value,
 		Type:  KeyAttrAtParam,
@@ -147,8 +125,8 @@ type AttrStr struct {
 	Type  string
 }
 
-func NewAttrStr(key string, value string) (*AttrEmpty, error) {
-	attr := &AttrEmpty{
+func NewAttrStr(key string, value string) (*AttrStr, error) {
+	attr := &AttrStr{
 		Key:   key,
 		Value: value,
 		Type:  KeyAttrStr,
@@ -169,8 +147,8 @@ type AttrBool struct {
 	Type  string
 }
 
-func NewAttrBool(key string, value string) (*AttrEmpty, error) {
-	attr := &AttrEmpty{
+func NewAttrBool(key string, value string) (*AttrBool, error) {
+	attr := &AttrBool{
 		Key:   key,
 		Value: value,
 		Type:  KeyAttrBool,
@@ -191,8 +169,8 @@ type AttrInt struct {
 	Type  string
 }
 
-func NewAttrInt(key string, value string) (*AttrEmpty, error) {
-	attr := &AttrEmpty{
+func NewAttrInt(key string, value string) (*AttrInt, error) {
+	attr := &AttrInt{
 		Key:   key,
 		Value: value,
 		Type:  KeyAttrInt,
@@ -205,3 +183,30 @@ func (attr *AttrInt) GetKey() string                    { return attr.Key }
 func (attr *AttrInt) GetValue() string                  { return attr.Value }
 func (attr *AttrInt) GetKeyValuePair() (string, string) { return attr.Key, attr.Value }
 func (attr *AttrInt) GetType() string                   { return attr.Type }
+
+// ##==================================================================
+type AttrInitParam struct {
+	Key   string
+	Value string
+	Type  string
+}
+
+func NewAttrInitParam(key string, value string) (*AttrInitParam, error) {
+	attr := &AttrInitParam{
+		Key:   key,
+		Value: value,
+		Type:  KeyAttrInitParam,
+	}
+	return attr, nil
+}
+
+func (attr *AttrInitParam) Print()         { fmt.Println(attr.Key + ":" + attr.Value) }
+func (attr *AttrInitParam) GetKey() string { return attr.Key }
+func (attr *AttrInitParam) GetValue() string {
+	val := attr.Value
+	val = purse.Squeeze(val)
+	val = purse.RemoveAllSubStr(val, "{{", "}}")
+	return val
+}
+func (attr *AttrInitParam) GetKeyValuePair() (string, string) { return attr.Key, attr.Value }
+func (attr *AttrInitParam) GetType() string                   { return attr.Type }

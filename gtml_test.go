@@ -67,20 +67,54 @@ func TestOne(t *testing.T) {
 		panic(err)
 	}
 
-	elm := compElms[0]
-	elm, err = gtml.MarkElementPlaceholders(elm)
-	if err != nil {
-		panic(err)
-	}
-	// _, err = gtml.NewFunc(elm)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	for _, elm := range compElms {
 
-	fn, err := gtml.NewFunc(elm)
-	if err != nil {
-		panic(err)
+		elm, err = gtml.MarkElementPlaceholders(elm)
+		if err != nil {
+			panic(err)
+		}
+		// _, err = gtml.NewFunc(elm)
+		// if err != nil {
+		// 	panic(err)
+		// }
+
+		fn, err := gtml.NewFunc(elm)
+		if err != nil {
+			panic(err)
+		}
+		fn.Print()
 	}
-	fn.Print()
 
 }
+
+// func GreetingCard(name string, colors []string) string {
+// 	var builder strings.Builder
+// 	greetingPlaceholder := func() string {
+// 		messageSlot := gtmlSlot(func() string {
+// 			var messageBuilder strings.Builder
+// 			messageBuilder.WriteString(`<div _slot="message"><p>testin!</p></div>`)
+// 			return messageBuilder.String()
+// 		})
+// 		loopSlot := gtmlSlot(func() string {
+// 			var loopBuilder strings.Builder
+// 			colorFor := gtmlFor(colors, func(i int, color string) string {
+// 				var colorBuilder strings.Builder
+// 				colorBuilder.WriteString(`<ul _for="color of colors []string"><li>`)
+// 				colorBuilder.WriteString(color)
+// 				colorBuilder.WriteString(`</li></ul>`)
+// 				return colorBuilder.String()
+// 			})
+// 			loopBuilder.WriteString(`<div _slot="loop">`)
+// 			loopBuilder.WriteString(colorFor)
+// 			loopBuilder.WriteString(`</div>`)
+// 			return loopBuilder.String()
+// 		})
+// 		return Greeting(firstGuestName, 20, messageSlot, loopSlot)
+// 	}
+// 	builder.WriteString(`<div _component="GreetingCard"><h1>`)
+// 	builder.WriteString(name)
+// 	builder.WriteString(`</h1>`)
+// 	builder.WriteString(greetingPlaceholder())
+// 	builder.WriteString(`</div>`)
+// 	return builder.String()
+// }
