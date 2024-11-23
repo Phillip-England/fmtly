@@ -343,7 +343,8 @@ type VarGoPlaceholder struct {
 	Attrs         []Attr
 	AttrsCalledAs []Attr
 	ParamStr      string
-	CallParams    string
+	CallParams    []string
+	CallParamStr  string
 }
 
 func NewVarGoPlaceholder(elm Element) (*VarGoPlaceholder, error) {
@@ -448,29 +449,38 @@ func (v *VarGoPlaceholder) initBuilderSeries() error {
 }
 
 func (v *VarGoPlaceholder) initCallParams() error {
-	callParams := make([]string, 0)
 	for _, attr := range v.AttrsCalledAs {
-		callParams = append(callParams, attr.GetValue())
+		v.CallParams = append(v.CallParams, "ATTRID"+attr.GetKey()+"ATTRID"+attr.GetValue())
 	}
-	v.CallParams = strings.Join(callParams, ", ")
-	return nil
-}
-
-func (v *VarGoPlaceholder) initData() error {
-	varNames := make([]string, 0)
 	vars, err := GetElementVars(v.Element)
 	if err != nil {
 		return err
 	}
-	for _, v := range vars {
-		varNames = append(varNames, v.GetVarName())
+	for _, inner := range vars {
+		if inner.GetType() == KeyVarGoSlot {
+			varName := inner.GetVarName()
+			i := strings.Index(varName, "Slot")
+			if i == -1 {
+				return fmt.Errorf("_slot element found with a VarName which doesn't end in 'Slot' you need to check NewVarGoSlot")
+			}
+			firstPart := varName[:i]
+			secondPart := varName[i:]
+			firstPart = "ATTRID" + firstPart + "ATTRID"
+			v.CallParams = append(v.CallParams, firstPart+secondPart)
+			continue
+		}
+		v.CallParams = append(v.CallParams, inner.GetVarName())
 	}
-	varNameStr := strings.Join(varNames, ", ")
+	v.CallParamStr = strings.Join(v.CallParams, ", ")
+	return nil
+}
+
+func (v *VarGoPlaceholder) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := func() string {
 %s
-	return %s(%s, %s)
-}`, v.VarName, v.WriteVarsAs, v.ComponentName, v.CallParams, varNameStr))
+	return %s(%s)
+}`, v.VarName, v.WriteVarsAs, v.ComponentName, v.CallParamStr))
 	v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }
