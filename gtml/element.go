@@ -398,7 +398,15 @@ func WalkAllElementNodesWithoutChildren(elm Element, fn func(sel *goquery.Select
 
 func GetElementPlaceholders(elm Element, compNames []string) ([]Placeholder, error) {
 	placeholders := make([]Placeholder, 0)
+	elmNodeName := goquery.NodeName(elm.GetSelection())
 	for _, name := range compNames {
+		if strings.ToLower(name) == elmNodeName {
+			place, err := NewPlaceholder(elm.GetHtml(), name)
+			if err != nil {
+				return nil, err
+			}
+			placeholders = append(placeholders, place)
+		}
 		err := WalkAllElementNodesWithoutChildren(elm, func(sel *goquery.Selection) error {
 			nodeName := goquery.NodeName(sel)
 			nodeHtml, err := gqpp.NewHtmlFromSelection(sel)

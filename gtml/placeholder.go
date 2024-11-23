@@ -88,6 +88,9 @@ func (place *PlaceholderComponent) initAttrs() error {
 func (place *PlaceholderComponent) initFuncParamSlice() error {
 	funcParamSlice := make([]string, 0)
 	for _, attr := range place.Attrs {
+		if attr.GetKey() == KeyElementComponent {
+			continue
+		}
 		if attr.GetType() == KeyAttrEmpty {
 			continue
 		}
