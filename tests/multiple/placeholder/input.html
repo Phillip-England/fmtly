@@ -1,12 +1,19 @@
 <div _component="GreetingCard">
     <h1>{{ name }}</h1>
-    <Greeting name="{{ firstGuestName }}" age="20"></Greeting>
-    <Greeting name="{{ secondGuestName }}" age="22"></Greeting>
-    <div _for="guest of guests []string">
-        <Greeting name="@guest.Name" age="20"></Greeting>
-    </div>
+    <Greeting name="{{ firstGuestName }}" age="20">
+        <div _slot="test">
+            <ul _for="color of colors []string">
+                <li>{{ item.Name }}</li>
+            </ul>
+            <p>testin!</p>
+        </div>
+    </Greeting>
 </div>
 
-<div _component="Greeting">Hello, {{ name }}! {{ age }}</div>
+<div _component="Greeting">
+    <h1>Hello, {{ name }}</h1> 
+    <p>you are {{ age }} years old!</p>
+    {{ slot "additions" }}
+</div>
 
 <GreetingCard _component="GreetJackAndBob" firstGuestName="bob" secondGuestName="jack"></GreetingCard>

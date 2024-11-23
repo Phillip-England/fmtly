@@ -8,6 +8,8 @@ github.com/phillip-england/gqpp v1.0.0 h1:TAuGz7i0QwXSU9d+8dkpv7n3QTsFuEzZmC7Ywp
 github.com/phillip-england/gqpp v1.0.0/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
 github.com/phillip-england/gqpp v1.0.1 h1:cQTELz7oyi1dGFsIYGyRliWpIQqD01Pijbm0iHSu09w=
 github.com/phillip-england/gqpp v1.0.1/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
+github.com/phillip-england/gqpp v1.0.2 h1:tGEurBLM4oUo2tBkcOq1td58+Pkqd+leTXjmXKt2M+s=
+github.com/phillip-england/gqpp v1.0.2/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
 github.com/phillip-england/purse v1.0.1 h1:YQvG/1Mj7UiyQcgc5sMhh22U2wDmDb8+Fai9YZSYeLk=
 github.com/phillip-england/purse v1.0.1/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
 github.com/phillip-england/purse v1.0.2 h1:NGO24e68WkOEM8b71kLiu7z509B3/xEkxB3iovl8JpA=

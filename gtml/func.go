@@ -32,12 +32,14 @@ func NewFunc(elm Element) (Func, error) {
 
 // ##==================================================================
 type GoComponentFunc struct {
-	Element  Element
-	Vars     []Var
-	Data     string
-	VarStr   string
-	Name     string
-	ParamStr string
+	Element      Element
+	Vars         []Var
+	BuilderNames []string
+	Data         string
+	VarStr       string
+	Name         string
+	ParamStr     string
+	BuilderCalls []string
 }
 
 func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
@@ -50,6 +52,8 @@ func NewGoComponentFunc(elm Element) (*GoComponentFunc, error) {
 		func() error { return fn.initVarStr() },
 		func() error { return fn.initParamStr() },
 		func() error { return fn.initData() },
+		func() error { return fn.initBuilderNames() },
+		func() error { return fn.initBuilderCalls() },
 	)
 	if err != nil {
 		return nil, err
@@ -61,7 +65,6 @@ func (fn *GoComponentFunc) GetData() string    { return fn.Data }
 func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
 func (fn *GoComponentFunc) GetVars() []Var     { return fn.Vars }
 func (fn *GoComponentFunc) Print()             { fmt.Println(fn.GetData()) }
-
 func (fn *GoComponentFunc) initName() error {
 	compAttr, err := gqpp.ForceElementAttr(fn.Element.GetSelection(), KeyElementComponent)
 	if err != nil {
@@ -106,6 +109,7 @@ func (fn *GoComponentFunc) initParamStr() error {
 	for _, param := range params {
 		paramStrs = append(paramStrs, param.GetStr())
 	}
+	paramStrs = purse.RemoveDuplicatesInSlice(paramStrs)
 	fn.ParamStr = strings.Join(paramStrs, ",")
 	return nil
 }
@@ -131,5 +135,26 @@ func %s(%s) string {
 	data = string(code)
 	data = purse.RemoveEmptyLines(data)
 	fn.Data = data
+	return nil
+}
+
+func (fn *GoComponentFunc) initBuilderNames() error {
+	fn.BuilderNames = append(fn.BuilderNames, "builder")
+	for _, v := range fn.Vars {
+		fn.BuilderNames = append(fn.BuilderNames, v.GetBuilderName())
+	}
+	return nil
+}
+
+func (fn *GoComponentFunc) initBuilderCalls() error {
+	lines := purse.MakeLines(fn.GetData())
+	for _, line := range lines {
+		line = purse.Flatten(line)
+		for _, name := range fn.BuilderNames {
+			if strings.HasPrefix(line, name+".") {
+				fn.BuilderCalls = append(fn.BuilderCalls, line)
+			}
+		}
+	}
 	return nil
 }
