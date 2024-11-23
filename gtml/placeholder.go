@@ -15,6 +15,7 @@ type Placeholder interface {
 	Print()
 	GetHtml() string
 	GetFuncCall() string
+	GetNodeName() string
 }
 
 func NewPlaceholder(foundAsHtml string, name string) (Placeholder, error) {
@@ -52,6 +53,11 @@ func NewPlaceholderComponent(foundAsHtml string, name string) (*PlaceholderCompo
 	}
 	return place, nil
 }
+
+func (place *PlaceholderComponent) Print()              { fmt.Println(place.Html) }
+func (place *PlaceholderComponent) GetHtml() string     { return place.Html }
+func (place *PlaceholderComponent) GetFuncCall() string { return place.FuncCall }
+func (place *PlaceholderComponent) GetNodeName() string { return place.NodeName }
 
 func (place *PlaceholderComponent) initNodeName(foundAsHtml string) error {
 	sel, err := gqpp.NewSelectionFromStr(foundAsHtml)
@@ -122,9 +128,6 @@ func (place *PlaceholderComponent) initComponentFuncCall() error {
 	place.FuncCall = call
 	return nil
 }
-func (place *PlaceholderComponent) Print()              { fmt.Println(place.Html) }
-func (place *PlaceholderComponent) GetHtml() string     { return place.Html }
-func (place *PlaceholderComponent) GetFuncCall() string { return place.FuncCall }
 
 // ##==================================================================
 
