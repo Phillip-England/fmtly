@@ -13,6 +13,7 @@ const (
 	KeyPropForStr      = "PROPFORSTR"
 	KeyPropStr         = "PROPSTR"
 	KeyPropPlaceholder = "PROPPLACEHOLDER"
+	KeyPropSlot        = "PROPSLOT"
 )
 
 // ##==================================================================
@@ -24,8 +25,27 @@ type Prop interface {
 }
 
 func NewProp(str string, compNames []string) (Prop, error) {
-	val := purse.Squeeze(str)
-	val = purse.RemoveAllSubStr(val, "{{", "}}")
+	val := purse.RemoveAllSubStr(str, "{{", "}}")
+	parts := strings.Split(val, " ")
+	filteredParts := make([]string, 0)
+	for _, part := range parts {
+		if len(part) == 0 {
+			continue
+		}
+		filteredParts = append(filteredParts, part)
+	}
+	parts = filteredParts
+	if len(parts) == 2 {
+		part1 := parts[0]
+		if part1 == "slot" {
+			prop, err := NewPropSlot(str, parts[1])
+			if err != nil {
+				return nil, err
+			}
+			return prop, nil
+		}
+	}
+	val = purse.Squeeze(val)
 	if val == "" {
 		return nil, fmt.Errorf("empty prop tag provided: %s", str)
 	}
@@ -33,7 +53,7 @@ func NewProp(str string, compNames []string) (Prop, error) {
 		openIndex := strings.Index(val, "(")
 		potentialName := val[:openIndex]
 		if purse.MustEqualOneOf(potentialName, compNames...) {
-			prop, err := NewPropPaceholder(str, val)
+			prop, err := NewPropPlaceholder(str, val)
 			if err != nil {
 				return nil, err
 			}
@@ -142,7 +162,7 @@ type PropPlaceholder struct {
 	Type  string
 }
 
-func NewPropPaceholder(raw string, val string) (*PropPlaceholder, error) {
+func NewPropPlaceholder(raw string, val string) (*PropPlaceholder, error) {
 	prop := &PropPlaceholder{
 		Raw:   raw,
 		Value: val,
@@ -159,6 +179,28 @@ func (prop *PropPlaceholder) Print() {
 }
 
 // ##==================================================================
+
+type PropSlot struct {
+	Raw   string
+	Value string
+	Type  string
+}
+
+func NewPropSlot(raw string, val string) (*PropSlot, error) {
+	prop := &PropSlot{
+		Raw:   raw,
+		Value: val,
+		Type:  KeyPropSlot,
+	}
+	return prop, nil
+}
+
+func (prop *PropSlot) GetRaw() string   { return prop.Raw }
+func (prop *PropSlot) GetValue() string { return prop.Value }
+func (prop *PropSlot) GetType() string  { return prop.Type }
+func (prop *PropSlot) Print() {
+	fmt.Println(fmt.Sprintf("raw: %s\nvalue: %s\ntype: %s", prop.Raw, prop.Value, prop.Type))
+}
 
 // ##==================================================================
 

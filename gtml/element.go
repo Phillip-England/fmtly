@@ -164,32 +164,11 @@ func GetElementParams(elm Element) ([]Param, error) {
 	}
 	strParams := make([]Param, 0)
 	for _, prop := range elm.GetProps() {
-		if prop.GetType() == KeyPropPlaceholder {
-			val := prop.GetValue()
-			openIndex := strings.Index(val, "(")
-			val = val[openIndex+1:]
-			val = purse.ReplaceLastInstanceOf(val, ")", "")
-			val = purse.Squeeze(val)
-			parts := strings.Split(val, ",")
-			for _, part := range parts {
-				if strings.Contains(part, "PARAM.") {
-					part = strings.Replace(part, "PARAM.", "", 1)
-					param, err := NewParam(part, "string")
-					if err != nil {
-						return params, err
-					}
-					if !slices.Contains(strParams, param) && purse.MustEqualOneOf(prop.GetType(), KeyPropForStr, KeyPropPlaceholder) {
-						strParams = append(strParams, param)
-					}
-				}
-			}
-			continue
-		}
 		param, err := NewParam(prop.GetValue(), "string")
 		if err != nil {
 			return params, err
 		}
-		if !slices.Contains(strParams, param) && purse.MustEqualOneOf(prop.GetType(), KeyPropStr, KeyPropPlaceholder) {
+		if !slices.Contains(strParams, param) && purse.MustEqualOneOf(prop.GetType(), KeyPropStr, KeyPropSlot) {
 			strParams = append(strParams, param)
 		}
 	}

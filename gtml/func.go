@@ -2,7 +2,6 @@ package gtml
 
 import (
 	"fmt"
-	"go/format"
 	"strings"
 
 	"github.com/phillip-england/fungi"
@@ -128,11 +127,11 @@ func %s(%s) string {
 	return builder.String()
 }
 	`, fn.Name, fn.ParamStr, fn.VarStr, series))
-	code, err := format.Source([]byte(data))
-	if err != nil {
-		return err
-	}
-	data = string(code)
+	// code, err := format.Source([]byte(data))
+	// if err != nil {
+	// 	return err
+	// }
+	// data = string(code)
 	data = purse.RemoveEmptyLines(data)
 	fn.Data = data
 	return nil

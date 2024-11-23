@@ -56,3 +56,17 @@ func GreetingCard(name string) string {
 
 # Development Notes
 1. What if two elements have the same param name?
+
+<div _component="GreetingCard">
+    <h1>{{ name }}</h1>
+    <Greeting name="{{ firstGuestName }}" age="20">
+        <div _slot="test">
+            <ul _for="color of colors []string">
+                <li>{{ item.Name }}</li>
+            </ul>
+            <p>testin!</p>
+        </div>
+    </Greeting>
+</div>
+
+<GreetingCard _component="GreetJackAndBob" firstGuestName="bob" secondGuestName="jack"></GreetingCard>
