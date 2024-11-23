@@ -62,7 +62,7 @@ func GreetingCard(name string) string {
     <Greeting name="{{ firstGuestName }}" age="20">
         <div _slot="test">
             <ul _for="color of colors []string">
-                <li>{{ item.Name }}</li>
+                <li>{{ color }}</li>
             </ul>
             <p>testin!</p>
         </div>
@@ -70,3 +70,48 @@ func GreetingCard(name string) string {
 </div>
 
 <GreetingCard _component="GreetJackAndBob" firstGuestName="bob" secondGuestName="jack"></GreetingCard>
+
+messageSlot := gtmlSlot(func() string {
+    var messageBuilder strings.Builder
+    messageBuilder.WriteString(`<div _slot="message"><p>testin!</p></div>`)
+    return messageBuilder.String()
+})
+
+messageSlot := gtmlSlot(func() string {
+    var messageBuilder strings.Builder
+    messageBuilder.WriteString(`<div _slot="message"><p>testin!</p></div>`)
+    return messageBuilder.String()
+})  
+
+loopSlot := gtmlSlot(func() string {
+        var loopBuilder strings.Builder
+        colorFor := gtmlFor(colors, func(i int, color string) string {
+                var colorBuilder strings.Builder
+                colorBuilder.WriteString(`<ul _for="color of colors []string"><li>`)
+                colorBuilder.WriteString(color)
+                colorBuilder.WriteString(`</li></ul>`)
+                return colorBuilder.String()
+        })
+        loopBuilder.WriteString(`<div _slot="loop">`)
+        loopBuilder.WriteString(colorFor)
+        loopBuilder.WriteString(`</div>`)
+        return loopBuilder.String()
+})
+
+ loopSlot := gtmlSlot(func() string {
+        var loopBuilder strings.Builder
+        colorFor := gtmlFor(colors, func(i int, color string) string {
+                var colorBuilder strings.Builder
+                colorBuilder.WriteString(`<ul _for="color of colors []string"><li>`)
+                colorBuilder.WriteString(color)
+                colorBuilder.WriteString(`</li></ul>`)
+                return colorBuilder.String()
+        })
+        loopBuilder.WriteString(`<div _slot="loop">`)
+        loopBuilder.WriteString(colorFor)
+        loopBuilder.WriteString(`</div>`)
+        return loopBuilder.String()
+})
+
+
+

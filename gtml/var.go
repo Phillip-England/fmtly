@@ -353,7 +353,6 @@ func NewVarGoPlaceholder(elm Element) (*VarGoPlaceholder, error) {
 	err := fungi.Process(
 		func() error { return v.initBasicInfo() },
 		func() error { return v.initAttrs() },
-		func() error { return v.initParamStr() },
 		func() error { return v.initVars() },
 		func() error { return v.initWriteVarsAs() },
 		func() error { return v.initBuilderSeries() },
@@ -421,15 +420,6 @@ func (v *VarGoPlaceholder) initAttrs() error {
 	return nil
 }
 
-func (v *VarGoPlaceholder) initParamStr() error {
-	if v.Element.GetSelection().Children().Length() == 0 {
-		v.ParamStr = ""
-		return nil
-	}
-	v.ParamStr = "children ...string"
-	return nil
-}
-
 func (v *VarGoPlaceholder) initVars() error {
 	vars, err := GetElementVars(v.Element)
 	if err != nil {
@@ -477,10 +467,10 @@ func (v *VarGoPlaceholder) initData() error {
 	}
 	varNameStr := strings.Join(varNames, ", ")
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
-%s := func(%s) string {
+%s := func() string {
 %s
 	return %s(%s, %s)
-}`, v.VarName, v.ParamStr, v.WriteVarsAs, v.ComponentName, v.CallParams, varNameStr))
+}`, v.VarName, v.WriteVarsAs, v.ComponentName, v.CallParams, varNameStr))
 	v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }

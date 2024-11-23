@@ -287,6 +287,10 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 		}
 		varType := newVar.GetType()
 		if purse.MustEqualOneOf(varType, KeyVarGoElse, KeyVarGoFor, KeyVarGoIf, KeyVarGoPlaceholder, KeyVarGoSlot) {
+			if varType == KeyVarGoPlaceholder {
+				call := fmt.Sprintf("%s.WriteString(%s())", builderName, newVar.GetVarName())
+				clay = strings.Replace(clay, childHtml, call, 1)
+			}
 			call := fmt.Sprintf("%s.WriteString(%s)", builderName, newVar.GetVarName())
 			clay = strings.Replace(clay, childHtml, call, 1)
 		}
