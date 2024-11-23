@@ -45,37 +45,37 @@ func GetChildElementList() []string {
 	return []string{KeyElementFor, KeyElementIf, KeyElementElse}
 }
 
-func NewElement(sel *goquery.Selection, compNames []string) (Element, error) {
+func NewElement(htmlStr string, compNames []string) (Element, error) {
+	sel, err := gqpp.NewSelectionFromStr(htmlStr)
+	if err != nil {
+		return nil, err
+	}
 	match := gqpp.GetFirstMatchingAttr(sel, GetFullElementList()...)
 	switch match {
 	case KeyElementComponent:
-		elm, err := NewElementComponent(sel, compNames)
+		elm, err := NewElementComponent(htmlStr, sel, compNames)
 		if err != nil {
 			return nil, err
 		}
 		return elm, nil
 	case KeyElementFor:
-		elm, err := NewElementFor(sel, compNames)
+		elm, err := NewElementFor(htmlStr, sel, compNames)
 		if err != nil {
 			return nil, err
 		}
 		return elm, nil
 	case KeyElementIf:
-		elm, err := NewElementIf(sel, compNames)
+		elm, err := NewElementIf(htmlStr, sel, compNames)
 		if err != nil {
 			return nil, err
 		}
 		return elm, nil
 	case KeyElementElse:
-		elm, err := NewElementElse(sel, compNames)
+		elm, err := NewElementElse(htmlStr, sel, compNames)
 		if err != nil {
 			return nil, err
 		}
 		return elm, nil
-	}
-	htmlStr, err := gqpp.NewHtmlFromSelection(sel)
-	if err != nil {
-		return nil, err
 	}
 	return nil, fmt.Errorf("provided selection is not a valid element: %s", htmlStr)
 }
@@ -83,7 +83,8 @@ func NewElement(sel *goquery.Selection, compNames []string) (Element, error) {
 func WalkElementChildren(elm Element, fn func(child Element) error) error {
 	var potErr error
 	elm.GetSelection().Find("*").Each(func(i int, inner *goquery.Selection) {
-		child, err := NewElement(inner, elm.GetCompNames())
+		htmlStr, err := gqpp.NewHtmlFromSelection(inner)
+		child, err := NewElement(htmlStr, elm.GetCompNames())
 		if err != nil {
 			// skip elements which are not a valid Element
 		} else {
@@ -107,7 +108,12 @@ func WalkElementChildrenIncludingRoot(elm Element, fn func(child Element) error)
 	}
 	var potErr error
 	elm.GetSelection().Find("*").Each(func(i int, inner *goquery.Selection) {
-		child, err := NewElement(inner, elm.GetCompNames())
+		htmlStr, err := gqpp.NewHtmlFromSelection(inner)
+		if err != nil {
+			potErr = err
+			return
+		}
+		child, err := NewElement(htmlStr, elm.GetCompNames())
 		if err != nil {
 			// skip elements which are not a valid Element
 		} else {
@@ -398,15 +404,15 @@ func WalkAllElementNodesWithoutChildren(elm Element, fn func(sel *goquery.Select
 
 func GetElementPlaceholders(elm Element, compNames []string) ([]Placeholder, error) {
 	placeholders := make([]Placeholder, 0)
-	elmNodeName := goquery.NodeName(elm.GetSelection())
+	// elmNodeName := goquery.NodeName(elm.GetSelection())
 	for _, name := range compNames {
-		if strings.ToLower(name) == elmNodeName {
-			place, err := NewPlaceholder(elm.GetHtml(), name)
-			if err != nil {
-				return nil, err
-			}
-			placeholders = append(placeholders, place)
-		}
+		// if strings.ToLower(name) == elmNodeName {
+		// 	place, err := NewPlaceholder(elm.GetHtml(), name)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// 	placeholders = append(placeholders, place)
+		// }
 		err := WalkAllElementNodesWithoutChildren(elm, func(sel *goquery.Selection) error {
 			nodeName := goquery.NodeName(sel)
 			nodeHtml, err := gqpp.NewHtmlFromSelection(sel)
@@ -444,7 +450,12 @@ func ReadComponentElementsFromFile(path string, compNames []string) ([]Element, 
 	doc.Find("*").Each(func(i int, sel *goquery.Selection) {
 		_, exists := sel.Attr(KeyElementComponent)
 		if exists {
-			elm, err := NewElement(sel, compNames)
+			htmlStr, err := gqpp.NewHtmlFromSelection(sel)
+			if err != nil {
+				potErr = err
+				return
+			}
+			elm, err := NewElement(htmlStr, compNames)
 			if err != nil {
 				potErr = err
 				return
@@ -484,11 +495,7 @@ func ReplaceElementPlaceholders(elm Element) (Element, error) {
 		elmHtml = strings.Replace(elmHtml, placeholder.GetHtml(), "{{ "+placeholder.GetFuncCall()+" }}", 1)
 		return nil
 	})
-	newSel, err := gqpp.NewSelectionFromStr(elmHtml)
-	if err != nil {
-		return nil, err
-	}
-	newElm, err := NewElement(newSel, elm.GetCompNames())
+	newElm, err := NewElement(elmHtml, elm.GetCompNames())
 	if err != nil {
 		return nil, err
 	}
@@ -508,7 +515,7 @@ type ElementComponent struct {
 	CompNames    []string
 }
 
-func NewElementComponent(sel *goquery.Selection, compNames []string) (*ElementComponent, error) {
+func NewElementComponent(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementComponent, error) {
 	elm := &ElementComponent{
 		CompNames: compNames,
 	}
@@ -611,7 +618,7 @@ type ElementFor struct {
 	CompNames    []string
 }
 
-func NewElementFor(sel *goquery.Selection, compNames []string) (*ElementFor, error) {
+func NewElementFor(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementFor, error) {
 	elm := &ElementFor{
 		CompNames: compNames,
 	}
@@ -724,7 +731,7 @@ type ElementIf struct {
 	CompNames    []string
 }
 
-func NewElementIf(sel *goquery.Selection, compNames []string) (*ElementIf, error) {
+func NewElementIf(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementIf, error) {
 	elm := &ElementIf{
 		CompNames: compNames,
 	}
@@ -831,7 +838,7 @@ type ElementElse struct {
 	CompNames    []string
 }
 
-func NewElementElse(sel *goquery.Selection, compNames []string) (*ElementElse, error) {
+func NewElementElse(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementElse, error) {
 	elm := &ElementElse{
 		CompNames: compNames,
 	}

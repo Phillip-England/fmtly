@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/phillip-england/fungi"
-	"github.com/phillip-england/gqpp"
 	"github.com/phillip-england/purse"
 )
 
@@ -19,11 +18,7 @@ func testSingle(t *testing.T, testDir string) error {
 		return err
 	}
 	fStr := string(f)
-	sel, err := gqpp.NewSelectionFromStr(fStr)
-	if err != nil {
-		return err
-	}
-	elm, err := gtml.NewElement(sel, []string{})
+	elm, err := gtml.NewElement(fStr, []string{})
 	if err != nil {
 		return err
 	}
