@@ -28,6 +28,10 @@ type Attr interface {
 }
 
 func NewAttr(key string, value string) (Attr, error) {
+	if strings.Contains(key, "-") {
+		key = purse.KebabToCamelCase(key)
+	}
+	fmt.Println(key)
 	if value == "" {
 		attr, err := NewAttrEmpty(key, value)
 		if err != nil {

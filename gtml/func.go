@@ -245,7 +245,6 @@ func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []Element) error {
 					// 	return fmt.Errorf("somehow, we ended up with an attribute in our Component Func which is not wrapped in ATTRID: %s", call)
 					// }
 					callParamId := callParamParts[0]
-					fmt.Println(callParamId, sibParam.GetName())
 					sibParamName := sibParam.GetName()
 					if callParamId == sibParamName {
 						writeAs := strings.Replace(callParam, "ATTRID", "", 1)
