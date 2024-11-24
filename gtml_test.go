@@ -41,6 +41,46 @@ func testSingle(t *testing.T, testDir string) error {
 	return nil
 }
 
+func testMultiple(t *testing.T, testDir string) error {
+	path := "./tests/multiple/" + testDir + "/input.html"
+	compNames, err := gtml.ReadComponentElementNamesFromFile(path)
+	if err != nil {
+		return err
+	}
+	compElms, err := gtml.ReadComponentElementsFromFile(path, compNames)
+	if err != nil {
+		return err
+	}
+	funcs := make([]gtml.Func, 0)
+	for _, elm := range compElms {
+		elm, err = gtml.MarkElementPlaceholders(elm)
+		if err != nil {
+			return err
+		}
+		fn, err := gtml.NewFunc(elm, compElms)
+		if err != nil {
+			return err
+		}
+		funcs = append(funcs, fn)
+	}
+	actual := ""
+	for _, fn := range funcs {
+		actual += fn.GetData() + "\n"
+	}
+	expectPath := "./tests/multiple/" + testDir + "/expect.txt"
+	expectedF, err := os.ReadFile(expectPath)
+	if err != nil {
+		return err
+	}
+	expect := string(expectedF)
+	sqActual := purse.Flatten(actual)
+	sqExpect := purse.Flatten(expect)
+	if sqActual != sqExpect {
+		t.Errorf("actual output does not meet expected output:\n\nexpected:\n\n%s\n\ngot:\n\n%s", expect, actual)
+	}
+	return nil
+}
+
 func TestSingles(t *testing.T) {
 	err := fungi.Process(
 		func() error { return testSingle(t, "mesh") },
@@ -54,40 +94,11 @@ func TestSingles(t *testing.T) {
 }
 
 func TestMultiples(t *testing.T) {
-	path := "./tests/multiple/placeholder/input.html"
-	compNames, err := gtml.ReadComponentElementNamesFromFile(path)
+	err := fungi.Process(
+		func() error { return testMultiple(t, "placeholder") },
+		func() error { return testMultiple(t, "placeholder_root") },
+	)
 	if err != nil {
 		panic(err)
-	}
-	compElms, err := gtml.ReadComponentElementsFromFile(path, compNames)
-	if err != nil {
-		panic(err)
-	}
-	funcs := make([]gtml.Func, 0)
-	for _, elm := range compElms {
-		elm, err = gtml.MarkElementPlaceholders(elm)
-		if err != nil {
-			panic(err)
-		}
-		fn, err := gtml.NewFunc(elm, compElms)
-		if err != nil {
-			panic(err)
-		}
-		funcs = append(funcs, fn)
-	}
-	actual := ""
-	for _, fn := range funcs {
-		actual += fn.GetData() + "\n"
-	}
-	expectPath := "./tests/multiple/placeholder/expect.txt"
-	expectedF, err := os.ReadFile(expectPath)
-	if err != nil {
-		panic(err)
-	}
-	expect := string(expectedF)
-	sqActual := purse.Flatten(actual)
-	sqExpect := purse.Flatten(expect)
-	if sqActual != sqExpect {
-		t.Errorf("actual output does not meet expected output:\n\nexpected:\n\n%s\n\ngot:\n\n%s", expect, actual)
 	}
 }
