@@ -54,7 +54,18 @@ func GreetingCard(name string) string {
 
 
 
-# Development Notes
-1. What if two elements have the same param name?
-
-
+# Features for v0.1.0
+1. For Loops ✅
+2. Conditionals ✅
+3. Slots ✅
+4. Internal Placeholders ✅
+5. Root Placeholders
+6. Automatic Attribute Organizing ✅
+7. Basic Props ✅
+8. Command Line Tool For Generation
+9. A --watch Command
+10. Type Generation
+11. Var Name Randomization
+12. Remove _ Attributes in Output
+13. Solid README.md
+14. Managing Imports and Package Names in Output File
