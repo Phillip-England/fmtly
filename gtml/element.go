@@ -500,6 +500,41 @@ func MarkElementPlaceholders(elm Element) (Element, error) {
 	return newElm, nil
 }
 
+func GetElementDepth(root Element, check Element) (int, error) {
+	elementCount := 0
+	checkHtml := check.GetHtml()
+	checkName := check.GetName()
+	err := WalkElementChildren(root, func(child Element) error {
+		childHtml := child.GetHtml()
+		childName := child.GetName()
+		if childName == checkName && childHtml == checkHtml {
+			var potErr error
+			gqpp.ClimbTreeUntil(child.GetSelection(), func(parent *goquery.Selection) bool {
+				parentHtml, err := gqpp.NewHtmlFromSelection(parent)
+				if err != nil {
+					potErr = err
+					return false
+				}
+				if parentHtml == root.GetHtml() {
+					isElement := gqpp.HasAttr(parent, GetChildElementList()...)
+					if isElement {
+						elementCount++
+					}
+				}
+				return true
+			})
+			if potErr != nil {
+				return potErr
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return -1, err
+	}
+	return elementCount, nil
+}
+
 // ##==================================================================
 type ElementComponent struct {
 	Selection *goquery.Selection
