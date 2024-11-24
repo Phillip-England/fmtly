@@ -57,7 +57,7 @@ func GreetingCard(name string) string {
 2. Conditionals ✅
 3. Slots ✅
 4. Internal Placeholders ✅
-5. Root Placeholders
+5. Root Placeholders ✅
 6. Automatic Attribute Organizing ✅
 7. Basic Props ✅
 8. Command Line Tool For Generation
@@ -68,9 +68,3 @@ func GreetingCard(name string) string {
 13. Solid README.md
 14. Managing Imports and Package Names in Output File
 15. Tests For Many Multilayered Components
-
-
-<div _component="GreetingCard">
-    <h1>Hello, {{ name }}! How are you?</h1>
-    <p>I've been waiting to tell you.. {{ message }}</p>
-</div>
