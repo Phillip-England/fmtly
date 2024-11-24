@@ -115,9 +115,11 @@ func NewAttrAtParam(key string, value string) (*AttrAtParam, error) {
 	return attr, nil
 }
 
-func (attr *AttrAtParam) Print()                            { fmt.Println(attr.Key + ":" + attr.Value) }
-func (attr *AttrAtParam) GetKey() string                    { return attr.Key }
-func (attr *AttrAtParam) GetValue() string                  { return attr.Value }
+func (attr *AttrAtParam) Print()         { fmt.Println(attr.Key + ":" + attr.Value) }
+func (attr *AttrAtParam) GetKey() string { return attr.Key }
+func (attr *AttrAtParam) GetValue() string {
+	return attr.Value[1:]
+}
 func (attr *AttrAtParam) GetKeyValuePair() (string, string) { return attr.Key, attr.Value }
 func (attr *AttrAtParam) GetType() string                   { return attr.Type }
 

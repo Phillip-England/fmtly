@@ -63,8 +63,14 @@ func GreetingCard(name string) string {
 8. Command Line Tool For Generation
 9. A --watch Command
 10. Type Generation
-11. Var Name Randomization?
+11. Var Name Randomization (may not need this? All _directives have their own scope..)
 12. Remove _ Attributes in Output
 13. Solid README.md
 14. Managing Imports and Package Names in Output File
 15. Tests For Many Multilayered Components
+16. Attributes can use props ✅
+
+# Rules Noted
+1. All HTML attribute names must be written in kebab casing while attribute values may be camel case.
+2. When declaring a prop using {{ propName }} syntax, you must use camel casing to define the name.
+3. Using @ to pipe props into an Elements attributes.

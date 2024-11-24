@@ -449,8 +449,8 @@ func (v *VarGoPlaceholder) initBuilderSeries() error {
 }
 
 func (v *VarGoPlaceholder) initCallParams() error {
-	for _, attr := range v.AttrsCalledAs {
-		if attr.GetType() == KeyAttrInitParam {
+	for _, attr := range v.Attrs {
+		if attr.GetType() == KeyAttrInitParam || attr.GetType() == KeyAttrAtParam {
 			v.CallParams = append(v.CallParams, "ATTRID"+attr.GetKey()+"ATTRID"+attr.GetValue())
 			continue
 		}

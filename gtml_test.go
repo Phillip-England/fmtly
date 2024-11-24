@@ -98,6 +98,8 @@ func TestMultiples(t *testing.T) {
 		func() error { return testMultiple(t, "placeholder") },
 		func() error { return testMultiple(t, "placeholder_root") },
 		func() error { return testMultiple(t, "placeholder_root_slot") },
+		func() error { return testMultiple(t, "attribute_prop") },
+		func() error { return testMultiple(t, "loop_with_placeholders") },
 	)
 	if err != nil {
 		panic(err)
