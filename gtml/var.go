@@ -450,7 +450,11 @@ func (v *VarGoPlaceholder) initBuilderSeries() error {
 
 func (v *VarGoPlaceholder) initCallParams() error {
 	for _, attr := range v.AttrsCalledAs {
-		v.CallParams = append(v.CallParams, "ATTRID"+attr.GetKey()+"ATTRID"+attr.GetValue())
+		if attr.GetType() == KeyAttrInitParam {
+			v.CallParams = append(v.CallParams, "ATTRID"+attr.GetKey()+"ATTRID"+attr.GetValue())
+			continue
+		}
+		v.CallParams = append(v.CallParams, "ATTRID"+attr.GetKey()+"ATTRID\""+attr.GetValue()+"\"")
 	}
 	vars, err := GetElementVars(v.Element)
 	if err != nil {
@@ -464,9 +468,9 @@ func (v *VarGoPlaceholder) initCallParams() error {
 				return fmt.Errorf("_slot element found with a VarName which doesn't end in 'Slot' you need to check NewVarGoSlot")
 			}
 			firstPart := varName[:i]
-			secondPart := varName[i:]
+			// secondPart := varName[i:]
 			firstPart = "ATTRID" + firstPart + "ATTRID"
-			v.CallParams = append(v.CallParams, firstPart+secondPart)
+			v.CallParams = append(v.CallParams, firstPart+varName)
 			continue
 		}
 		v.CallParams = append(v.CallParams, inner.GetVarName())

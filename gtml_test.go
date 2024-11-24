@@ -22,7 +22,7 @@ func testSingle(t *testing.T, testDir string) error {
 	if err != nil {
 		return err
 	}
-	fn, err := gtml.NewFunc(elm)
+	fn, err := gtml.NewFunc(elm, make([]gtml.Element, 0))
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func TestOne(t *testing.T) {
 		// 	panic(err)
 		// }
 
-		fn, err := gtml.NewFunc(elm)
+		fn, err := gtml.NewFunc(elm, compElms)
 		if err != nil {
 			panic(err)
 		}

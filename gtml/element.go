@@ -35,6 +35,7 @@ type Element interface {
 	GetProps() []Prop
 	GetCompNames() []string
 	GetAttrs() []Attr
+	GetName() string
 }
 
 func GetFullElementList() []string {
