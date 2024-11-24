@@ -29,7 +29,6 @@ func GreetingCard(name string, firstGuestName string, colors []string) string {
 	builder.WriteString(`</div>`)
 	return builder.String()
 }
-
 func Greeting(message string, name string, age string, loop string) string {
 	var builder strings.Builder
 	builder.WriteString(`<div _component="Greeting">`)

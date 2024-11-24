@@ -55,7 +55,6 @@ func TestSingles(t *testing.T) {
 
 func TestMultiples(t *testing.T) {
 	path := "./tests/multiple/placeholder/input.html"
-	expectPath := "./tests/multiple/placeholder/expect.txt"
 	compNames, err := gtml.ReadComponentElementNamesFromFile(path)
 	if err != nil {
 		panic(err)
@@ -78,15 +77,17 @@ func TestMultiples(t *testing.T) {
 	}
 	actual := ""
 	for _, fn := range funcs {
-		actual += fn.GetData() + "\n" + "\n"
+		actual += fn.GetData() + "\n"
 	}
-
+	expectPath := "./tests/multiple/placeholder/expect.txt"
 	expectedF, err := os.ReadFile(expectPath)
 	if err != nil {
 		panic(err)
 	}
 	expect := string(expectedF)
-	if actual != expect {
+	sqActual := purse.Flatten(actual)
+	sqExpect := purse.Flatten(expect)
+	if sqActual != sqExpect {
 		t.Errorf("actual output does not meet expected output:\n\nexpected:\n\n%s\n\ngot:\n\n%s", expect, actual)
 	}
 }

@@ -2,6 +2,7 @@ package gtml
 
 import (
 	"fmt"
+	"go/format"
 	"strings"
 
 	"github.com/phillip-england/fungi"
@@ -113,7 +114,7 @@ func (fn *GoComponentFunc) initVarStr() error {
 		data := v.GetData()
 		str += data + "\n"
 	}
-	str = purse.PrefixLines(str, "\t")
+	// str = purse.PrefixLines(str, "\t")
 	fn.VarStr = str
 	return nil
 }
@@ -138,20 +139,16 @@ func (fn *GoComponentFunc) initData() error {
 	if err != nil {
 		return err
 	}
-	series = purse.PrefixLines(series, "\t")
+	// series = purse.PrefixLines(series, "\t")
 	data := purse.RemoveFirstLine(fmt.Sprintf(`
 func %s(%s) string {
-	var builder strings.Builder
+var builder strings.Builder
 %s
 %s
-	return builder.String()
+return builder.String()
 }
 	`, fn.Name, fn.ParamStr, fn.VarStr, series))
-	// code, err := format.Source([]byte(data))
-	// if err != nil {
-	// 	return err
-	// }
-	// data = string(code)
+
 	data = purse.RemoveEmptyLines(data)
 	fn.Data = data
 	return nil
@@ -250,9 +247,29 @@ func (fn *GoComponentFunc) initWriteCorrectPlaceholderCalls() error {
 }
 
 func (fn *GoComponentFunc) initFormatData() error {
+	newLines := make([]string, 0)
 	lines := purse.MakeLines(fn.Data)
+	indentCount := 0
 	for _, line := range lines {
-		fmt.Println(line)
+		if indentCount < 0 {
+			break
+		}
+		tabs := strings.Repeat("\t", indentCount)
+		newLines = append(newLines, tabs+line)
+		if strings.HasSuffix(line, "{") {
+			indentCount++
+		}
+		if strings.Contains(line, "return ") {
+			indentCount--
+		}
+
 	}
+	data := purse.JoinLines(newLines)
+	code, err := format.Source([]byte(data))
+	if err != nil {
+		return err
+	}
+	data = string(code)
+	fn.Data = data
 	return nil
 }
