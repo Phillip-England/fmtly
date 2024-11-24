@@ -70,6 +70,7 @@ func NewGoComponentFunc(elm Element, siblings []Element) (*GoComponentFunc, erro
 		func() error { return fn.initPlaceholderCalls() },
 		func() error { return fn.initOrderPlaceholderCalls(siblings) },
 		func() error { return fn.initWriteCorrectPlaceholderCalls() },
+		func() error { return fn.initFormatData() },
 	)
 	if err != nil {
 		return nil, err
@@ -244,6 +245,14 @@ func (fn *GoComponentFunc) initWriteCorrectPlaceholderCalls() error {
 		paramStr := strings.Join(fn.OrderedPlaceholderCalls, ", ")
 		fnCall := fmt.Sprintf(`%s(%s)`, callName, paramStr)
 		fn.Data = strings.Replace(fn.Data, callStr, fnCall, 1)
+	}
+	return nil
+}
+
+func (fn *GoComponentFunc) initFormatData() error {
+	lines := purse.MakeLines(fn.Data)
+	for _, line := range lines {
+		fmt.Println(line)
 	}
 	return nil
 }

@@ -128,7 +128,7 @@ func (v *VarGoFor) initVars() error {
 func (v *VarGoFor) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
-		varsToWrite += "\t" + inner.GetData()
+		varsToWrite += inner.GetData()
 	}
 	v.WriteVarsAs = varsToWrite
 	return nil
@@ -146,11 +146,11 @@ func (v *VarGoFor) initBuilderSeries() error {
 func (v *VarGoFor) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := gtmlFor(%s, func(i int, %s %s) string {
-	var %s strings.Builder
+var %s strings.Builder
 %s
 %s
-	return %s.String()
-})`, v.VarName, v.IterItems, v.IterItem, v.IterType, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
+return %s.String()
+})`+"\n", v.VarName, v.IterItems, v.IterItem, v.IterType, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
 	v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }
@@ -212,7 +212,7 @@ func (v *VarGoIf) initVars() error {
 func (v *VarGoIf) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
-		varsToWrite += "\t" + inner.GetData()
+		varsToWrite += inner.GetData()
 	}
 	v.WriteVarsAs = varsToWrite
 	return nil
@@ -230,14 +230,14 @@ func (v *VarGoIf) initBuilderSeries() error {
 func (v *VarGoIf) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := gtmlIf(%s, func() string {
-	var %s strings.Builder
+var %s strings.Builder
 %s
 %s
-	if %s {
-		return %s.String()
-	}
-	return ""
-})`, v.VarName, v.BoolToCheck, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BoolToCheck, v.BuilderName))
+if %s {
+return %s.String()
+}
+return ""
+})`+"\n", v.VarName, v.BoolToCheck, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BoolToCheck, v.BuilderName))
 	v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }
@@ -299,7 +299,7 @@ func (v *VarGoElse) initVars() error {
 func (v *VarGoElse) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
-		varsToWrite += "\t" + inner.GetData()
+		varsToWrite += inner.GetData()
 	}
 	v.WriteVarsAs = varsToWrite
 	return nil
@@ -317,14 +317,14 @@ func (v *VarGoElse) initBuilderSeries() error {
 func (v *VarGoElse) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := gtmlElse(%s, func() string {
-	var %s strings.Builder
+var %s strings.Builder
 %s
 %s
-	if !%s {
-		return %s.String()
-	}
-	return ""
-})`, v.VarName, v.BoolToCheck, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BoolToCheck, v.BuilderName))
+if !%s {
+	return %s.String()
+}
+return ""
+})`+"\n", v.VarName, v.BoolToCheck, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BoolToCheck, v.BuilderName))
 	v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }
@@ -433,7 +433,7 @@ func (v *VarGoPlaceholder) initVars() error {
 func (v *VarGoPlaceholder) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
-		varsToWrite += "\t" + inner.GetData()
+		varsToWrite += inner.GetData()
 	}
 	v.WriteVarsAs = varsToWrite
 	return nil
@@ -483,8 +483,8 @@ func (v *VarGoPlaceholder) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := func() string {
 %s
-	return %s(%s)
-}`, v.VarName, v.WriteVarsAs, v.ComponentName, v.CallParamStr))
+return %s(%s)
+}`+"\n", v.VarName, v.WriteVarsAs, v.ComponentName, v.CallParamStr))
 	v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }
@@ -546,7 +546,7 @@ func (v *VarGoSlot) initVars() error {
 func (v *VarGoSlot) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
-		varsToWrite += "\t" + inner.GetData()
+		varsToWrite += inner.GetData()
 	}
 	v.WriteVarsAs = varsToWrite
 	return nil
@@ -564,10 +564,10 @@ func (v *VarGoSlot) initBuilderSeries() error {
 func (v *VarGoSlot) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := gtmlSlot(func() string {
-	var %s strings.Builder
+var %s strings.Builder
 %s
 %s
-	return %s.String()
+return %s.String()
 })`+"\n", v.VarName, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
 	// v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
