@@ -97,6 +97,7 @@ func TestMultiples(t *testing.T) {
 	err := fungi.Process(
 		func() error { return testMultiple(t, "placeholder") },
 		func() error { return testMultiple(t, "placeholder_root") },
+		func() error { return testMultiple(t, "placeholder_root_slot") },
 	)
 	if err != nil {
 		panic(err)

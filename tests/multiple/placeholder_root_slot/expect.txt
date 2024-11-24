@@ -1,0 +1,24 @@
+func GreetingCard(guestName string, message string, favoriteFood string) string {
+        var builder strings.Builder
+        builder.WriteString(`<div _component="GreetingCard"><h1>Hello, `)
+        builder.WriteString(guestName)
+        builder.WriteString(`! How are you?</h1><p>I&#39;ve been waiting to tell you.. `)
+        builder.WriteString(message)
+        builder.WriteString(`</p><div><h1>What is your favorite food?</h1>`)
+        builder.WriteString(favoriteFood)
+        builder.WriteString(`</div></div>`)
+        return builder.String()
+}
+func GreetJack() string {
+        var builder strings.Builder
+        greetingcardPlaceholder := func() string {
+                favoriteFoodSlot := gtmlSlot(func() string {
+                        var favoriteFoodBuilder strings.Builder
+                        favoriteFoodBuilder.WriteString(`<slot _slot="favoriteFood"><p>Pizza!</p></slot>`)
+                        return favoriteFoodBuilder.String()
+                })
+                return GreetingCard("Jack", "Iloveyou!", favoriteFoodSlot)
+        }
+        builder.WriteString(greetingcardPlaceholder())
+        return builder.String()
+}

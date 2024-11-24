@@ -117,9 +117,19 @@ func (fn *GoComponentFunc) initVars() error {
 
 func (fn *GoComponentFunc) initVarStr() error {
 	str := ""
-	for _, v := range fn.Vars {
-		data := v.GetData()
-		str += data + "\n"
+	for i, v := range fn.Vars {
+		// if a _component is also a _placeholder, we must only include the first var in its var string
+		// not doing so will result in the outer func body becoming polluted with unneeded vars from the _placeholder element itself.
+		// its vars will become present in the func body
+		if fn.Element.GetType() == KeyElementPlaceholder {
+			if i == 0 {
+				data := v.GetData()
+				str += data + "\n"
+			}
+		} else {
+			data := v.GetData()
+			str += data + "\n"
+		}
 	}
 	// str = purse.PrefixLines(str, "\t")
 	fn.VarStr = str

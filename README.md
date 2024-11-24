@@ -63,7 +63,7 @@ func GreetingCard(name string) string {
 8. Command Line Tool For Generation
 9. A --watch Command
 10. Type Generation
-11. Var Name Randomization
+11. Var Name Randomization?
 12. Remove _ Attributes in Output
 13. Solid README.md
 14. Managing Imports and Package Names in Output File
