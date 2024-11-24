@@ -461,7 +461,7 @@ func ReadComponentElementNamesFromFile(path string) ([]string, error) {
 
 func MarkElementPlaceholders(elm Element) (Element, error) {
 	clay := elm.GetHtml()
-	err := WalkAllElementNodes(elm, func(sel *goquery.Selection) error {
+	err := WalkAllElementNodesIncludingRoot(elm, func(sel *goquery.Selection) error {
 		nodeName := goquery.NodeName(sel)
 		ogSelHtml, err := gqpp.NewHtmlFromSelection(sel)
 		if err != nil {

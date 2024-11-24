@@ -52,8 +52,6 @@ func GreetingCard(name string) string {
 }
 ```
 
-
-
 # Features for v0.1.0
 1. For Loops ✅
 2. Conditionals ✅
@@ -69,3 +67,10 @@ func GreetingCard(name string) string {
 12. Remove _ Attributes in Output
 13. Solid README.md
 14. Managing Imports and Package Names in Output File
+15. Tests For Many Multilayered Components
+
+
+<div _component="GreetingCard">
+    <h1>Hello, {{ name }}! How are you?</h1>
+    <p>I've been waiting to tell you.. {{ message }}</p>
+</div>

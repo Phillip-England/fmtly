@@ -1,5 +1,6 @@
 <div _component="GreetingCard">
-    <h1>Hello, {{ name }}! How are you?</h1>
+    <h1>Hello, {{ guestname }}! How are you?</h1>
+    <p>I've been waiting to tell you.. {{ message }}</p>
 </div>
 
-<GreetingCard _component="GreetJack" name="Jack"></GreetingCard>
+<GreetingCard _component="GreetJack" message="I love you!" guestname="Jack"></GreetingCard>

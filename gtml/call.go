@@ -54,7 +54,15 @@ func (call *CallPlaceholder) initParams() error {
 	i := strings.Index(data, "(") + 1
 	data = data[i:]
 	data = purse.ReplaceLastInstanceOf(data, ")", "")
-	data = purse.Squeeze(data)
+	if strings.HasSuffix(data, "\"") {
+		i := strings.Index(data, "\"")
+		firstHalf := data[:i]
+		firstHalf = purse.Squeeze(firstHalf)
+		secondHalf := data[i:]
+		data = firstHalf + secondHalf
+	} else {
+		data = purse.Squeeze(data)
+	}
 	parts := strings.Split(data, ",")
 	call.Params = parts
 	return nil

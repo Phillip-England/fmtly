@@ -29,7 +29,7 @@ func NewFunc(elm Element, siblings []Element) (Func, error) {
 		filtered = append(filtered, sibling)
 	}
 	siblings = filtered
-	if elm.GetType() == KeyElementComponent {
+	if elm.GetType() == KeyElementComponent || elm.GetType() == KeyElementPlaceholder {
 		fn, err := NewGoComponentFunc(elm, siblings)
 		if err != nil {
 			return nil, err
@@ -94,6 +94,13 @@ func (fn *GoComponentFunc) initName() error {
 }
 
 func (fn *GoComponentFunc) initVars() error {
+	if fn.Element.GetType() == KeyElementPlaceholder {
+		goVar, err := NewVar(fn.Element)
+		if err != nil {
+			return err
+		}
+		fn.Vars = append(fn.Vars, goVar)
+	}
 	err := WalkElementDirectChildren(fn.Element, func(child Element) error {
 		goVar, err := NewVar(child)
 		if err != nil {
@@ -135,9 +142,20 @@ func (fn *GoComponentFunc) initParamStr() error {
 }
 
 func (fn *GoComponentFunc) initData() error {
-	series, err := GetElementAsBuilderSeries(fn.Element, "builder")
-	if err != nil {
-		return err
+	series := ""
+	if fn.Element.GetType() == KeyElementComponent {
+		str, err := GetElementAsBuilderSeries(fn.Element, "builder")
+		if err != nil {
+			return err
+		}
+		series = str
+	}
+	if fn.Element.GetType() == KeyElementPlaceholder {
+		goVar, err := NewVar(fn.Element)
+		if err != nil {
+			return err
+		}
+		series += "builder.WriteString(" + goVar.GetVarName() + "())"
 	}
 	// series = purse.PrefixLines(series, "\t")
 	data := purse.RemoveFirstLine(fmt.Sprintf(`
@@ -215,10 +233,19 @@ func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []Element) error {
 					clay = strings.Replace(clay, "ATTRID", "", 1)
 					clay = strings.Replace(clay, "ATTRID", " ", 1)
 					callParamParts := strings.Split(clay, " ")
-					if len(callParamParts) != 2 {
-						return fmt.Errorf("somehow, we ended up with an attribute in our Component Func which is not wrapped in ATTRID: %s", call)
+					filtered := make([]string, 0)
+					for _, part := range callParamParts {
+						if len(part) == 0 {
+							continue
+						}
+						filtered = append(filtered, part)
 					}
+					callParamParts = filtered
+					// if len(callParamParts) != 2 {
+					// 	return fmt.Errorf("somehow, we ended up with an attribute in our Component Func which is not wrapped in ATTRID: %s", call)
+					// }
 					callParamId := callParamParts[0]
+					fmt.Println(callParamId, sibParam.GetName())
 					sibParamName := sibParam.GetName()
 					if callParamId == sibParamName {
 						writeAs := strings.Replace(callParam, "ATTRID", "", 1)
