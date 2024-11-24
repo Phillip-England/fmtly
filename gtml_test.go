@@ -41,7 +41,7 @@ func testSingle(t *testing.T, testDir string) error {
 	return nil
 }
 
-func TestAll(t *testing.T) {
+func TestSingles(t *testing.T) {
 	err := fungi.Process(
 		func() error { return testSingle(t, "mesh") },
 		func() error { return testSingle(t, "if") },
@@ -53,68 +53,40 @@ func TestAll(t *testing.T) {
 	}
 }
 
-func TestOne(t *testing.T) {
-
+func TestMultiples(t *testing.T) {
 	path := "./tests/multiple/placeholder/input.html"
-
+	expectPath := "./tests/multiple/placeholder/expect.txt"
 	compNames, err := gtml.ReadComponentElementNamesFromFile(path)
 	if err != nil {
 		panic(err)
 	}
-
 	compElms, err := gtml.ReadComponentElementsFromFile(path, compNames)
 	if err != nil {
 		panic(err)
 	}
-
+	funcs := make([]gtml.Func, 0)
 	for _, elm := range compElms {
-
 		elm, err = gtml.MarkElementPlaceholders(elm)
 		if err != nil {
 			panic(err)
 		}
-		// _, err = gtml.NewFunc(elm)
-		// if err != nil {
-		// 	panic(err)
-		// }
-
 		fn, err := gtml.NewFunc(elm, compElms)
 		if err != nil {
 			panic(err)
 		}
-		fn.Print()
+		funcs = append(funcs, fn)
+	}
+	actual := ""
+	for _, fn := range funcs {
+		actual += fn.GetData() + "\n" + "\n"
 	}
 
+	expectedF, err := os.ReadFile(expectPath)
+	if err != nil {
+		panic(err)
+	}
+	expect := string(expectedF)
+	if actual != expect {
+		t.Errorf("actual output does not meet expected output:\n\nexpected:\n\n%s\n\ngot:\n\n%s", expect, actual)
+	}
 }
-
-// func GreetingCard(name string, colors []string) string {
-// 	var builder strings.Builder
-// 	greetingPlaceholder := func() string {
-// 		messageSlot := gtmlSlot(func() string {
-// 			var messageBuilder strings.Builder
-// 			messageBuilder.WriteString(`<div _slot="message"><p>testin!</p></div>`)
-// 			return messageBuilder.String()
-// 		})
-// 		loopSlot := gtmlSlot(func() string {
-// 			var loopBuilder strings.Builder
-// 			colorFor := gtmlFor(colors, func(i int, color string) string {
-// 				var colorBuilder strings.Builder
-// 				colorBuilder.WriteString(`<ul _for="color of colors []string"><li>`)
-// 				colorBuilder.WriteString(color)
-// 				colorBuilder.WriteString(`</li></ul>`)
-// 				return colorBuilder.String()
-// 			})
-// 			loopBuilder.WriteString(`<div _slot="loop">`)
-// 			loopBuilder.WriteString(colorFor)
-// 			loopBuilder.WriteString(`</div>`)
-// 			return loopBuilder.String()
-// 		})
-// 		return Greeting(firstGuestName, 20, messageSlot, loopSlot)
-// 	}
-// 	builder.WriteString(`<div _component="GreetingCard"><h1>`)
-// 	builder.WriteString(name)
-// 	builder.WriteString(`</h1>`)
-// 	builder.WriteString(greetingPlaceholder())
-// 	builder.WriteString(`</div>`)
-// 	return builder.String()
-// }

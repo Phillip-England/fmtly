@@ -128,7 +128,7 @@ func (fn *GoComponentFunc) initParamStr() error {
 		paramStrs = append(paramStrs, param.GetStr())
 	}
 	paramStrs = purse.RemoveDuplicatesInSlice(paramStrs)
-	fn.ParamStr = strings.Join(paramStrs, ",")
+	fn.ParamStr = strings.Join(paramStrs, ", ")
 	return nil
 }
 
