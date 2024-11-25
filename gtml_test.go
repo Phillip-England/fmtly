@@ -13,32 +13,33 @@ import (
 func testSingle(t *testing.T, testDir string) error {
 	inputPath := fmt.Sprintf("./tests/single/%s/input.html", testDir)
 	expectPath := fmt.Sprintf("./tests/single/%s/expect.txt", testDir)
-	f, err := os.ReadFile(inputPath)
+	compNames, err := gtml.ReadComponentElementNamesFromFile(inputPath)
 	if err != nil {
 		return err
 	}
-	fStr := string(f)
-	elm, err := gtml.NewElement(fStr, []string{})
+	compSels, err := gtml.ReadComponentSelectionsFromFile(inputPath)
 	if err != nil {
 		return err
 	}
-	err = gtml.SaltElements(elm)
+	compElms, err := gtml.ConvertSelectionsIntoElements(compSels, compNames)
 	if err != nil {
 		return err
 	}
-	fn, err := gtml.NewFunc(elm, make([]gtml.Element, 0))
-	if err != nil {
-		return err
-	}
-	out := purse.Squeeze(purse.Flatten(fn.GetData()))
-	f, err = os.ReadFile(expectPath)
-	if err != nil {
-		return err
-	}
-	fStr = string(f)
-	expect := purse.Squeeze(purse.Flatten(fStr))
-	if out != expect {
-		t.Errorf("output does not meet expectations:\n\nexpected:\n\n%s\n\ngot:\n\n%s", fStr, fn.GetData())
+	for _, compElm := range compElms {
+		fn, err := gtml.NewFunc(compElm, make([]gtml.Element, 0))
+		if err != nil {
+			return err
+		}
+		out := purse.Squeeze(purse.Flatten(fn.GetData()))
+		f, err := os.ReadFile(expectPath)
+		if err != nil {
+			return err
+		}
+		fStr := string(f)
+		expect := purse.Squeeze(purse.Flatten(fStr))
+		if out != expect {
+			t.Errorf("output does not meet expectations:\n\nexpected:\n\n%s\n\ngot:\n\n%s", fStr, fn.GetData())
+		}
 	}
 	return nil
 }
@@ -49,17 +50,15 @@ func testMultiple(t *testing.T, testDir string) error {
 	if err != nil {
 		return err
 	}
-	compElms, err := gtml.ReadComponentElementsFromFile(path, compNames)
+	compSels, err := gtml.ReadComponentSelectionsFromFile(path)
+	if err != nil {
+		return err
+	}
+	compElms, err := gtml.ConvertSelectionsIntoElements(compSels, compNames)
 	if err != nil {
 		return err
 	}
 	funcs := make([]gtml.Func, 0)
-	for _, elm := range compElms {
-		err = gtml.SaltElements(elm)
-		if err != nil {
-			return err
-		}
-	}
 	for _, elm := range compElms {
 		elm, err = gtml.MarkElementPlaceholders(elm)
 		if err != nil {

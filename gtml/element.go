@@ -412,36 +412,42 @@ func WalkAllElementNodesWithoutChildren(elm Element, fn func(sel *goquery.Select
 	return nil
 }
 
-func ReadComponentElementsFromFile(path string, compNames []string) ([]Element, error) {
-	elms := make([]Element, 0)
+func ReadComponentSelectionsFromFile(path string) ([]*goquery.Selection, error) {
+	selections := make([]*goquery.Selection, 0)
 	f, err := os.ReadFile(path)
 	if err != nil {
-		return elms, err
+		return selections, err
 	}
 	fStr := string(f)
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(fStr))
 	if err != nil {
-		return elms, err
+		return selections, err
 	}
 	var potErr error
 	doc.Find("*").Each(func(i int, sel *goquery.Selection) {
 		_, exists := sel.Attr(KeyElementComponent)
 		if exists {
-			htmlStr, err := gqpp.NewHtmlFromSelection(sel)
-			if err != nil {
-				potErr = err
-				return
-			}
-			elm, err := NewElement(htmlStr, compNames)
-			if err != nil {
-				potErr = err
-				return
-			}
-			elms = append(elms, elm)
+			selections = append(selections, sel)
 		}
 	})
 	if potErr != nil {
-		return elms, potErr
+		return selections, potErr
+	}
+	return selections, nil
+}
+
+func ConvertSelectionsIntoElements(selections []*goquery.Selection, compNames []string) ([]Element, error) {
+	elms := make([]Element, 0)
+	for _, sel := range selections {
+		htmlStr, err := gqpp.NewHtmlFromSelection(sel)
+		if err != nil {
+			return elms, err
+		}
+		elm, err := NewElement(htmlStr, compNames)
+		if err != nil {
+			return elms, err
+		}
+		elms = append(elms, elm)
 	}
 	return elms, nil
 }
@@ -505,41 +511,6 @@ func MarkElementPlaceholders(elm Element) (Element, error) {
 		return nil, err
 	}
 	return newElm, nil
-}
-
-func GetElementDepth(root Element, check Element) (int, error) {
-	elementCount := 0
-	checkHtml := check.GetHtml()
-	checkName := check.GetName()
-	err := WalkElementChildren(root, func(child Element) error {
-		childHtml := child.GetHtml()
-		childName := child.GetName()
-		if childName == checkName && childHtml == checkHtml {
-			var potErr error
-			gqpp.ClimbTreeUntil(child.GetSelection(), func(parent *goquery.Selection) bool {
-				parentHtml, err := gqpp.NewHtmlFromSelection(parent)
-				if err != nil {
-					potErr = err
-					return false
-				}
-				if parentHtml == root.GetHtml() {
-					isElement := gqpp.HasAttr(parent, GetChildElementList()...)
-					if isElement {
-						elementCount++
-					}
-				}
-				return true
-			})
-			if potErr != nil {
-				return potErr
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return -1, err
-	}
-	return elementCount, nil
 }
 
 func SaltElements(elm Element) error {
