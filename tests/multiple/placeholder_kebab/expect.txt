@@ -1,0 +1,17 @@
+func FancyPost() string {
+        var builder strings.Builder
+        fancytextPlaceholder := func() string {
+                return FancyText("I am Fancy!")
+        }
+        builder.WriteString(`<div _component="FancyPost">`)
+        builder.WriteString(fancytextPlaceholder())
+        builder.WriteString(`</div>`)
+        return builder.String()
+}
+func FancyText(someText string) string {
+        var builder strings.Builder
+        builder.WriteString(`<div _component="FancyText">`)
+        builder.WriteString(someText)
+        builder.WriteString(`</div>`)
+        return builder.String()
+}

@@ -1,0 +1,19 @@
+func GreetingCard(name string) string {
+        var builder strings.Builder
+        greetingPlaceholder := func() string {
+                return Greeting(name, "20")
+        }
+        builder.WriteString(`<div _component="GreetingCard">`)
+        builder.WriteString(greetingPlaceholder())
+        builder.WriteString(`</div>`)
+        return builder.String()
+}
+func Greeting(name string, age string) string {
+        var builder strings.Builder
+        builder.WriteString(`<div _component="Greeting"><h1>Hello, `)
+        builder.WriteString(name)
+        builder.WriteString(`</h1> <p>you are `)
+        builder.WriteString(age)
+        builder.WriteString(` years old!</p></div>`)
+        return builder.String()
+}

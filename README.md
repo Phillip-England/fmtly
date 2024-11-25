@@ -1,5 +1,5 @@
 # gtml
-Html in Go doesn't *have* to suck. Introducing... 🥁 gtml.
+Html in Go doesn't have to suck.
 
 ## Hello, World
 
@@ -107,7 +107,7 @@ func FavoriteColors(colors []string) string {
 }
 ```
 
-## _if & _else
+### _if & _else
 _if and _else Elements are opposites. _if will allow a block of html to be rendered if a boolean is true. _else will allow a block to be rendered if a boolean is false.
 
 Here an example:
@@ -150,7 +150,7 @@ func WelcomeBanner(loggedIn bool) string {
 }
 ```
 
-# _slot
+### _slot
 _slot elements are used to create reusable layout components. In the following example, we have one _component utilizing another _component as a `placeholder` (more on placeholders later):
 
 ```html
@@ -205,7 +205,152 @@ func Sandwich(top string, bottom string) string {
     return builder.String()
 }
 ```
+## Props
+Props are used to inform gtml about dynamic data within our components, along with a few other things. They are defined using `{{}}` syntax. 
 
+This area of the project is still under work. I like the `$rune()` syntax Svelte uses, and I might adopt it to create a distinction between `{{ props }}` and `$runes()`.
+
+🚨 All `prop` names **must** be camelCase.
+
+Here are the different types of props which can be used in your components:
+
+### String Props
+String props are the most common type of prop you'll encounter. They are used to define a piece of dynamic data within our component. Here is an example:
+
+```html
+<div _component='Greeting'>
+    <h1>Hello, {{ name }}</h1>
+</div>
+```
+
+In the above example, name will appear in our output function like so:
+
+```go
+func Greeting(name string) {...}
+```
+
+### For Type Props
+For Type props are used when we are iterating over a slice using `_for`. A For Type Prop is identified by it's use of a `.` like `{{ user.Email }}`.
+
+These types of props will not appear in our output function. Rather, they are used to let gtml know we are trying to access an types internal data.
+
+Here is an example:
+```html
+<div _component="GuestList">
+    <ul _for='guest of guests []Guest'>
+        <li>{{ guest.Name }}</li>
+    </ul>
+</div>
+```
+
+### For Str Props
+For Str Props are very similar to For Type Props, except they are used when iterating over a []string slice. A For Str Prop is identified by it's use of `.` at the start of the prop like `{{ .color }}`.
+
+These types of props must match the name provided by the `_for` attribute they are refferencing:
+
+```html
+<div _component="FavoriteColors">
+    <ul _for="color of colors []string">
+        <li>{{ .color }}</li>
+    </ul>
+</div>
+```
+
+### Slot Props
+A Slot Prop is used to tell gtml where to place children within a `placeholder`. Here is an example:
+
+```html
+<div _component="Sandwich">
+    {{ slot top }}
+    <p>🥪</p>
+    {{ slot bottom }}
+</div>
+```
+
+Then, we can make use of these slots when we use `Sandwich` as a `placeholder`
+```html
+<div _component="UsingSlots">
+    <Sandwich>
+        <div _slot="top">
+            <p>I'm on top!</p>
+        </div>
+        <div _slot="bottom">
+            <p>I'm on bottom</p>
+        </div>
+    </Sandwich>
+</div>
+```
+
+## Placeholders
+When a `_component` is used inside of another `_component`, it is reffered to as a `placeholder`. Here is an example of us making use of a simple placeholder:
+
+```html
+<form _component="LoginForm">
+    <h1>Login</h1>
+    <input type="text" name="username"/>
+    <SubmitButton></SubmitButton>
+</form>
+
+<button _component="SubmitButton">Submit</button>
+```
+
+### Not JSX
+Take note, this is not JSX, we cannot do this (yet?):
+```html
+<form _component="LoginForm">
+    <h1>Login</h1>
+    <input type="text" name="username"/>
+    <SubmitButton />
+</form>
+
+<button _component="SubmitButton">Submit</button>
+```
+
+### Kebab Casing on Attributes
+Placeholders may need data to be rendered properly, like this one: 
+```html
+<div _component="FancyPost">
+    <FancyText some-text="I am Fancy!"></FancyText>
+</div>
+
+<div _component="FancyText">{{ someText }}</div>
+```
+
+🚨 When passing data into a `placeholder`, you must use kebab-casing. This can be patched in future releases.
+
+### Piping Data into Placeholders using "@"
+Placeholders may need to pipe data from a parent component into it's own context. To do so, we can use `@`:
+
+```html
+<div _component="SurvivalTeam">
+    <ul _for="member of members []Memeber">
+        <Survivalist member-name="@member.Name" member-age=@member.age></Survivalist>
+    </ul>
+</div>
+
+<div _component="SurvivalList">
+    <h1>{{ memberName }}</h1>
+    <p>{{ memberAge }}</p>
+</div>
+```
+
+Without the `@` operator, gtml would treat piped in values as strings instead.
+
+### Placeholders and Props
+What if we have a `placeholder`, and we want the value we are passing into it to be dynamic? Well, just use a prop:
+
+```html
+<div _component="GreetingCard">
+    <Greeting name="{{ name }}" age="20"></Greeting>
+</div>
+
+<div _component="Greeting">
+    <h1>Hello, {{ name }}</h1> 
+    <p>you are {{ age }} years old!</p>
+</div>
+```
+
+Now, `GreetingCard()` will expect a name, which will be piped into the context of `Greeting()`
 
 # Features for v0.1.0
 - For Loops ✅

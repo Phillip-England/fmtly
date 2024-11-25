@@ -1,1 +1,29 @@
-asdsa
+func UsingSlots() string {
+        var builder strings.Builder
+        sandwichPlaceholder := func() string {
+                topSlot := gtml.Slot(func() string {
+                        var topBuilder strings.Builder
+                        topBuilder.WriteString(`<div _slot="top"><p>I&#39;m on top!</p></div>`)
+                        return topBuilder.String()
+                })
+                bottomSlot := gtml.Slot(func() string {
+                        var bottomBuilder strings.Builder
+                        bottomBuilder.WriteString(`<div _slot="bottom"><p>I&#39;m on bottom</p></div>`)
+                        return bottomBuilder.String()
+                })
+                return Sandwich(topSlot, bottomSlot)
+        }
+        builder.WriteString(`<div _component="UsingSlots">`)
+        builder.WriteString(sandwichPlaceholder())
+        builder.WriteString(`</div>`)
+        return builder.String()
+}
+func Sandwich(top string, bottom string) string {
+        var builder strings.Builder
+        builder.WriteString(`<div _component="Sandwich">`)
+        builder.WriteString(top)
+        builder.WriteString(`<p>🥪</p>`)
+        builder.WriteString(bottom)
+        builder.WriteString(`</div>`)
+        return builder.String()
+}
