@@ -1,51 +1,42 @@
 # gtml
-Let's be reel 🎣, html in Go sucks. But it doesn't *have* to. Introducing... 🥁 gtml.
+Html in Go doesn't *have* to suck. Introducing... 🥁 gtml.
 
-## Html Attributes
-gtml allows us to use html attributes to determine the structure of our components. For example, to define a for loop we may do something like this:
+## Hello, World
 
+Turn this:
 ```html
-<div _component="GuestList">
-    <ul _for='guest of guests []Guest'>
-        <li>{{ guest.Name }}</li>
-    </ul>
+<div _component='HelloWorld'>
+    <h1>Hello, World!</h1>
 </div>
 ```
 
-gtml will take the component above, and generate the following Go output:
-
+Into this:
 ```go
-func GuestList(guests []Guest) string {
-	var builder strings.Builder
-	guestFor := gtmlFor(guests, func(i int, guest Guest) string {
-		var guestBuilder strings.Builder
-		guestBuilder.WriteString(`<ul _for="guest of guests []Guest"><li>`)
-		guestBuilder.WriteString(guest.Name)
-		guestBuilder.WriteString(`</li></ul>`)
-		return guestBuilder.String()
-	})
-	builder.WriteString(`<div _component="GuestList">`)
-	builder.WriteString(guestFor)
-	builder.WriteString(`</div>`)
-	return builder.String()
+func HelloWorld() string {
+    var builder strings.Builder
+    builder.WriteString(`<div _component='GreetingCard'><h1>Hello, World!</h1>`)
+    return builder.String()
 }
 ```
 
-## _component
-_component elements are used to register a new component. gtml will convert all _component elements into their own corrosponding Go function.
+## Attribute Listing
+gtml uses html attributes to determine the structure of our components. Here is a list of the available attributes:
 
-### input
+### _component
+A _component element is the root-level element for a gtml component. A _component element must have no parents and it must be named using PascalCasing. A _component element may not have any _component elements within it.
+
+Here is a basic _component element making use of a prop (more on props later):
 ```html
-<div _component='GreetingCard'>
-    <h1>Hello, {{ name }}!</h1>
+<div _component='Greeting'>
+    <h1>Hello, {{ name }}</h1>
 </div>
 ```
 
-### output
+gtml will scan all the `.html` files in a given directory, generating a Go function for each _component element. The above component will resolve to:
 ```go
-func GreetingCard(name string) string {
+func Greeting(name string) string {
     var builder strings.Builder
-    builder.WriteString(`<div _component='GreetingCard'><h1>Hello,`)
+    builder.WriteString(`<div _component='Greeting'><h1>Hello, `)
     builder.WriteString(name)
     builder.WriteString(`!</h1>`)
     return builder.String()
@@ -53,7 +44,7 @@ func GreetingCard(name string) string {
 ```
 
 # Features for v0.1.0
-- For Loops ✅
+- For Loops (bug where placeholders inside loops wont register)
 - Conditionals ✅
 - Slots ✅
 - Internal Placeholders ✅
