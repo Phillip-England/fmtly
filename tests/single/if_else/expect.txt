@@ -1,1 +1,24 @@
-asd
+func WelcomeBanner(loggedIn bool) string {
+        var builder strings.Builder
+        loggedInIf := gtml.If(loggedIn, func() string {
+                var loggedInBuilder strings.Builder
+                loggedInBuilder.WriteString(`<div _if="loggedIn"><p>Welcome, User!</p></div>`)
+                if loggedIn {
+                        return loggedInBuilder.String()
+                }
+                return ""
+        })
+        loggedInElse := gtml.Else(loggedIn, func() string {
+                var loggedInBuilder strings.Builder
+                loggedInBuilder.WriteString(`<div _else="loggedIn"><p>Welcome, Guest!</p></div>`)
+                if !loggedIn {
+                        return loggedInBuilder.String()
+                }
+                return ""
+        })
+        builder.WriteString(`<div _component="WelcomeBanner">`)
+        builder.WriteString(loggedInIf)
+        builder.WriteString(loggedInElse)
+        builder.WriteString(`</div>`)
+        return builder.String()
+}
