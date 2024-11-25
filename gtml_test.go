@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"gtml/gtml"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/phillip-england/fungi"
@@ -103,38 +102,9 @@ func TestMultiples(t *testing.T) {
 		func() error { return testMultiple(t, "placeholder_root_slot") },
 		func() error { return testMultiple(t, "attribute_prop") },
 		func() error { return testMultiple(t, "loop_with_placeholders") },
+		func() error { return testMultiple(t, "slot") },
 	)
 	if err != nil {
 		panic(err)
 	}
-}
-
-func DiningMenu(foodThree string) string {
-	var builder strings.Builder
-	foodlistPlaceholder := func() string {
-		return FoodList("Pizza", "Tacos", foodThree)
-	}
-	builder.WriteString(`<div _component="DiningMenu"><h1>Welcome!</h1><p>Please take a look at our menu, ask if you have questions!</p>`)
-	builder.WriteString(foodlistPlaceholder())
-	builder.WriteString(`</div>`)
-	return builder.String()
-}
-func FoodList(foodOne string, foodTwo string, foodThree string) string {
-	var builder strings.Builder
-	builder.WriteString(`<div _component="FoodList"><ul><li>`)
-	builder.WriteString(foodOne)
-	builder.WriteString(`</li><li>`)
-	builder.WriteString(foodTwo)
-	builder.WriteString(`</li><li>`)
-	builder.WriteString(foodThree)
-	builder.WriteString(`</li></ul></div>`)
-	return builder.String()
-}
-
-func For[T any](slice []T, callback func(T) string) string {
-	var result string
-	for _, item := range slice {
-		result += callback(item)
-	}
-	return result
 }

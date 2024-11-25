@@ -1,0 +1,17 @@
+<div _component="UsingSlots">
+    <Sandwich>
+        <div _slot="top">
+            <p>I'm on top!</p>
+        </div>
+        <div _slot="bottom">
+            <p>I'm on bottom</p>
+        </div>
+    </Sandwich>
+</div>
+
+
+<div _component="Sandwich">
+    {{ slot top }}
+    <p>🥪</p>
+    {{ slot bottom }}
+</div>

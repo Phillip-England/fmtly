@@ -111,7 +111,100 @@ func FavoriteColors(colors []string) string {
 _if and _else Elements are opposites. _if will allow a block of html to be rendered if a boolean is true. _else will allow a block to be rendered if a boolean is false.
 
 Here an example:
+```html
+<div _component="WelcomeBanner">
+    <div _if="loggedIn">
+        <p>Welcome, User!</p>
+    </div>
+    <div _else="loggedIn">
+        <p>Welcome, Guest!</p>
+    </div>
+</div>
+```
 
+The output:
+```go
+func WelcomeBanner(loggedIn bool) string {
+    var builder strings.Builder
+    loggedInIf := gtml.If(loggedIn, func() string {
+        var loggedInBuilder strings.Builder
+        loggedInBuilder.WriteString(`<div _if="loggedIn"><p>Welcome, User!</p></div>`)
+        if loggedIn {
+                return loggedInBuilder.String()
+        }
+        return ""
+    })
+    loggedInElse := gtml.Else(loggedIn, func() string {
+        var loggedInBuilder strings.Builder
+        loggedInBuilder.WriteString(`<div _else="loggedIn"><p>Welcome, Guest!</p></div>`)
+        if !loggedIn {
+                return loggedInBuilder.String()
+        }
+        return ""
+    })
+    builder.WriteString(`<div _component="WelcomeBanner">`)
+    builder.WriteString(loggedInIf)
+    builder.WriteString(loggedInElse)
+    builder.WriteString(`</div>`)
+    return builder.String()
+}
+```
+
+# _slot
+_slot elements are used to create reusable layout components. In the following example, we have one _component utilizing another _component as a `placeholder` (more on placeholders later):
+
+```html
+<div _component="UsingSlots">
+    <Sandwich>
+        <div _slot="top">
+            <p>I'm on top!</p>
+        </div>
+        <div _slot="bottom">
+            <p>I'm on bottom</p>
+        </div>
+    </Sandwich>
+</div>
+
+
+<div _component="Sandwich">
+    {{ slot top }}
+    <p>🥪</p>
+    {{ slot bottom }}
+</div>
+```
+
+The output:
+```go
+func UsingSlots() string {
+    var builder strings.Builder
+    sandwichPlaceholder := func() string {
+        topSlot := gtml.Slot(func() string {
+            var topBuilder strings.Builder
+            topBuilder.WriteString(`<div _slot="top"><p>I&#39;m on top!</p></div>`)
+            return topBuilder.String()
+        })
+        bottomSlot := gtml.Slot(func() string {
+            var bottomBuilder strings.Builder
+            bottomBuilder.WriteString(`<div _slot="bottom"><p>I&#39;m on bottom</p></div>`)
+            return bottomBuilder.String()
+        })
+        return Sandwich(topSlot, bottomSlot)
+    }
+    builder.WriteString(`<div _component="UsingSlots">`)
+    builder.WriteString(sandwichPlaceholder())
+    builder.WriteString(`</div>`)
+    return builder.String()
+}
+func Sandwich(top string, bottom string) string {
+    var builder strings.Builder
+    builder.WriteString(`<div _component="Sandwich">`)
+    builder.WriteString(top)
+    builder.WriteString(`<p>🥪</p>`)
+    builder.WriteString(bottom)
+    builder.WriteString(`</div>`)
+    return builder.String()
+}
+```
 
 
 # Features for v0.1.0
@@ -134,4 +227,5 @@ Here an example:
 # Rules Noted
 - all HTML attribute names must be written in kebab casing while attribute values may be camel case
 - when declaring a prop using {{ propName }} syntax, you must use camel casing to define the name
-- use @ to pipe props into an child Elements.
+- use @ to pipe props into an child Elements
+- use {{ propName }} within an attribute to define a prop as well
