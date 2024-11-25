@@ -1,14 +1,14 @@
 func GreetingCard(name string, firstGuestName string, colors []string) string {
 	var builder strings.Builder
 	greetingPlaceholder := func() string {
-		messageSlot := gtmlSlot(func() string {
+		messageSlot := gtml.Slot(func() string {
 			var messageBuilder strings.Builder
 			messageBuilder.WriteString(`<div _slot="message"><p>testin!</p></div>`)
 			return messageBuilder.String()
 		})
-		loopSlot := gtmlSlot(func() string {
+		loopSlot := gtml.Slot(func() string {
 			var loopBuilder strings.Builder
-			colorFor := gtmlFor(colors, func(i int, color string) string {
+			colorFor := gtml.For(colors, func(i int, color string) string {
 				var colorBuilder strings.Builder
 				colorBuilder.WriteString(`<ul _for="color of colors []string"><li>`)
 				colorBuilder.WriteString(color)

@@ -1,6 +1,6 @@
 func SurvivalSupplies(members []Memeber) string {
         var builder strings.Builder
-        memberFor := gtmlFor(members, func(i int, member Memeber) string {
+        memberFor := gtml.For(members, func(i int, member Memeber) string {
                 var memberBuilder strings.Builder
                 survivallistPlaceholder := func() string {
                         return SurvivalList(member.Name)
@@ -17,7 +17,7 @@ func SurvivalSupplies(members []Memeber) string {
 }
 func SurvivalList(memberName string) string {
         var builder strings.Builder
-        itemFor := gtmlFor(member.Items, func(i int, item Item) string {
+        itemFor := gtml.For(member.Items, func(i int, item Item) string {
                 var itemBuilder strings.Builder
                 itemBuilder.WriteString(`<ul _for="item of member.Items []Item"><li>`)
                 itemBuilder.WriteString(item.Name)

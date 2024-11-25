@@ -1,6 +1,6 @@
 func UserGate(isBlocked bool) string {
 	var builder strings.Builder
-	isBlockedElse := gtmlElse(isBlocked, func() string {
+	isBlockedElse := gtml.Else(isBlocked, func() string {
 		var isBlockedBuilder strings.Builder
 		isBlockedBuilder.WriteString(`<div _else="isBlocked"><p>you are not blocked!</p></div>`)
 		if !isBlocked {

@@ -53,24 +53,22 @@ func GreetingCard(name string) string {
 ```
 
 # Features for v0.1.0
-1. For Loops ✅
-2. Conditionals ✅
-3. Slots ✅
-4. Internal Placeholders ✅
-5. Root Placeholders ✅
-6. Automatic Attribute Organizing ✅
-7. Basic Props ✅
-8. Command Line Tool For Generation
-9. A --watch Command
-10. Type Generation
-11. Var Name Randomization (may not need this? All _directives have their own scope..)
-12. Remove _ Attributes in Output
-13. Solid README.md
-14. Managing Imports and Package Names in Output File
-15. Tests For Many Multilayered Components
-16. Attributes can use props ✅
+- For Loops ✅
+- Conditionals ✅
+- Slots ✅
+- Internal Placeholders ✅
+- Root Placeholders ✅
+- Automatic Attribute Organizing ✅
+- Basic Props ✅
+- Command Line Tool For Generation
+- A --watch Command
+- Type Generation
+- Solid README.md
+- Managing Imports and Package Names in Output File
+- Tests For Many Multilayered Components
+- Attributes can use props ✅
 
 # Rules Noted
-1. All HTML attribute names must be written in kebab casing while attribute values may be camel case.
-2. When declaring a prop using {{ propName }} syntax, you must use camel casing to define the name.
-3. Using @ to pipe props into an Elements attributes.
+- all HTML attribute names must be written in kebab casing while attribute values may be camel case
+- when declaring a prop using {{ propName }} syntax, you must use camel casing to define the name
+- use @ to pipe props into an child Elements.

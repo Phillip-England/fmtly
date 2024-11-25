@@ -1,12 +1,12 @@
 func GuestList(someTitle string, guests []Guest, isAdmin bool, colors []string, loggedIn bool) string {
 	var builder strings.Builder
-	guestFor := gtmlFor(guests, func(i int, guest Guest) string {
+	guestFor := gtml.For(guests, func(i int, guest Guest) string {
 		var guestBuilder strings.Builder
-		itemFor := gtmlFor(guest.Items, func(i int, item Item) string {
+		itemFor := gtml.For(guest.Items, func(i int, item Item) string {
 			var itemBuilder strings.Builder
-			colorFor := gtmlFor(item.Colors, func(i int, color Color) string {
+			colorFor := gtml.For(item.Colors, func(i int, color Color) string {
 				var colorBuilder strings.Builder
-                isAdminIf := gtmlIf(isAdmin, func() string {
+                isAdminIf := gtml.If(isAdmin, func() string {
                     var isAdminBuilder strings.Builder
                     isAdminBuilder.WriteString(`<div _if="isAdmin"><p>Hello Admin!</p></div>`)
                     if isAdmin {
@@ -39,7 +39,7 @@ func GuestList(someTitle string, guests []Guest, isAdmin bool, colors []string, 
 		guestBuilder.WriteString(`</div>`)
 		return guestBuilder.String()
 	})
-	colorFor := gtmlFor(colors, func(i int, color string) string {
+	colorFor := gtml.For(colors, func(i int, color string) string {
 		var colorBuilder strings.Builder
 		colorBuilder.WriteString(`<div _for="color of colors []string"><p>`)
 		colorBuilder.WriteString(color)
@@ -48,7 +48,7 @@ func GuestList(someTitle string, guests []Guest, isAdmin bool, colors []string, 
 		colorBuilder.WriteString(`</p></div>`)
 		return colorBuilder.String()
 	})
-    loggedInIf := gtmlIf(loggedIn, func() string {
+    loggedInIf := gtml.If(loggedIn, func() string {
 		var loggedInBuilder strings.Builder
 		loggedInBuilder.WriteString(`<div _if="loggedIn"><p>Logged in!</p></div>`)
 		if loggedIn {
