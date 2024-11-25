@@ -206,7 +206,7 @@ func Sandwich(top string, bottom string) string {
 }
 ```
 ## Props
-Props are used to inform gtml about dynamic data within our components, along with a few other things. They are defined using `{{}}` syntax. 
+Props are used to inform gtml about dynamic data within our components, along with a few other things. They are defined using `{{}}` syntax.
 
 This area of the project is still under work. I like the `$rune()` syntax Svelte uses, and I might adopt it to create a distinction between `{{ props }}` and `$runes()`.
 
@@ -307,7 +307,7 @@ Take note, this is not JSX, we cannot do this (yet?):
 ```
 
 ### Kebab Casing on Attributes
-Placeholders may need data to be rendered properly, like this one: 
+Placeholders may need data to be rendered properly, like this one:
 ```html
 <div _component="FancyPost">
     <FancyText some-text="I am Fancy!"></FancyText>
@@ -345,7 +345,7 @@ What if we have a `placeholder`, and we want the value we are passing into it to
 </div>
 
 <div _component="Greeting">
-    <h1>Hello, {{ name }}</h1> 
+    <h1>Hello, {{ name }}</h1>
     <p>you are {{ age }} years old!</p>
 </div>
 ```
@@ -362,15 +362,20 @@ Now, `GreetingCard()` will expect a name, which will be piped into the context o
 - Basic Props ✅
 - Command Line Tool For Generation
 - A --watch Command
-- Type Generation
 - Solid README.md ✅
 - Managing Imports and Package Names in Output File
 - Tests For Many Multilayered Components
 - Attributes can use props ✅
-- Varname Randomization (found instances where multiple uses of the same name will be needed)
+- Varname Randomization ✅
 
 # Rules Noted
 - all HTML attribute names must be written in kebab casing while attribute values may be camel case
 - when declaring a prop using {{ propName }} syntax, you must use camel casing to define the name
 - use @ to pipe props into an child Elements
 - use {{ propName }} within an attribute to define a prop as well
+
+# Feature Wish List (v0.2.0)
+- JSX <SingleTag/> support
+- camelCase Supported in Attributes
+- Type Generation (each component to have it's own ComponentNameProps type to match)
+- Output Cleanup
