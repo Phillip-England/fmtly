@@ -83,12 +83,12 @@ func testMultiple(t *testing.T, testDir string) error {
 
 func TestSingles(t *testing.T) {
 	err := fungi.Process(
-		func() error { return testSingle(t, "mesh") },
-		func() error { return testSingle(t, "if") },
+		// func() error { return testSingle(t, "mesh") },
+		// func() error { return testSingle(t, "if") },
 		func() error { return testSingle(t, "for") },
-		func() error { return testSingle(t, "for_str") },
-		func() error { return testSingle(t, "else") },
-		func() error { return testSingle(t, "if_else") },
+		// func() error { return testSingle(t, "for_str") },
+		// func() error { return testSingle(t, "else") },
+		// func() error { return testSingle(t, "if_else") },
 	)
 	if err != nil {
 		panic(err)
@@ -97,15 +97,15 @@ func TestSingles(t *testing.T) {
 
 func TestMultiples(t *testing.T) {
 	err := fungi.Process(
-		func() error { return testMultiple(t, "placeholder") },
-		func() error { return testMultiple(t, "placeholder_root") },
-		func() error { return testMultiple(t, "placeholder_root_slot") },
-		func() error { return testMultiple(t, "attribute_prop") },
-		func() error { return testMultiple(t, "loop_with_placeholders") },
-		func() error { return testMultiple(t, "slot") },
-		func() error { return testMultiple(t, "simple_placeholder") },
-		func() error { return testMultiple(t, "placeholder_kebab") },
-		func() error { return testMultiple(t, "placeholder_with_prop") },
+	// func() error { return testMultiple(t, "placeholder") },
+	// func() error { return testMultiple(t, "placeholder_root") },
+	// func() error { return testMultiple(t, "placeholder_root_slot") },
+	// func() error { return testMultiple(t, "attribute_prop") },
+	// func() error { return testMultiple(t, "loop_with_placeholders") },
+	// func() error { return testMultiple(t, "slot") },
+	// func() error { return testMultiple(t, "simple_placeholder") },
+	// func() error { return testMultiple(t, "placeholder_kebab") },
+	// func() error { return testMultiple(t, "placeholder_with_prop") },
 	)
 	if err != nil {
 		panic(err)

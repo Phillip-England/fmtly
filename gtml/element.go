@@ -36,6 +36,7 @@ type Element interface {
 	GetCompNames() []string
 	GetAttrs() []Attr
 	GetName() string
+	GetSalt() string
 }
 
 func GetFullElementList() []string {
@@ -55,6 +56,10 @@ func NewElement(htmlStr string, compNames []string) (Element, error) {
 	if err != nil {
 		return nil, err
 	}
+	// _, saltExists := sel.Attr("_salt")
+	// if !saltExists {
+	// 	sel.SetAttr("_salt", "")
+	// }
 	match := gqpp.GetFirstMatchingAttr(sel, GetFullElementList()...)
 	switch match {
 	case KeyElementComponent:
@@ -550,6 +555,7 @@ type ElementComponent struct {
 	Props     []Prop
 	CompNames []string
 	Attrs     []Attr
+	Salt      string
 }
 
 func NewElementComponent(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementComponent, error) {
@@ -560,6 +566,7 @@ func NewElementComponent(htmlStr string, sel *goquery.Selection, compNames []str
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
+		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -586,6 +593,7 @@ func (elm *ElementComponent) GetName() string        { return elm.Name }
 func (elm *ElementComponent) GetProps() []Prop       { return elm.Props }
 func (elm *ElementComponent) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementComponent) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementComponent) GetSalt() string        { return elm.Salt }
 
 func (elm *ElementComponent) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
@@ -603,6 +611,15 @@ func (elm *ElementComponent) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
+	return nil
+}
+
+func (elm *ElementComponent) initSalt() error {
+	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
+	if err != nil {
+		return err
+	}
+	elm.Salt = attr
 	return nil
 }
 
@@ -659,6 +676,7 @@ type ElementFor struct {
 	Props     []Prop
 	CompNames []string
 	Attrs     []Attr
+	Salt      string
 }
 
 func NewElementFor(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementFor, error) {
@@ -669,6 +687,7 @@ func NewElementFor(htmlStr string, sel *goquery.Selection, compNames []string) (
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
+		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -706,6 +725,7 @@ func (elm *ElementFor) GetName() string        { return elm.Name }
 func (elm *ElementFor) GetProps() []Prop       { return elm.Props }
 func (elm *ElementFor) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementFor) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementFor) GetSalt() string        { return elm.Salt }
 
 func (elm *ElementFor) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
@@ -723,6 +743,15 @@ func (elm *ElementFor) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
+	return nil
+}
+
+func (elm *ElementFor) initSalt() error {
+	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
+	if err != nil {
+		return err
+	}
+	elm.Salt = attr
 	return nil
 }
 
@@ -779,6 +808,7 @@ type ElementIf struct {
 	Props     []Prop
 	CompNames []string
 	Attrs     []Attr
+	Salt      string
 }
 
 func NewElementIf(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementIf, error) {
@@ -789,6 +819,7 @@ func NewElementIf(htmlStr string, sel *goquery.Selection, compNames []string) (*
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
+		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -820,6 +851,7 @@ func (elm *ElementIf) GetName() string        { return elm.Name }
 func (elm *ElementIf) GetProps() []Prop       { return elm.Props }
 func (elm *ElementIf) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementIf) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementIf) GetSalt() string        { return elm.Salt }
 
 func (elm *ElementIf) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
@@ -837,6 +869,15 @@ func (elm *ElementIf) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
+	return nil
+}
+
+func (elm *ElementIf) initSalt() error {
+	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
+	if err != nil {
+		return err
+	}
+	elm.Salt = attr
 	return nil
 }
 
@@ -893,6 +934,7 @@ type ElementElse struct {
 	Props     []Prop
 	CompNames []string
 	Attrs     []Attr
+	Salt      string
 }
 
 func NewElementElse(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementElse, error) {
@@ -903,6 +945,7 @@ func NewElementElse(htmlStr string, sel *goquery.Selection, compNames []string) 
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
+		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -934,6 +977,7 @@ func (elm *ElementElse) GetName() string        { return elm.Name }
 func (elm *ElementElse) GetProps() []Prop       { return elm.Props }
 func (elm *ElementElse) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementElse) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementElse) GetSalt() string        { return elm.Salt }
 
 func (elm *ElementElse) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
@@ -951,6 +995,15 @@ func (elm *ElementElse) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
+	return nil
+}
+
+func (elm *ElementElse) initSalt() error {
+	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
+	if err != nil {
+		return err
+	}
+	elm.Salt = attr
 	return nil
 }
 
@@ -1007,6 +1060,7 @@ type ElementPlaceholder struct {
 	Props     []Prop
 	CompNames []string
 	Attrs     []Attr
+	Salt      string
 }
 
 func NewElementPlaceholder(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementPlaceholder, error) {
@@ -1017,6 +1071,7 @@ func NewElementPlaceholder(htmlStr string, sel *goquery.Selection, compNames []s
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
+		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -1054,6 +1109,7 @@ func (elm *ElementPlaceholder) GetName() string        { return elm.Name }
 func (elm *ElementPlaceholder) GetProps() []Prop       { return elm.Props }
 func (elm *ElementPlaceholder) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementPlaceholder) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementPlaceholder) GetSalt() string        { return elm.Salt }
 
 func (elm *ElementPlaceholder) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
@@ -1071,6 +1127,15 @@ func (elm *ElementPlaceholder) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
+	return nil
+}
+
+func (elm *ElementPlaceholder) initSalt() error {
+	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
+	if err != nil {
+		return err
+	}
+	elm.Salt = attr
 	return nil
 }
 
@@ -1127,6 +1192,7 @@ type ElementSlot struct {
 	Props     []Prop
 	CompNames []string
 	Attrs     []Attr
+	Salt      string
 }
 
 func NewElementSlot(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementSlot, error) {
@@ -1137,6 +1203,7 @@ func NewElementSlot(htmlStr string, sel *goquery.Selection, compNames []string) 
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
+		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -1163,6 +1230,7 @@ func (elm *ElementSlot) GetName() string        { return elm.Name }
 func (elm *ElementSlot) GetProps() []Prop       { return elm.Props }
 func (elm *ElementSlot) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementSlot) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementSlot) GetSalt() string        { return elm.Salt }
 
 func (elm *ElementSlot) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
@@ -1180,6 +1248,15 @@ func (elm *ElementSlot) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
+	return nil
+}
+
+func (elm *ElementSlot) initSalt() error {
+	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
+	if err != nil {
+		return err
+	}
+	elm.Salt = attr
 	return nil
 }
 

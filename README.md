@@ -363,7 +363,7 @@ Now, `GreetingCard()` will expect a name, which will be piped into the context o
 - Command Line Tool For Generation
 - A --watch Command
 - Type Generation
-- Solid README.md
+- Solid README.md ✅
 - Managing Imports and Package Names in Output File
 - Tests For Many Multilayered Components
 - Attributes can use props ✅
