@@ -59,6 +59,8 @@ func testMultiple(t *testing.T, testDir string) error {
 		if err != nil {
 			return err
 		}
+	}
+	for _, elm := range compElms {
 		elm, err = gtml.MarkElementPlaceholders(elm)
 		if err != nil {
 			return err

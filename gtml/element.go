@@ -186,6 +186,7 @@ func GetElementParams(elm Element) ([]Param, error) {
 	return params, nil
 }
 
+// to solve our salt problem, we need to make it so we are not generating NewHtmlFromSelection
 func WalkElementDirectChildren(elm Element, fn func(child Element) error) error {
 	var potErr error
 	elm.GetSelection().Children().Each(func(i int, childSel *goquery.Selection) {

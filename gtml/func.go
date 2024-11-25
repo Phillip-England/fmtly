@@ -85,6 +85,7 @@ func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
 func (fn *GoComponentFunc) GetVars() []Var     { return fn.Vars }
 func (fn *GoComponentFunc) GetParams() []Param { return fn.Params }
 func (fn *GoComponentFunc) Print()             { fmt.Println(fn.GetData()) }
+
 func (fn *GoComponentFunc) initName() error {
 	compAttr, err := gqpp.ForceElementAttr(fn.Element.GetSelection(), KeyElementComponent)
 	if err != nil {
