@@ -86,8 +86,10 @@ func TestSingles(t *testing.T) {
 	err := fungi.Process(
 		// func() error { return testSingle(t, "mesh") },
 		// func() error { return testSingle(t, "if") },
-		func() error { return testSingle(t, "for") },
-		func() error { return testSingle(t, "else") },
+		// func() error { return testSingle(t, "for") },
+		// func() error { return testSingle(t, "for_str") },
+		// func() error { return testSingle(t, "else") },
+		func() error { return testSingle(t, "if_else") },
 	)
 	if err != nil {
 		panic(err)

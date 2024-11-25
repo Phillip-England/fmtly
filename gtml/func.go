@@ -3,6 +3,7 @@ package gtml
 import (
 	"fmt"
 	"go/format"
+	"slices"
 	"strings"
 
 	"github.com/phillip-england/fungi"
@@ -141,13 +142,21 @@ func (fn *GoComponentFunc) initParamStr() error {
 	if err != nil {
 		return err
 	}
+
 	paramStrs := make([]string, 0)
 	for _, param := range params {
 		fn.Params = append(fn.Params, param)
 		paramStrs = append(paramStrs, param.GetStr())
 	}
-	paramStrs = purse.RemoveDuplicatesInSlice(paramStrs)
-	fn.ParamStr = strings.Join(paramStrs, ", ")
+	// paramStrs = purse.RemoveDuplicatesInSlice(paramStrs)
+	filter := make([]string, 0)
+	for _, str := range paramStrs {
+		if slices.Contains(filter, str) {
+			continue
+		}
+		filter = append(filter, str)
+	}
+	fn.ParamStr = strings.Join(filter, ", ")
 	return nil
 }
 

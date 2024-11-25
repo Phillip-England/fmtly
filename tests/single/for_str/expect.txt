@@ -1,0 +1,14 @@
+func FavoriteColors(colors []string) string {
+        var builder strings.Builder
+        colorFor := gtml.For(colors, func(i int, color string) string {
+                var colorBuilder strings.Builder
+                colorBuilder.WriteString(`<ul _for="color of colors []string"><li>`)
+                colorBuilder.WriteString(color)
+                colorBuilder.WriteString(`</li></ul>`)
+                return colorBuilder.String()
+        })
+        builder.WriteString(`<div _component="FavoriteColors">`)
+        builder.WriteString(colorFor)
+        builder.WriteString(`</div>`)
+        return builder.String()
+}

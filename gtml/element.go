@@ -175,9 +175,9 @@ func GetElementParams(elm Element) ([]Param, error) {
 		if !slices.Contains(strParams, param) && purse.MustEqualOneOf(prop.GetType(), KeyPropStr, KeyPropSlot) {
 			strParams = append(strParams, param)
 		}
-		params = append(strParams, elementSpecificParams...)
 		return nil
 	})
+	params = append(strParams, elementSpecificParams...)
 	if err != nil {
 		return nil, err
 	}

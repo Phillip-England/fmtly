@@ -1,0 +1,16 @@
+func GuestList(name string, guests []Guest) string {
+        var builder strings.Builder
+        guestFor := gtml.For(guests, func(i int, guest Guest) string {
+                var guestBuilder strings.Builder
+                guestBuilder.WriteString(`<ul _for="guest of guests []Guest"><li>`)
+                guestBuilder.WriteString(guest.Name)
+                guestBuilder.WriteString(`</li></ul>`)
+                return guestBuilder.String()
+        })
+        builder.WriteString(`<div _component="GuestList"><p>`)
+        builder.WriteString(name)
+        builder.WriteString(`</p>`)
+        builder.WriteString(guestFor)
+        builder.WriteString(`</div>`)
+        return builder.String()
+}
