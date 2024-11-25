@@ -472,6 +472,36 @@ func ReadComponentElementNamesFromFile(path string) ([]string, error) {
 	return names, nil
 }
 
+func MarkSelectionPlaceholders(sel *goquery.Selection, compNames []string) error {
+	ogSelHtml, err := gqpp.NewHtmlFromSelection(sel)
+	if err != nil {
+		return err
+	}
+	var potErr error
+	sel.Find("*").Each(func(i int, inner *goquery.Selection) {
+		innerNodeName := goquery.NodeName(inner)
+		for _, compName := range compNames {
+			if strings.ToLower(compName) == innerNodeName {
+				inner.SetAttr("_placeholder", compName)
+				inner.Children().Each(func(i int, childSel *goquery.Selection) {
+					_, hasSlot := childSel.Attr("_slot")
+					if !hasSlot {
+						potErr = fmt.Errorf("_placeholder element has children which are not wrapped in an element with a _slot='slotName' attribute: %s", ogSelHtml)
+						return
+					}
+				})
+				if potErr != nil {
+					return
+				}
+			}
+		}
+	})
+	if potErr != nil {
+		return potErr
+	}
+	return nil
+}
+
 func MarkElementPlaceholders(elm Element) (Element, error) {
 	clay := elm.GetHtml()
 	err := WalkAllElementNodesIncludingRoot(elm, func(sel *goquery.Selection) error {
@@ -513,18 +543,21 @@ func MarkElementPlaceholders(elm Element) (Element, error) {
 	return newElm, nil
 }
 
-func SaltElements(elm Element) error {
-	err := WalkElementChildren(elm, func(child Element) error {
-		err := child.SetSalt(elm)
-		if err != nil {
-			return err
+func SaltSelection(sel *goquery.Selection) {
+	sel.Find("*").Each(func(i int, inner *goquery.Selection) {
+		match := gqpp.GetFirstMatchingAttr(inner, GetChildElementList()...)
+		if match == "" {
+			return // skip elements which don't have a valid _attribute
 		}
-		return nil
+		salt := purse.RandStr(8)
+		inner.SetAttr("_salt", salt)
 	})
-	if err != nil {
-		return err
+}
+
+func SaltSelections(selections []*goquery.Selection) {
+	for _, sel := range selections {
+		SaltSelection(sel)
 	}
-	return nil
 }
 
 // ##==================================================================

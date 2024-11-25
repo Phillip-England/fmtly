@@ -21,6 +21,13 @@ func testSingle(t *testing.T, testDir string) error {
 	if err != nil {
 		return err
 	}
+	for _, sel := range compSels {
+		err := gtml.MarkSelectionPlaceholders(sel, compNames)
+		if err != nil {
+			return err
+		}
+	}
+	gtml.SaltSelections(compSels)
 	compElms, err := gtml.ConvertSelectionsIntoElements(compSels, compNames)
 	if err != nil {
 		return err
@@ -54,16 +61,19 @@ func testMultiple(t *testing.T, testDir string) error {
 	if err != nil {
 		return err
 	}
+	for _, sel := range compSels {
+		err := gtml.MarkSelectionPlaceholders(sel, compNames)
+		if err != nil {
+			return err
+		}
+	}
+	gtml.SaltSelections(compSels)
 	compElms, err := gtml.ConvertSelectionsIntoElements(compSels, compNames)
 	if err != nil {
 		return err
 	}
 	funcs := make([]gtml.Func, 0)
 	for _, elm := range compElms {
-		elm, err = gtml.MarkElementPlaceholders(elm)
-		if err != nil {
-			return err
-		}
 		fn, err := gtml.NewFunc(elm, compElms)
 		if err != nil {
 			return err
@@ -90,12 +100,12 @@ func testMultiple(t *testing.T, testDir string) error {
 
 func TestSingles(t *testing.T) {
 	err := fungi.Process(
-		// func() error { return testSingle(t, "mesh") },
-		// func() error { return testSingle(t, "if") },
-		// func() error { return testSingle(t, "for") },
-		// func() error { return testSingle(t, "for_str") },
-		// func() error { return testSingle(t, "else") },
-		func() error { return testSingle(t, "if_else") },
+	// func() error { return testSingle(t, "mesh") },
+	// func() error { return testSingle(t, "if") },
+	// func() error { return testSingle(t, "for") },
+	// func() error { return testSingle(t, "for_str") },
+	// func() error { return testSingle(t, "else") },
+	// func() error { return testSingle(t, "if_else") },
 	)
 	if err != nil {
 		panic(err)
@@ -104,7 +114,7 @@ func TestSingles(t *testing.T) {
 
 func TestMultiples(t *testing.T) {
 	err := fungi.Process(
-	// func() error { return testMultiple(t, "placeholder") },
+		func() error { return testMultiple(t, "placeholder") },
 	// func() error { return testMultiple(t, "placeholder_root") },
 	// func() error { return testMultiple(t, "placeholder_root_slot") },
 	// func() error { return testMultiple(t, "attribute_prop") },
