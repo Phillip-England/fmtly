@@ -167,16 +167,20 @@ func GetElementParams(elm Element) ([]Param, error) {
 		return params, err
 	}
 	strParams := make([]Param, 0)
-	for _, prop := range elm.GetProps() {
+	err = WalkElementProps(elm, func(prop Prop) error {
 		param, err := NewParam(prop.GetValue(), "string")
 		if err != nil {
-			return params, err
+			return err
 		}
 		if !slices.Contains(strParams, param) && purse.MustEqualOneOf(prop.GetType(), KeyPropStr, KeyPropSlot) {
 			strParams = append(strParams, param)
 		}
+		params = append(strParams, elementSpecificParams...)
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
-	params = append(strParams, elementSpecificParams...)
 	return params, nil
 }
 

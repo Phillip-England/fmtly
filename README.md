@@ -44,7 +44,7 @@ func Greeting(name string) string {
 ```
 
 # Features for v0.1.0
-- For Loops (bug where placeholders inside loops wont register)
+- For Loops (bug where props inside loops wont register in param str)
 - Conditionals ✅
 - Slots ✅
 - Internal Placeholders ✅

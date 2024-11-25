@@ -87,7 +87,7 @@ func TestSingles(t *testing.T) {
 		// func() error { return testSingle(t, "mesh") },
 		// func() error { return testSingle(t, "if") },
 		func() error { return testSingle(t, "for") },
-		// func() error { return testSingle(t, "else") },
+		func() error { return testSingle(t, "else") },
 	)
 	if err != nil {
 		panic(err)
