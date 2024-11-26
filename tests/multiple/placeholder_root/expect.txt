@@ -1,6 +1,6 @@
 func GreetingCard(guestName string, message string) string {
         var builder strings.Builder
-        builder.WriteString(`<div _component="GreetingCard"><h1>Hello, `)
+        builder.WriteString(`<div _component="GreetingCard" _id="0"><h1>Hello, `)
         builder.WriteString(guestName)
         builder.WriteString(`! How are you?</h1><p>I&#39;ve been waiting to tell you.. `)
         builder.WriteString(message)
@@ -9,9 +9,9 @@ func GreetingCard(guestName string, message string) string {
 }
 func GreetJack() string {
         var builder strings.Builder
-        greetingcardPlaceholder := func() string {
+        greetingcardPlaceholder0 := func() string {
                 return GreetingCard("Jack", "I love you!")
         }
-        builder.WriteString(greetingcardPlaceholder())
+        builder.WriteString(greetingcardPlaceholder0())
         return builder.String()
 }

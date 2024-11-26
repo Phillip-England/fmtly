@@ -1,67 +1,67 @@
 func GuestList(someTitle string, guests []Guest, isAdmin bool, colors []string, loggedIn bool) string {
-	var builder strings.Builder
-	guestFor := gtml.For(guests, func(i int, guest Guest) string {
-		var guestBuilder strings.Builder
-		itemFor := gtml.For(guest.Items, func(i int, item Item) string {
-			var itemBuilder strings.Builder
-			colorFor := gtml.For(item.Colors, func(i int, color Color) string {
-				var colorBuilder strings.Builder
-                isAdminIf := gtml.If(isAdmin, func() string {
-                    var isAdminBuilder strings.Builder
-                    isAdminBuilder.WriteString(`<div _if="isAdmin"><p>Hello Admin!</p></div>`)
-                    if isAdmin {
-                        return isAdminBuilder.String()
-                    }
-                    return ""
+        var builder strings.Builder
+        guestFor1 := gtml.For(guests, func(i int, guest Guest) string {
+                var guestBuilder strings.Builder
+                itemFor2 := gtml.For(guest.Items, func(i int, item Item) string {
+                        var itemBuilder strings.Builder
+                        colorFor3 := gtml.For(item.Colors, func(i int, color Color) string {
+                                var colorBuilder strings.Builder
+                                isAdminIf4 := gtml.If(isAdmin, func() string {
+                                        var isAdminBuilder strings.Builder
+                                        isAdminBuilder.WriteString(`<div _if="isAdmin" _id="4"><p>Hello Admin!</p></div>`)
+                                        if isAdmin {
+                                                return isAdminBuilder.String()
+                                        }
+                                        return ""
+                                })
+                                colorBuilder.WriteString(`<div _for="color of item.Colors []Color" _id="3"><p>`)
+                                colorBuilder.WriteString(color.Shade)
+                                colorBuilder.WriteString(`</p><p>`)
+                                colorBuilder.WriteString(color.Hue)
+                                colorBuilder.WriteString(`</p>`)
+                                colorBuilder.WriteString(isAdminIf4)
+                                colorBuilder.WriteString(`</div>`)
+                                return colorBuilder.String()
+                        })
+                        itemBuilder.WriteString(`<div _for="item of guest.Items []Item" _id="2"><p>`)
+                        itemBuilder.WriteString(item.Name)
+                        itemBuilder.WriteString(`</p><p>`)
+                        itemBuilder.WriteString(item.Price)
+                        itemBuilder.WriteString(`</p>`)
+                        itemBuilder.WriteString(colorFor3)
+                        itemBuilder.WriteString(`</div>`)
+                        return itemBuilder.String()
                 })
-				colorBuilder.WriteString(`<div _for="color of item.Colors []Color"><p>`)
-				colorBuilder.WriteString(color.Shade)
-				colorBuilder.WriteString(`</p><p>`)
-				colorBuilder.WriteString(color.Hue)
-				colorBuilder.WriteString(`</p>`)
-                colorBuilder.WriteString(isAdminIf)
-				colorBuilder.WriteString(`</div>`)
-				return colorBuilder.String()
-			})
-			itemBuilder.WriteString(`<div _for="item of guest.Items []Item"><p>`)
-			itemBuilder.WriteString(item.Name)
-			itemBuilder.WriteString(`</p><p>`)
-			itemBuilder.WriteString(item.Price)
-			itemBuilder.WriteString(`</p>`)
-			itemBuilder.WriteString(colorFor)
-			itemBuilder.WriteString(`</div>`)
-			return itemBuilder.String()
-		})
-		guestBuilder.WriteString(`<div _for="guest of guests []Guest"><h1>`)
-		guestBuilder.WriteString(guest.Name)
-		guestBuilder.WriteString(`</h1><p>The guest has brought the following items:</p>`)
-		guestBuilder.WriteString(itemFor)
-		guestBuilder.WriteString(`</div>`)
-		return guestBuilder.String()
-	})
-	colorFor := gtml.For(colors, func(i int, color string) string {
-		var colorBuilder strings.Builder
-		colorBuilder.WriteString(`<div _for="color of colors []string"><p>`)
-		colorBuilder.WriteString(color)
-		colorBuilder.WriteString(`</p><p>`)
-		colorBuilder.WriteString(color)
-		colorBuilder.WriteString(`</p></div>`)
-		return colorBuilder.String()
-	})
-    loggedInIf := gtml.If(loggedIn, func() string {
-		var loggedInBuilder strings.Builder
-		loggedInBuilder.WriteString(`<div _if="loggedIn"><p>Logged in!</p></div>`)
-		if loggedIn {
-			return loggedInBuilder.String()
-		}
-		return ""
-	})
-	builder.WriteString(`<div _component="GuestList"><h1>`)
-	builder.WriteString(someTitle)
-	builder.WriteString(`</h1>`)
-	builder.WriteString(guestFor)
-	builder.WriteString(colorFor)
-	builder.WriteString(loggedInIf)
-	builder.WriteString(`</div>`)
-	return builder.String()
+                guestBuilder.WriteString(`<div _for="guest of guests []Guest" _id="1"><h1>`)
+                guestBuilder.WriteString(guest.Name)
+                guestBuilder.WriteString(`</h1><p>The guest has brought the following items:</p>`)
+                guestBuilder.WriteString(itemFor2)
+                guestBuilder.WriteString(`</div>`)
+                return guestBuilder.String()
+        })
+        colorFor5 := gtml.For(colors, func(i int, color string) string {
+                var colorBuilder strings.Builder
+                colorBuilder.WriteString(`<div _for="color of colors []string" _id="5"><p>`)
+                colorBuilder.WriteString(color)
+                colorBuilder.WriteString(`</p><p>`)
+                colorBuilder.WriteString(color)
+                colorBuilder.WriteString(`</p></div>`)
+                return colorBuilder.String()
+        })
+        loggedInIf6 := gtml.If(loggedIn, func() string {
+                var loggedInBuilder strings.Builder
+                loggedInBuilder.WriteString(`<div _if="loggedIn" _id="6"><p>Logged in!</p></div>`)
+                if loggedIn {
+                        return loggedInBuilder.String()
+                }
+                return ""
+        })
+        builder.WriteString(`<div _component="GuestList" _id="0"><h1>`)
+        builder.WriteString(someTitle)
+        builder.WriteString(`</h1>`)
+        builder.WriteString(guestFor1)
+        builder.WriteString(colorFor5)
+        builder.WriteString(loggedInIf6)
+        builder.WriteString(`</div>`)
+        return builder.String()
 }

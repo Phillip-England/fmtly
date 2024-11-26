@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -36,8 +37,7 @@ type Element interface {
 	GetCompNames() []string
 	GetAttrs() []Attr
 	GetName() string
-	GetSalt() string
-	SetSalt(root Element) error
+	GetId() string
 }
 
 func GetFullElementList() []string {
@@ -186,7 +186,6 @@ func GetElementParams(elm Element) ([]Param, error) {
 	return params, nil
 }
 
-// to solve our salt problem, we need to make it so we are not generating NewHtmlFromSelection
 func WalkElementDirectChildren(elm Element, fn func(child Element) error) error {
 	var potErr error
 	elm.GetSelection().Children().Each(func(i int, childSel *goquery.Selection) {
@@ -477,27 +476,37 @@ func MarkSelectionPlaceholders(sel *goquery.Selection, compNames []string) error
 	if err != nil {
 		return err
 	}
+	err = MarkSelectionAsPlaceholder(sel, compNames, ogSelHtml)
+	if err != nil {
+		return err
+	}
 	var potErr error
 	sel.Find("*").Each(func(i int, inner *goquery.Selection) {
-		innerNodeName := goquery.NodeName(inner)
-		for _, compName := range compNames {
-			if strings.ToLower(compName) == innerNodeName {
-				inner.SetAttr("_placeholder", compName)
-				inner.Children().Each(func(i int, childSel *goquery.Selection) {
-					_, hasSlot := childSel.Attr("_slot")
-					if !hasSlot {
-						potErr = fmt.Errorf("_placeholder element has children which are not wrapped in an element with a _slot='slotName' attribute: %s", ogSelHtml)
-						return
-					}
-				})
-				if potErr != nil {
+		if potErr != nil {
+			return // Exit early if there's already an error
+		}
+		potErr = MarkSelectionAsPlaceholder(inner, compNames, ogSelHtml)
+	})
+	return potErr
+}
+
+func MarkSelectionAsPlaceholder(inner *goquery.Selection, compNames []string, ogSelHtml string) error {
+	innerNodeName := goquery.NodeName(inner)
+	for _, compName := range compNames {
+		if strings.ToLower(compName) == innerNodeName {
+			inner.SetAttr("_placeholder", compName)
+			var potErr error
+			inner.Children().Each(func(i int, childSel *goquery.Selection) {
+				_, hasSlot := childSel.Attr("_slot")
+				if !hasSlot {
+					potErr = fmt.Errorf("_placeholder element has children which are not wrapped in an element with a _slot='slotName' attribute: %s", ogSelHtml)
 					return
 				}
+			})
+			if potErr != nil {
+				return potErr
 			}
 		}
-	})
-	if potErr != nil {
-		return potErr
 	}
 	return nil
 }
@@ -543,20 +552,24 @@ func MarkElementPlaceholders(elm Element) (Element, error) {
 	return newElm, nil
 }
 
-func SaltSelection(sel *goquery.Selection) {
+func MarkSelectionAsUnique(sel *goquery.Selection) {
+	id := 0
+	sel.SetAttr("_id", strconv.Itoa(id))
+	id++
 	sel.Find("*").Each(func(i int, inner *goquery.Selection) {
 		match := gqpp.GetFirstMatchingAttr(inner, GetChildElementList()...)
 		if match == "" {
 			return // skip elements which don't have a valid _attribute
 		}
-		salt := purse.RandStr(8)
-		inner.SetAttr("_salt", salt)
+		idStr := strconv.Itoa(id)
+		inner.SetAttr("_id", idStr)
+		id++
 	})
 }
 
-func SaltSelections(selections []*goquery.Selection) {
+func MarkSelectionsAsUnique(selections []*goquery.Selection) {
 	for _, sel := range selections {
-		SaltSelection(sel)
+		MarkSelectionAsUnique(sel)
 	}
 }
 
@@ -582,7 +595,6 @@ func NewElementComponent(htmlStr string, sel *goquery.Selection, compNames []str
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
-		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -609,22 +621,9 @@ func (elm *ElementComponent) GetName() string        { return elm.Name }
 func (elm *ElementComponent) GetProps() []Prop       { return elm.Props }
 func (elm *ElementComponent) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementComponent) GetAttrs() []Attr       { return elm.Attrs }
-func (elm *ElementComponent) GetSalt() string {
-	salt, _ := elm.GetSelection().Attr("_salt")
+func (elm *ElementComponent) GetId() string {
+	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
-}
-func (elm *ElementComponent) SetSalt(root Element) error {
-	rootHtml := root.GetHtml()
-	ogHtml := elm.GetHtml()
-	elm.GetSelection().SetAttr("_salt", purse.RandStr(12))
-	newHtml, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
-	if err != nil {
-		return err
-	}
-	rootHtml = strings.Replace(rootHtml, ogHtml, newHtml, 1)
-	root.SetHtml(rootHtml)
-	elm.SetHtml(newHtml)
-	return nil
 }
 
 func (elm *ElementComponent) initSelection(sel *goquery.Selection) error {
@@ -643,15 +642,6 @@ func (elm *ElementComponent) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
-	return nil
-}
-
-func (elm *ElementComponent) initSalt() error {
-	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
-	if err != nil {
-		return err
-	}
-	elm.Salt = attr
 	return nil
 }
 
@@ -719,7 +709,6 @@ func NewElementFor(htmlStr string, sel *goquery.Selection, compNames []string) (
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
-		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -757,22 +746,9 @@ func (elm *ElementFor) GetName() string        { return elm.Name }
 func (elm *ElementFor) GetProps() []Prop       { return elm.Props }
 func (elm *ElementFor) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementFor) GetAttrs() []Attr       { return elm.Attrs }
-func (elm *ElementFor) GetSalt() string {
-	salt, _ := elm.GetSelection().Attr("_salt")
+func (elm *ElementFor) GetId() string {
+	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
-}
-func (elm *ElementFor) SetSalt(root Element) error {
-	rootHtml := root.GetHtml()
-	ogHtml := elm.GetHtml()
-	elm.GetSelection().SetAttr("_salt", purse.RandStr(12))
-	newHtml, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
-	if err != nil {
-		return err
-	}
-	rootHtml = strings.Replace(rootHtml, ogHtml, newHtml, 1)
-	root.SetHtml(rootHtml)
-	elm.SetHtml(newHtml)
-	return nil
 }
 
 func (elm *ElementFor) initSelection(sel *goquery.Selection) error {
@@ -791,15 +767,6 @@ func (elm *ElementFor) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
-	return nil
-}
-
-func (elm *ElementFor) initSalt() error {
-	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
-	if err != nil {
-		return err
-	}
-	elm.Salt = attr
 	return nil
 }
 
@@ -867,7 +834,6 @@ func NewElementIf(htmlStr string, sel *goquery.Selection, compNames []string) (*
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
-		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -899,22 +865,9 @@ func (elm *ElementIf) GetName() string        { return elm.Name }
 func (elm *ElementIf) GetProps() []Prop       { return elm.Props }
 func (elm *ElementIf) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementIf) GetAttrs() []Attr       { return elm.Attrs }
-func (elm *ElementIf) GetSalt() string {
-	salt, _ := elm.GetSelection().Attr("_salt")
+func (elm *ElementIf) GetId() string {
+	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
-}
-func (elm *ElementIf) SetSalt(root Element) error {
-	rootHtml := root.GetHtml()
-	ogHtml := elm.GetHtml()
-	elm.GetSelection().SetAttr("_salt", purse.RandStr(12))
-	newHtml, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
-	if err != nil {
-		return err
-	}
-	rootHtml = strings.Replace(rootHtml, ogHtml, newHtml, 1)
-	root.SetHtml(rootHtml)
-	elm.SetHtml(newHtml)
-	return nil
 }
 
 func (elm *ElementIf) initSelection(sel *goquery.Selection) error {
@@ -933,15 +886,6 @@ func (elm *ElementIf) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
-	return nil
-}
-
-func (elm *ElementIf) initSalt() error {
-	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
-	if err != nil {
-		return err
-	}
-	elm.Salt = attr
 	return nil
 }
 
@@ -1009,7 +953,6 @@ func NewElementElse(htmlStr string, sel *goquery.Selection, compNames []string) 
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
-		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -1041,22 +984,9 @@ func (elm *ElementElse) GetName() string        { return elm.Name }
 func (elm *ElementElse) GetProps() []Prop       { return elm.Props }
 func (elm *ElementElse) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementElse) GetAttrs() []Attr       { return elm.Attrs }
-func (elm *ElementElse) GetSalt() string {
-	salt, _ := elm.GetSelection().Attr("_salt")
+func (elm *ElementElse) GetId() string {
+	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
-}
-func (elm *ElementElse) SetSalt(root Element) error {
-	rootHtml := root.GetHtml()
-	ogHtml := elm.GetHtml()
-	elm.GetSelection().SetAttr("_salt", purse.RandStr(12))
-	newHtml, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
-	if err != nil {
-		return err
-	}
-	rootHtml = strings.Replace(rootHtml, ogHtml, newHtml, 1)
-	root.SetHtml(rootHtml)
-	elm.SetHtml(newHtml)
-	return nil
 }
 
 func (elm *ElementElse) initSelection(sel *goquery.Selection) error {
@@ -1075,15 +1005,6 @@ func (elm *ElementElse) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
-	return nil
-}
-
-func (elm *ElementElse) initSalt() error {
-	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
-	if err != nil {
-		return err
-	}
-	elm.Salt = attr
 	return nil
 }
 
@@ -1151,7 +1072,6 @@ func NewElementPlaceholder(htmlStr string, sel *goquery.Selection, compNames []s
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
-		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -1189,22 +1109,9 @@ func (elm *ElementPlaceholder) GetName() string        { return elm.Name }
 func (elm *ElementPlaceholder) GetProps() []Prop       { return elm.Props }
 func (elm *ElementPlaceholder) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementPlaceholder) GetAttrs() []Attr       { return elm.Attrs }
-func (elm *ElementPlaceholder) GetSalt() string {
-	salt, _ := elm.GetSelection().Attr("_salt")
+func (elm *ElementPlaceholder) GetId() string {
+	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
-}
-func (elm *ElementPlaceholder) SetSalt(root Element) error {
-	rootHtml := root.GetHtml()
-	ogHtml := elm.GetHtml()
-	elm.GetSelection().SetAttr("_salt", purse.RandStr(12))
-	newHtml, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
-	if err != nil {
-		return err
-	}
-	rootHtml = strings.Replace(rootHtml, ogHtml, newHtml, 1)
-	root.SetHtml(rootHtml)
-	elm.SetHtml(newHtml)
-	return nil
 }
 
 func (elm *ElementPlaceholder) initSelection(sel *goquery.Selection) error {
@@ -1223,15 +1130,6 @@ func (elm *ElementPlaceholder) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
-	return nil
-}
-
-func (elm *ElementPlaceholder) initSalt() error {
-	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
-	if err != nil {
-		return err
-	}
-	elm.Salt = attr
 	return nil
 }
 
@@ -1299,7 +1197,6 @@ func NewElementSlot(htmlStr string, sel *goquery.Selection, compNames []string) 
 		func() error { return elm.initSelection(sel) },
 		func() error { return elm.initType() },
 		func() error { return elm.initHtml() },
-		// func() error { return elm.initSalt() },
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
@@ -1326,23 +1223,11 @@ func (elm *ElementSlot) GetName() string        { return elm.Name }
 func (elm *ElementSlot) GetProps() []Prop       { return elm.Props }
 func (elm *ElementSlot) GetCompNames() []string { return elm.CompNames }
 func (elm *ElementSlot) GetAttrs() []Attr       { return elm.Attrs }
-func (elm *ElementSlot) GetSalt() string {
-	salt, _ := elm.GetSelection().Attr("_salt")
+func (elm *ElementSlot) GetId() string {
+	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
 }
-func (elm *ElementSlot) SetSalt(root Element) error {
-	rootHtml := root.GetHtml()
-	ogHtml := elm.GetHtml()
-	elm.GetSelection().SetAttr("_salt", purse.RandStr(12))
-	newHtml, err := gqpp.NewHtmlFromSelection(elm.GetSelection())
-	if err != nil {
-		return err
-	}
-	rootHtml = strings.Replace(rootHtml, ogHtml, newHtml, 1)
-	root.SetHtml(rootHtml)
-	elm.SetHtml(newHtml)
-	return nil
-}
+
 func (elm *ElementSlot) initSelection(sel *goquery.Selection) error {
 	elm.Selection = sel
 	return nil
@@ -1359,15 +1244,6 @@ func (elm *ElementSlot) initHtml() error {
 		return err
 	}
 	elm.Html = htmlStr
-	return nil
-}
-
-func (elm *ElementSlot) initSalt() error {
-	attr, err := gqpp.GetAttr(elm.GetSelection(), "_salt")
-	if err != nil {
-		return err
-	}
-	elm.Salt = attr
 	return nil
 }
 

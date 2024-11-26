@@ -107,7 +107,7 @@ func (v *VarGoFor) initVarName() error {
 
 func (v *VarGoFor) initBasicInfo() error {
 	attrParts := v.Element.GetAttrParts()
-	v.VarName = attrParts[0] + "For" + v.Element.GetSalt()
+	v.VarName = attrParts[0] + "For" + v.Element.GetId()
 	v.BuilderName = attrParts[0] + "Builder"
 	v.IterItems = attrParts[2]
 	v.IterItem = attrParts[0]
@@ -193,7 +193,7 @@ func (v *VarGoIf) Print()                 { fmt.Print(v.Data) }
 
 func (v *VarGoIf) initBasicInfo() error {
 	attr := v.Element.GetAttr()
-	v.VarName = attr + "If" + v.Element.GetSalt()
+	v.VarName = attr + "If" + v.Element.GetId()
 	v.BuilderName = attr + "Builder"
 	v.BoolToCheck = attr
 	v.Type = KeyVarGoIf
@@ -280,7 +280,7 @@ func (v *VarGoElse) Print()                 { fmt.Print(v.Data) }
 
 func (v *VarGoElse) initBasicInfo() error {
 	attr := v.Element.GetAttr()
-	v.VarName = attr + "Else" + v.Element.GetSalt()
+	v.VarName = attr + "Else" + v.Element.GetId()
 	v.BuilderName = attr + "Builder"
 	v.BoolToCheck = attr
 	v.Type = KeyVarGoElse
@@ -374,7 +374,7 @@ func (v *VarGoPlaceholder) Print()                 { fmt.Print(v.Data) }
 
 func (v *VarGoPlaceholder) initBasicInfo() error {
 	attr := v.Element.GetAttr()
-	v.VarName = strings.ToLower(attr) + "Placeholder" + v.Element.GetSalt()
+	v.VarName = strings.ToLower(attr) + "Placeholder" + v.Element.GetId()
 	v.BuilderName = strings.ToLower(attr) + "Builder"
 	v.ComponentName = attr
 	v.Type = KeyVarGoPlaceholder
@@ -527,7 +527,7 @@ func (v *VarGoSlot) Print()                 { fmt.Print(v.Data) }
 
 func (v *VarGoSlot) initBasicInfo() error {
 	attr := v.Element.GetAttr()
-	v.VarName = attr + "Slot" + v.Element.GetSalt()
+	v.VarName = attr + "Slot" + v.Element.GetId()
 	v.BuilderName = attr + "Builder"
 	v.BoolToCheck = attr
 	v.Type = KeyVarGoSlot

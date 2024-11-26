@@ -1,24 +1,24 @@
 func WelcomeBanner(loggedIn bool) string {
         var builder strings.Builder
-        loggedInIf := gtml.If(loggedIn, func() string {
+        loggedInIf1 := gtml.If(loggedIn, func() string {
                 var loggedInBuilder strings.Builder
-                loggedInBuilder.WriteString(`<div _if="loggedIn"><p>Welcome, User!</p></div>`)
+                loggedInBuilder.WriteString(`<div _if="loggedIn" _id="1"><p>Welcome, User!</p></div>`)
                 if loggedIn {
                         return loggedInBuilder.String()
                 }
                 return ""
         })
-        loggedInElse := gtml.Else(loggedIn, func() string {
+        loggedInElse2 := gtml.Else(loggedIn, func() string {
                 var loggedInBuilder strings.Builder
-                loggedInBuilder.WriteString(`<div _else="loggedIn"><p>Welcome, Guest!</p></div>`)
+                loggedInBuilder.WriteString(`<div _else="loggedIn" _id="2"><p>Welcome, Guest!</p></div>`)
                 if !loggedIn {
                         return loggedInBuilder.String()
                 }
                 return ""
         })
-        builder.WriteString(`<div _component="WelcomeBanner">`)
-        builder.WriteString(loggedInIf)
-        builder.WriteString(loggedInElse)
+        builder.WriteString(`<div _component="WelcomeBanner" _id="0">`)
+        builder.WriteString(loggedInIf1)
+        builder.WriteString(loggedInElse2)
         builder.WriteString(`</div>`)
         return builder.String()
 }

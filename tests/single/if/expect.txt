@@ -1,15 +1,15 @@
 func HomePage(loggedIn bool) string {
-	var builder strings.Builder
-	loggedInIf := gtml.If(loggedIn, func() string {
-		var loggedInBuilder strings.Builder
-		loggedInBuilder.WriteString(`<div _if="loggedIn"><p>Logged in!</p></div>`)
-		if loggedIn {
-			return loggedInBuilder.String()
-		}
-		return ""
-	})
-	builder.WriteString(`<div _component="HomePage">`)
-	builder.WriteString(loggedInIf)
-	builder.WriteString(`</div>`)
-	return builder.String()
+        var builder strings.Builder
+        loggedInIf1 := gtml.If(loggedIn, func() string {
+                var loggedInBuilder strings.Builder
+                loggedInBuilder.WriteString(`<div _if="loggedIn" _id="1"><p>Logged in!</p></div>`)
+                if loggedIn {
+                        return loggedInBuilder.String()
+                }
+                return ""
+        })
+        builder.WriteString(`<div _component="HomePage" _id="0">`)
+        builder.WriteString(loggedInIf1)
+        builder.WriteString(`</div>`)
+        return builder.String()
 }

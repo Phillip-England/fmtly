@@ -1,15 +1,15 @@
 func LoginForm() string {
         var builder strings.Builder
-        submitbuttonPlaceholder := func() string {
+        submitbuttonPlaceholder1 := func() string {
                 return SubmitButton()
         }
-        builder.WriteString(`<form _component="LoginForm"><h1>Login</h1><input type="text" name="username"/>`)
-        builder.WriteString(submitbuttonPlaceholder())
+        builder.WriteString(`<form _component="LoginForm" _id="0"><h1>Login</h1><input type="text" name="username"/>`)
+        builder.WriteString(submitbuttonPlaceholder1())
         builder.WriteString(`</form>`)
         return builder.String()
 }
 func SubmitButton() string {
         var builder strings.Builder
-        builder.WriteString(`<button _component="SubmitButton">Submit</button>`)
+        builder.WriteString(`<button _component="SubmitButton" _id="0">Submit</button>`)
         return builder.String()
 }
