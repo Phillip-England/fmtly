@@ -25,9 +25,11 @@ func getGtmlArt() string {
  | |__| |  | |  | |  | | |____ 
   \_____|  |_|  |_|  |_|______|
  -------------------------------
- An HTML to Golang Transpiler 🐛
+ An HTML to Golang Transpiler 💦
  Version 0.1.0 (2024-11-26)
+ https://github.com/phillip-england/gtml
  -------------------------------`
+
 	return purse.RemoveFirstLine(art)
 }
 
