@@ -128,3 +128,7 @@ func TestMultiples(t *testing.T) {
 		panic(err)
 	}
 }
+
+func TestCmd(t *testing.T) {
+
+}
