@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/purse"
 )
 
@@ -29,7 +30,6 @@ func getGtmlArt() string {
  Version 0.1.0 (2024-11-26)
  https://github.com/phillip-england/gtml
  -------------------------------`
-
 	return purse.RemoveFirstLine(art)
 }
 
@@ -66,17 +66,23 @@ func NewCommand() (Command, error) {
 
 // ##==================================================================
 type CommandBuild struct {
-	Args  []string
-	Arg   string
-	Type  string
-	Emoji string
+	Arg       string
+	Type      string
+	InputDir  string
+	OutputDir string
+	Options   []Option
 }
 
 func NewCommandBuild(arg string) (*CommandBuild, error) {
 	cmd := &CommandBuild{
-		Arg:   arg,
-		Type:  KeyCommandBuild,
-		Emoji: "⚡",
+		Arg:  arg,
+		Type: KeyCommandBuild,
+	}
+	err := fungi.Process(
+		func() error { return cmd.initDirs() },
+	)
+	if err != nil {
+		return nil, err
 	}
 	return cmd, nil
 }
@@ -86,19 +92,23 @@ func (cmd *CommandBuild) Execute() error {
 	return nil
 }
 
+func (cmd *CommandBuild) initDirs() error {
+	for _, arg := range os.Args {
+		fmt.Println(arg)
+	}
+	return nil
+}
+
 // ##==================================================================
 type CommandHelp struct {
-	Args  []string
-	Arg   string
-	Type  string
-	Emoji string
+	Arg  string
+	Type string
 }
 
 func NewCommandHelp(arg string) (*CommandHelp, error) {
 	cmd := &CommandHelp{
-		Arg:   arg,
-		Type:  KeyCommandHelp,
-		Emoji: "🆘",
+		Arg:  arg,
+		Type: KeyCommandHelp,
 	}
 	return cmd, nil
 }
