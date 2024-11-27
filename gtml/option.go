@@ -2,7 +2,9 @@ package gtml
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/phillip-england/purse"
 )
 
@@ -20,6 +22,7 @@ func getOptionList() []string {
 type Option interface {
 	Print()
 	GetType() string
+	Inject(ex Executor, process func() error) func() error
 }
 
 func NewOption(arg string) (Option, error) {
@@ -52,6 +55,62 @@ func NewOptionWatch() (*OptionWatch, error) {
 
 func (opt *OptionWatch) GetType() string { return opt.Type }
 func (opt *OptionWatch) Print()          { fmt.Println(opt.Type) }
+func (opt *OptionWatch) Inject(ex Executor, process func() error) func() error {
+	return func() error {
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			return err
+		}
+		defer watcher.Close()
+
+		dirToWatch := ex.GetCommand().GetFilteredArgs()[0]
+		if err := watcher.Add(dirToWatch); err != nil {
+			return err
+		}
+
+		err = process() // Initial run
+		if err != nil {
+			return err
+		}
+
+		var debounceTimer *time.Timer
+		debounceDuration := 100 * time.Millisecond
+
+		go func() {
+			for {
+				select {
+				case event, ok := <-watcher.Events:
+					if !ok {
+						return
+					}
+
+					if event.Op&fsnotify.Write == fsnotify.Write {
+						fmt.Printf("File modified: %s\n", event.Name)
+
+						if debounceTimer != nil {
+							debounceTimer.Stop()
+						}
+						debounceTimer = time.AfterFunc(debounceDuration, func() {
+							err := process()
+							if err != nil {
+								fmt.Printf("Error running process: %v\n", err)
+							}
+						})
+					}
+
+				case err, ok := <-watcher.Errors:
+					if !ok {
+						return
+					}
+					fmt.Printf("Watcher error: %v\n", err)
+				}
+			}
+		}()
+
+		fmt.Printf("Watching directory: %s\n", dirToWatch)
+		select {} // Block forever.
+	}
+}
 
 // ##==================================================================
 
