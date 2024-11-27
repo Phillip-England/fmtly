@@ -62,6 +62,7 @@ func NewGoComponentFunc(elm Element, siblings []Element) (*GoComponentFunc, erro
 		func() error { return fn.initName() },
 		func() error { return fn.initVars() },
 		func() error { return fn.initVarStr() },
+		func() error { return fn.initParams() },
 		func() error { return fn.initData() },
 		func() error { return fn.initBuilderNames() },
 		func() error { return fn.initBuilderCalls() },
@@ -132,6 +133,20 @@ func (fn *GoComponentFunc) initVarStr() error {
 		}
 	}
 	fn.VarStr = str
+	return nil
+}
+
+func (fn *GoComponentFunc) initParams() error {
+	params, err := GetElementParams(fn.Element)
+	if err != nil {
+		return err
+	}
+	fn.Params = params
+	strs := make([]string, 0)
+	for _, param := range params {
+		strs = append(strs, param.GetStr())
+	}
+	fn.ParamStr = strings.Join(strs, ", ")
 	return nil
 }
 

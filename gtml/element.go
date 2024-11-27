@@ -226,11 +226,13 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	// err = WalkElementProps(elm, func(prop Prop) error {
-	// 	call := fmt.Sprintf("%s.WriteString(%s)", builderName, prop.GetValue())
-	// 	clay = strings.Replace(clay, prop.GetRaw(), call, 1)
-	// 	return nil
-	// })
+	err = WalkElementRunes(elm, func(rn GtmlRune) error {
+		if rn.GetType() == KeyRuneProp {
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
+			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
+		}
+		return nil
+	})
 	if err != nil {
 		return "", err
 	}
@@ -490,6 +492,70 @@ func MarkSelectionsAsUnique(selections []*goquery.Selection) {
 	}
 }
 
+func GetElementRunes(elm Element) ([]GtmlRune, error) {
+	runes := make([]GtmlRune, 0)
+	elmHtml, err := GetElementHtmlWithoutChildren(elm)
+	if err != nil {
+		return runes, err
+	}
+	parts := purse.ScanBetweenSubStrs(elmHtml, "$", ")")
+	for _, part := range parts {
+		index := strings.Index(part, "(")
+		if index == -1 {
+			continue
+		}
+		name := part[:index]
+		if !purse.SliceContains(GetRuneNames(), name) {
+			continue
+		}
+		r, err := NewGtmlRune(part)
+		if err != nil {
+			return runes, err
+		}
+		runes = append(runes, r)
+	}
+	return runes, nil
+}
+
+func WalkElementRunes(elm Element, fn func(rn GtmlRune) error) error {
+	rns, err := GetElementRunes(elm)
+	if err != nil {
+		return err
+	}
+	for _, rn := range rns {
+		err := fn(rn)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func GetElementParams(elm Element) ([]Param, error) {
+	params := make([]Param, 0)
+	// pulling params from runes from the root and its elements
+	err := WalkElementChildrenIncludingRoot(elm, func(child Element) error {
+		err := WalkElementRunes(child, func(rn GtmlRune) error {
+			if rn.GetType() == KeyRuneProp {
+				param, err := NewParam(rn.GetValue(), "string")
+				if err != nil {
+					return err
+				}
+				params = append(params, param)
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return params, err
+	}
+	return params, nil
+}
+
 // ##==================================================================
 type ElementComponent struct {
 	Selection *goquery.Selection
@@ -500,7 +566,7 @@ type ElementComponent struct {
 	Name      string
 	CompNames []string
 	Attrs     []Attr
-	Salt      string
+	Runes     []GtmlRune
 }
 
 func NewElementComponent(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementComponent, error) {
@@ -514,6 +580,7 @@ func NewElementComponent(htmlStr string, sel *goquery.Selection, compNames []str
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
+		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -592,6 +659,15 @@ func (elm *ElementComponent) initName() error {
 	return nil
 }
 
+func (elm *ElementComponent) initRunes() error {
+	r, err := GetElementRunes(elm)
+	if err != nil {
+		return err
+	}
+	elm.Runes = r
+	return nil
+}
+
 // ##==================================================================
 type ElementFor struct {
 	Selection *goquery.Selection
@@ -602,7 +678,7 @@ type ElementFor struct {
 	Name      string
 	CompNames []string
 	Attrs     []Attr
-	Salt      string
+	Runes     []GtmlRune
 }
 
 func NewElementFor(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementFor, error) {
@@ -715,7 +791,7 @@ type ElementIf struct {
 	Name      string
 	CompNames []string
 	Attrs     []Attr
-	Salt      string
+	Runes     []GtmlRune
 }
 
 func NewElementIf(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementIf, error) {
@@ -822,7 +898,7 @@ type ElementElse struct {
 	Name      string
 	CompNames []string
 	Attrs     []Attr
-	Salt      string
+	Runes     []GtmlRune
 }
 
 func NewElementElse(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementElse, error) {
@@ -929,7 +1005,7 @@ type ElementPlaceholder struct {
 	Name      string
 	CompNames []string
 	Attrs     []Attr
-	Salt      string
+	Runes     []GtmlRune
 }
 
 func NewElementPlaceholder(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementPlaceholder, error) {
@@ -1042,7 +1118,7 @@ type ElementSlot struct {
 	Name      string
 	CompNames []string
 	Attrs     []Attr
-	Salt      string
+	Runes     []GtmlRune
 }
 
 func NewElementSlot(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementSlot, error) {

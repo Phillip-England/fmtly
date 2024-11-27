@@ -58,3 +58,23 @@ When I was thinking about how I wanted my templating directives to be declared, 
 
 # Vision Of Changes (v0.2.0)
 Usage of `{{}}` and it's multiple use-cases is odd, for example, within an attribute, using `{{}}` will define a param in the output func. It also represents a kind of placeholder because the param name itself will be in the output, just without the `{{}}`. BUT if we use `{{}}` in the context of a _for loop, then it has a different meaning. It is also used to define slots. It just feels like {{}} is wearing a lot of different hats. I like the idea of splitting these functionalities across a series of runes (similar to Svelte but with different implementation). For example, we could introduce the `$prop("propName")` rune which is very direct in it's desire to define a prop and also represents the prop as a placeholder. Maybe if we wanted to take things further we could say, `$pipe("propName")` to grab `propName` from the current context and pipe it into another component. This would also eliminate the weird `@` syntax. We could do `$slot("slotName")` to eliminate our issue with slots. In _for loops, we could do `$val("guest.Name")` or `$val("color")` and it will be easy to tell which input is a string of a specific type. This way we get rid of `{{}}` completely and then we will be in the position to consider which runes can be used to inject client side interactivity and a bunch of other things 🦄
+
+
+# Runes
+
+## $prop()
+`$prop()` is used to define a `prop` within our `_component`. The value passed into `$prop()` will end up in the function arguments of our output component.
+
+🚨: `$prop()` only accepts strings: `$prop("someStr")`
+
+Once a `$prop()` has been defined, it can used in elsewhere in the same component using `$val()`
+
+Also, you can pipe the value of a `$prop()` into a child `_component` using `$pipe()`
+
+
+## $val()
+`$val()` is used to access the value of another prop within the component.
+
+For example, in a `_for` element, `$val()` may access the value of the slice we are looping over using `$val(item.Property)`.
+
+If a value has been defined using `$prop()`, you may access the value of the `$prop()` using `$val(propName)`

@@ -123,6 +123,8 @@ building %s 💦`, ex.OutputFile)
 			if err != nil {
 				return err
 			}
+			// REMOVE: here is where i am working to test runes
+
 			for _, elm := range compElms {
 				fn, err := NewFunc(elm, compElms)
 				if err != nil {
