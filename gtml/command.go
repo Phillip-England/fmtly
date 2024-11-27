@@ -25,17 +25,22 @@ func getGtmlArt() string {
  | | |_ |  | |  | |\/| | |     
  | |__| |  | |  | |  | | |____ 
   \_____|  |_|  |_|  |_|______|
- -------------------------------
+ ---------------------------------------
  An HTML to Golang Transpiler 💦
  Version 0.1.0 (2024-11-26)
  https://github.com/phillip-england/gtml
- -------------------------------`
+ ---------------------------------------`
 	return purse.RemoveFirstLine(art)
+}
+
+func getCommandList() []string {
+	return []string{KeyCommandBuild, KeyCommandHelp}
 }
 
 // ##==================================================================
 type Command interface {
 	Print()
+	GetType() string
 	Execute() error
 }
 
@@ -43,77 +48,108 @@ type Command interface {
 func NewCommand() (Command, error) {
 	args := os.Args
 	if len(args) == 1 {
-		cmd, err := NewCommandHelp(KeyCommandHelp)
-		if err != nil {
-			return nil, err
+		fmt.Println("Run 'gtml help' for usage.")
+		return nil, nil
+	}
+	args = args[1:]
+	opts := make([]Option, 0)
+	for _, arg := range args {
+		match := purse.FindMatchInStrSlice(getCommandList(), arg)
+		if match == "" {
+			opt, err := NewOption(arg)
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts, opt)
+			continue
 		}
-		return cmd, nil
-	}
-	rootArg := args[1]
-	if rootArg == KeyCommandBuild {
-		cmd, err := NewCommandBuild(KeyCommandBuild)
-		if err != nil {
-			return nil, err
+		if match == KeyCommandHelp {
+			cmd, err := NewCommandHelp()
+			if err != nil {
+				return nil, err
+			}
+			return cmd, nil
 		}
-		return cmd, nil
+		if match == KeyCommandBuild {
+			cmd, err := NewCommandBuild(opts)
+			if err != nil {
+				return nil, err
+			}
+			return cmd, nil
+		}
 	}
-	cmd, err := NewCommandHelp(KeyCommandHelp)
-	if err != nil {
-		return nil, err
-	}
-	return cmd, nil
+	fmt.Println("Run 'gtml help' for usage.")
+	return nil, nil
 }
 
 // ##==================================================================
 type CommandBuild struct {
-	Arg       string
-	Type      string
-	InputDir  string
-	OutputDir string
-	Options   []Option
+	Type         string
+	InputDir     string
+	OutputDir    string
+	Options      []Option
+	FilteredArgs []string
 }
 
-func NewCommandBuild(arg string) (*CommandBuild, error) {
+func NewCommandBuild(opts []Option) (*CommandBuild, error) {
 	cmd := &CommandBuild{
-		Arg:  arg,
-		Type: KeyCommandBuild,
+		Type:    KeyCommandBuild,
+		Options: opts,
 	}
 	err := fungi.Process(
-		func() error { return cmd.initDirs() },
+		func() error { return cmd.initFilteredArgs() },
 	)
 	if err != nil {
 		return nil, err
 	}
+	for _, arg := range cmd.FilteredArgs {
+		fmt.Println(arg)
+	}
 	return cmd, nil
 }
 
-func (cmd *CommandBuild) Print() { fmt.Println(cmd.Arg) }
+func (cmd *CommandBuild) Print()          { fmt.Println(cmd.Type) }
+func (cmd *CommandBuild) GetType() string { return cmd.Type }
 func (cmd *CommandBuild) Execute() error {
 	return nil
 }
 
-func (cmd *CommandBuild) initDirs() error {
-	for _, arg := range os.Args {
-		fmt.Println(arg)
+func (cmd *CommandBuild) initFilteredArgs() error {
+	filtered := make([]string, 0)
+	for i, arg := range os.Args {
+		if i == 0 {
+			continue
+		}
+		isOpt := false
+		for _, opt := range cmd.Options {
+			if arg == opt.GetType() {
+				isOpt = true
+				continue
+			}
+		}
+		if isOpt {
+			continue
+		}
+		filtered = append(filtered, arg)
 	}
+	cmd.FilteredArgs = filtered
 	return nil
 }
 
 // ##==================================================================
 type CommandHelp struct {
-	Arg  string
 	Type string
 }
 
-func NewCommandHelp(arg string) (*CommandHelp, error) {
+func NewCommandHelp() (*CommandHelp, error) {
 	cmd := &CommandHelp{
-		Arg:  arg,
 		Type: KeyCommandHelp,
 	}
 	return cmd, nil
 }
 
-func (cmd *CommandHelp) Print() { fmt.Println(cmd.Arg) }
+func (cmd *CommandHelp) Print()          { fmt.Println(cmd.Type) }
+func (cmd *CommandHelp) GetType() string { return cmd.Type }
 func (cmd *CommandHelp) Execute() error {
 	message := fmt.Sprintf(`
 %s
