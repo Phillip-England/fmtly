@@ -499,6 +499,7 @@ func GetElementRunes(elm Element) ([]GtmlRune, error) {
 		return runes, err
 	}
 	parts := purse.ScanBetweenSubStrs(elmHtml, "$", ")")
+	clay := elmHtml
 	for _, part := range parts {
 		index := strings.Index(part, "(")
 		if index == -1 {
@@ -508,7 +509,14 @@ func GetElementRunes(elm Element) ([]GtmlRune, error) {
 		if !purse.SliceContains(GetRuneNames(), name) {
 			continue
 		}
-		r, err := NewGtmlRune(part)
+		index = strings.Index(clay, part)
+		potentialEqualSignIndex := index - 2
+		potentialAttrStart := clay[potentialEqualSignIndex : potentialEqualSignIndex+2]
+		attrLocation := KeyLocationElsewhere
+		if potentialAttrStart == "=\"" || potentialAttrStart == "='" {
+			attrLocation = KeyLocationAttribute
+		}
+		r, err := NewGtmlRune(part, attrLocation)
 		if err != nil {
 			return runes, err
 		}

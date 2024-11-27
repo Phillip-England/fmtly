@@ -33,11 +33,11 @@ func gtmlSlot(contentFunc func() string) string {
 	return contentFunc()
 }
 
-func RuneProp(name string) string {
+func RuneAttrProp(name string) string {
 	var builder strings.Builder
-	builder.WriteString(`<div _component="RuneProp" _id="0"><p>Hello, `)
+	builder.WriteString(`<div _component="RuneAttrProp" _id="0"><p class="text-sm `)
 	builder.WriteString(name)
-	builder.WriteString(`!</p></div>`)
+	builder.WriteString(`">My class is set to what?</p></div>`)
 	return builder.String()
 }
 
