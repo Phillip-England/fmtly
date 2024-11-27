@@ -1,0 +1,13 @@
+<div _component="GreetingCard">
+    <h1>{{ name }}</h1>
+    <GreetingSlot name="{{ firstGuestName }}" age="20">
+        <div _slot="message">
+            <p>testin!</p>
+        </div>
+        <div _slot="loop">
+            <ul _for="color of colors []string">
+                <li>{{ .color }}</li>
+            </ul>
+        </div>
+    </GreetingSlot>
+</div>

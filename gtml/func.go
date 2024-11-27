@@ -76,6 +76,7 @@ func NewGoComponentFunc(elm Element, siblings []Element) (*GoComponentFunc, erro
 	if err != nil {
 		return nil, err
 	}
+
 	return fn, nil
 }
 
@@ -154,6 +155,7 @@ func (fn *GoComponentFunc) initParamStr() error {
 		filter = append(filter, str)
 	}
 	fn.ParamStr = strings.Join(filter, ", ")
+	fmt.Println(filter)
 	return nil
 }
 

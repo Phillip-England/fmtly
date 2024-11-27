@@ -1,0 +1,36 @@
+<div _component="GreetingPerson">
+    <h1>Hello, {{ guestName }}! How are you?</h1>
+    <p>I've been waiting to tell you.. {{ message }}</p>
+</div>
+
+<GreetingPerson _component="GreetJack" message="I love you!" guest-name="Jack"></GreetingPerson>
+
+<div _component="GreetingFood">
+    <h1>Hello, {{ guestName }}! How are you?</h1>
+    <p>I've been waiting to tell you.. {{ message }}</p>
+    <div>
+        <h1>What is your favorite food?</h1>
+        {{ slot favoriteFood }}
+    </div>
+</div>
+
+<GreetingFood _component="GreetJackWithPizza" message="I love you!" guest-name="Jack">
+    <div _slot="favoriteFood">
+        <p>Pizza!</p>
+    </div>
+</GreetingFood>
+
+
+
+<div _component="GreetingCardProp">
+    <GreetingProp name="{{ name }}" age="20"></GreetingProp>
+</div>
+
+<div _component="GreetingProp">
+    <h1>Hello, {{ name }}</h1> 
+    <p>you are {{ age }} years old!</p>
+</div>
+
+
+
+
