@@ -3,7 +3,6 @@ package gtml
 import (
 	"fmt"
 	"go/format"
-	"slices"
 	"strings"
 
 	"github.com/phillip-england/fungi"
@@ -63,7 +62,6 @@ func NewGoComponentFunc(elm Element, siblings []Element) (*GoComponentFunc, erro
 		func() error { return fn.initName() },
 		func() error { return fn.initVars() },
 		func() error { return fn.initVarStr() },
-		func() error { return fn.initParamStr() },
 		func() error { return fn.initData() },
 		func() error { return fn.initBuilderNames() },
 		func() error { return fn.initBuilderCalls() },
@@ -134,28 +132,6 @@ func (fn *GoComponentFunc) initVarStr() error {
 		}
 	}
 	fn.VarStr = str
-	return nil
-}
-
-func (fn *GoComponentFunc) initParamStr() error {
-	params, err := GetElementParams(fn.Element)
-	if err != nil {
-		return err
-	}
-	paramStrs := make([]string, 0)
-	for _, param := range params {
-		fn.Params = append(fn.Params, param)
-		paramStrs = append(paramStrs, param.GetStr())
-	}
-	filter := make([]string, 0)
-	for _, str := range paramStrs {
-		if slices.Contains(filter, str) {
-			continue
-		}
-		filter = append(filter, str)
-	}
-	fn.ParamStr = strings.Join(filter, ", ")
-	fmt.Println(filter)
 	return nil
 }
 
@@ -237,52 +213,54 @@ func (fn *GoComponentFunc) initPlaceholderCalls() error {
 
 func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []Element) error {
 	ordered := make([]string, 0)
-	for _, sib := range siblings {
-		if fn.Element.GetName() == sib.GetName() {
-			continue
-		}
-		params, err := GetElementParams(sib)
-		if err != nil {
-			return err
-		}
-		sibParams := make([]Param, 0)
-		found := make([]string, 0)
-		for _, param := range params {
-			if purse.SliceContains(found, param.GetStr()) {
-				continue
-			}
-			sibParams = append(sibParams, param)
-			found = append(found, param.GetStr())
-		}
-		for _, sibParam := range sibParams {
-			for _, call := range fn.PlaceholderCalls {
-				callParams := call.GetParams()
-				for _, callParam := range callParams {
-					clay := callParam
-					clay = strings.Replace(clay, "ATTRID", "", 1)
-					clay = strings.Replace(clay, "ATTRID", " ", 1)
-					callParamParts := strings.Split(clay, " ")
-					filtered := make([]string, 0)
-					for _, part := range callParamParts {
-						if len(part) == 0 {
-							continue
-						}
-						filtered = append(filtered, part)
-					}
-					callParamParts = filtered
-					callParamId := callParamParts[0]
-					sibParamName := sibParam.GetName()
-					if callParamId == sibParamName {
-						writeAs := strings.Replace(callParam, "ATTRID", "", 1)
-						i := strings.Index(writeAs, "ATTRID") + len("ATTRID")
-						writeAs = writeAs[i:]
-						ordered = append(ordered, writeAs)
-					}
-				}
-			}
-		}
-		fn.OrderedPlaceholderCalls = ordered
-	}
+
+	// need to get runes here instead
+
+	// for _, sib := range siblings {
+	// 	if fn.Element.GetName() == sib.GetName() {
+	// 		continue
+	// 	}
+	// 	params, err := GetElementParams(sib)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	sibParams := make([]Param, 0)
+	// 	found := make([]string, 0)
+	// 	for _, param := range params {
+	// 		if purse.SliceContains(found, param.GetStr()) {
+	// 			continue
+	// 		}
+	// 		sibParams = append(sibParams, param)
+	// 		found = append(found, param.GetStr())
+	// 	}
+	// 	for _, sibParam := range sibParams {
+	// 		for _, call := range fn.PlaceholderCalls {
+	// 			callParams := call.GetParams()
+	// 			for _, callParam := range callParams {
+	// 				clay := callParam
+	// 				clay = strings.Replace(clay, "ATTRID", "", 1)
+	// 				clay = strings.Replace(clay, "ATTRID", " ", 1)
+	// 				callParamParts := strings.Split(clay, " ")
+	// 				filtered := make([]string, 0)
+	// 				for _, part := range callParamParts {
+	// 					if len(part) == 0 {
+	// 						continue
+	// 					}
+	// 					filtered = append(filtered, part)
+	// 				}
+	// 				callParamParts = filtered
+	// 				callParamId := callParamParts[0]
+	// 				sibParamName := sibParam.GetName()
+	// 				if callParamId == sibParamName {
+	// 					writeAs := strings.Replace(callParam, "ATTRID", "", 1)
+	// 					i := strings.Index(writeAs, "ATTRID") + len("ATTRID")
+	// 					writeAs = writeAs[i:]
+	// 					ordered = append(ordered, writeAs)
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	fn.OrderedPlaceholderCalls = ordered
 	return nil
 }
 

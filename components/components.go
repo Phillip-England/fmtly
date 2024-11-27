@@ -33,38 +33,3 @@ func gtmlSlot(contentFunc func() string) string {
 	return contentFunc()
 }
 
-func SurvivalSupplies(members []Memeber) string {
-	var builder strings.Builder
-	memberFor1 := gtmlFor(members, func(i int, member Memeber) string {
-		var memberBuilder strings.Builder
-		survivallistPlaceholder2 := func() string {
-			return SurvivalList(member.Name)
-		}
-		memberBuilder.WriteString(`<ul _for="member of members []Memeber" _id="1">`)
-		memberBuilder.WriteString(survivallistPlaceholder2())
-		memberBuilder.WriteString(`</ul>`)
-		return memberBuilder.String()
-	})
-	builder.WriteString(`<div _component="SurvivalSupplies" _id="0">`)
-	builder.WriteString(memberFor1)
-	builder.WriteString(`</div>`)
-	return builder.String()
-}
-
-func SurvivalList(memberName string) string {
-	var builder strings.Builder
-	itemFor1 := gtmlFor(member.Items, func(i int, item Item) string {
-		var itemBuilder strings.Builder
-		itemBuilder.WriteString(`<ul _for="item of member.Items []Item" _id="1"><li>`)
-		itemBuilder.WriteString(item.Name)
-		itemBuilder.WriteString(`</li></ul>`)
-		return itemBuilder.String()
-	})
-	builder.WriteString(`<div _component="SurvivalList" _id="0"><h1>`)
-	builder.WriteString(memberName)
-	builder.WriteString(`</h1>`)
-	builder.WriteString(itemFor1)
-	builder.WriteString(`</div>`)
-	return builder.String()
-}
-
