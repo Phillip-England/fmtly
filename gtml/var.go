@@ -145,7 +145,7 @@ func (v *VarGoFor) initBuilderSeries() error {
 
 func (v *VarGoFor) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
-%s := gtml.For(%s, func(i int, %s %s) string {
+%s := gtmlFor(%s, func(i int, %s %s) string {
 var %s strings.Builder
 %s
 %s
@@ -229,7 +229,7 @@ func (v *VarGoIf) initBuilderSeries() error {
 
 func (v *VarGoIf) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
-%s := gtml.If(%s, func() string {
+%s := gtmlIf(%s, func() string {
 var %s strings.Builder
 %s
 %s
@@ -316,7 +316,7 @@ func (v *VarGoElse) initBuilderSeries() error {
 
 func (v *VarGoElse) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
-%s := gtml.Else(%s, func() string {
+%s := gtmlElse(%s, func() string {
 var %s strings.Builder
 %s
 %s
@@ -563,7 +563,7 @@ func (v *VarGoSlot) initBuilderSeries() error {
 
 func (v *VarGoSlot) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
-%s := gtml.Slot(func() string {
+%s := gtmlSlot(func() string {
 var %s strings.Builder
 %s
 %s

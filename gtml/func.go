@@ -29,9 +29,8 @@ func NewFunc(elm Element, siblings []Element) (Func, error) {
 		}
 		filtered = append(filtered, sibling)
 	}
-	siblings = filtered
 	if elm.GetType() == KeyElementComponent || elm.GetType() == KeyElementPlaceholder {
-		fn, err := NewGoComponentFunc(elm, siblings)
+		fn, err := NewGoComponentFunc(elm, filtered)
 		if err != nil {
 			return nil, err
 		}
@@ -133,7 +132,6 @@ func (fn *GoComponentFunc) initVarStr() error {
 			str += data + "\n"
 		}
 	}
-	// str = purse.PrefixLines(str, "\t")
 	fn.VarStr = str
 	return nil
 }
@@ -143,13 +141,11 @@ func (fn *GoComponentFunc) initParamStr() error {
 	if err != nil {
 		return err
 	}
-
 	paramStrs := make([]string, 0)
 	for _, param := range params {
 		fn.Params = append(fn.Params, param)
 		paramStrs = append(paramStrs, param.GetStr())
 	}
-	// paramStrs = purse.RemoveDuplicatesInSlice(paramStrs)
 	filter := make([]string, 0)
 	for _, str := range paramStrs {
 		if slices.Contains(filter, str) {
@@ -177,7 +173,6 @@ func (fn *GoComponentFunc) initData() error {
 		}
 		series += "builder.WriteString(" + goVar.GetVarName() + "())"
 	}
-	// series = purse.PrefixLines(series, "\t")
 	data := purse.RemoveFirstLine(fmt.Sprintf(`
 func %s(%s) string {
 var builder strings.Builder
@@ -241,11 +236,23 @@ func (fn *GoComponentFunc) initPlaceholderCalls() error {
 func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []Element) error {
 	ordered := make([]string, 0)
 	for _, sib := range siblings {
-		sibFunc, err := NewFunc(sib, siblings)
+		if fn.Element.GetName() == sib.GetName() {
+			continue
+		}
+		params, err := GetElementParams(sib)
 		if err != nil {
 			return err
 		}
-		for _, sibParam := range sibFunc.GetParams() {
+		sibParams := make([]Param, 0)
+		found := make([]string, 0)
+		for _, param := range params {
+			if purse.SliceContains(found, param.GetStr()) {
+				continue
+			}
+			sibParams = append(sibParams, param)
+			found = append(found, param.GetStr())
+		}
+		for _, sibParam := range sibParams {
 			for _, call := range fn.PlaceholderCalls {
 				callParams := call.GetParams()
 				for _, callParam := range callParams {
@@ -261,9 +268,6 @@ func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []Element) error {
 						filtered = append(filtered, part)
 					}
 					callParamParts = filtered
-					// if len(callParamParts) != 2 {
-					// 	return fmt.Errorf("somehow, we ended up with an attribute in our Component Func which is not wrapped in ATTRID: %s", call)
-					// }
 					callParamId := callParamParts[0]
 					sibParamName := sibParam.GetName()
 					if callParamId == sibParamName {
