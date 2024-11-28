@@ -56,16 +56,16 @@ In gtml, we make use of html attributes to determine a components structure. Her
 - _slot
 
 ### _component
-When gtml is scanning `.html` files, it is searching for _component elements. When it finds a component element, it will generate a function in go which will output the _component's html.
+When gtml is scanning `.html` files, it is searching for `_component` elements. When it finds a `_component`, it will generate a function in go which will output the  `_component`'s html.
 
-> 🚨 _component elements may not be placed within other _component elements
+> 🚨 `_component` may not be defined within another `_component`. However, you can use a `_component` as a `placeholder` within another `_component`
 
-When defining a _component, you must give it a name:
+When defining a `_component`, you must give it a name:
 ```html
 <button _component="CustomButton">Click Me!</button>
 ```
 
-The above component will be converted into:
+The above `_component` will be converted into:
 ```go
 func CustomButton() string {
 	var builder strings.Builder
@@ -75,9 +75,9 @@ func CustomButton() string {
 ```
 
 ### _for
-_for elements are used to iterate over a slice. The slice may be a custom type or a string slice. 
+`_for` elements are used to iterate over a slice. The slice may be a custom type or a string slice. 
 
-_for elements require their attribute value to be structured in the following way:
+`_for` elements require their attribute value to be structured in the following way:
 ```bash
 _for="ITEM OF ITEMS []TYPE"
 ```
@@ -139,7 +139,7 @@ func GuestList(Guests []Guest) string {
 > 🚨 bring your own types, gtml will not autogenerate them (yet..? 🦄)
 
 ### _if
-_if elements are used to conditionally render a piece of html.
+`_if` elements are used to render a piece of html if a condition is met.
 
 input:
 ```html
@@ -170,7 +170,7 @@ func AdminPage(isLoggedIn bool) string {
 ```
 
 ### _else
-_if elements are used to conditionally render a piece of html.
+`_else` elements are used to render a piece of html if a condition is not met.
 
 input:
 ```html
@@ -201,9 +201,9 @@ func AdminPage(isLoggedIn bool) string {
 ```
 
 ### _slot
-_slot elements are unique in the sense that they are not used within a _component itself, rather, they are used in it's placeholder.
+`_slot` elements are unique in the sense that they are not used within a `_component` itself, rather, they are used in it's `placeholder`.
 
-We will discuss placeholders more in a bit, but for now, just know that a placeholder is what we refer to a component as when it is being used *within another component*.
+We will discuss placeholders more in a bit, but for now, just know that a placeholder is what we refer to a `_component` as when it is being used *within another component*.
 
 For example, this `LoginForm` uses `CustomButton` as a `placeholder`
 ```html
