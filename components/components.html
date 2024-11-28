@@ -1,10 +1,12 @@
 <div _component="SlotBasic">
-    <h1>Hello!</h1>
-    $slot("message")
+    $slot("top")
+    <h1>🥪</h1>
+    $slot("bottom")
 </div>
 
-<SlotBasic _component="NoteToSelf">
-    <p _slot="message">gtml is awesome 💦</p>
+<SlotBasic _component="Sandwich">
+    <p _slot="bottom">I am on bottom</p>
+    <p _slot="top">I am on top</p>
 </SlotBasic>
 
 

@@ -33,21 +33,30 @@ func gtmlSlot(contentFunc func() string) string {
 return contentFunc()
 }
 
-func SlotBasic() string {
+func SlotBasic(top string, bottom string) string {
 	var builder strings.Builder
-	builder.WriteString(`<div _component="SlotBasic" _id="0"><h1>Hello!</h1>$slot(&#34;message&#34;)</div>`)
+	builder.WriteString(`<div _component="SlotBasic" _id="0">`)
+	builder.WriteString(top)
+	builder.WriteString(`<h1>🥪</h1>`)
+	builder.WriteString(bottom)
+	builder.WriteString(`</div>`)
 	return builder.String()
 }
 
-func NoteToSelf() string {
+func Sandwich() string {
 	var builder strings.Builder
 	slotbasicPlaceholder0 := func() string {
-		messageSlot1 := gtmlSlot(func() string {
-			var messageBuilder strings.Builder
-			messageBuilder.WriteString(`<p _slot="message" _id="1">gtml is awesome 💦</p>`)
-			return messageBuilder.String()
+		bottomSlot1 := gtmlSlot(func() string {
+			var bottomBuilder strings.Builder
+			bottomBuilder.WriteString(`<p _slot="bottom" _id="1">I am on bottom</p>`)
+			return bottomBuilder.String()
 		})
-		return SlotBasic()
+		topSlot2 := gtmlSlot(func() string {
+			var topBuilder strings.Builder
+			topBuilder.WriteString(`<p _slot="top" _id="2">I am on top</p>`)
+			return topBuilder.String()
+		})
+		return SlotBasic(topSlot2, bottomSlot1)
 	}
 	builder.WriteString(slotbasicPlaceholder0())
 	return builder.String()

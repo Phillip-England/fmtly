@@ -12,6 +12,7 @@ import (
 // ##==================================================================
 const (
 	KeyRuneProp = "$prop"
+	KeyRuneSlot = "$slot"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 
 // ##==================================================================
 func GetRuneNames() []string {
-	return []string{KeyRuneProp, "$val", "$pipe"}
+	return []string{KeyRuneProp, KeyRuneSlot}
 }
 
 // ##==================================================================
@@ -36,6 +37,13 @@ type GtmlRune interface {
 func NewGtmlRune(runeStr string, location string) (GtmlRune, error) {
 	if strings.HasPrefix(runeStr, KeyRuneProp) {
 		r, err := NewRuneProp(runeStr)
+		if err != nil {
+			return nil, err
+		}
+		return r, nil
+	}
+	if strings.HasPrefix(runeStr, KeyRuneSlot) {
+		r, err := NewRuneSlot(runeStr)
 		if err != nil {
 			return nil, err
 		}
@@ -149,6 +157,108 @@ $prop may only contain characters; no symbols, numbers, or spaces
 }
 
 // ##==================================================================
+type RuneSlot struct {
+	Data        string
+	DecodedData string
+	Value       string
+	Type        string
+	Location    string
+}
+
+func NewRuneSlot(data string) (*RuneProp, error) {
+	r := &RuneProp{
+		DecodedData: data,
+		Data:        html.UnescapeString(data),
+		Type:        KeyRuneProp,
+	}
+	err := fungi.Process(
+		func() error { return r.initValue() },
+	)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func (r *RuneSlot) Print()                 { fmt.Println(r.Data) }
+func (r *RuneSlot) GetValue() string       { return r.Value }
+func (r *RuneSlot) GetType() string        { return r.Type }
+func (r *RuneSlot) GetDecodedData() string { return r.DecodedData }
+func (r *RuneSlot) GetLocation() string    { return r.Location }
+
+func (r *RuneSlot) initValue() error {
+	index := strings.Index(r.Data, "(") + 1
+	part := r.Data[index:]
+	lastChar := string(part[len(part)-1])
+	if lastChar != ")" {
+		msg := purse.Fmt(`
+invalid $prop rune found: %s`, r.Data)
+		return fmt.Errorf(msg)
+	}
+	val := part[:len(part)-1]
+
+	valFirstChar := string(val[0])
+	valLastChar := string(val[len(val)-1])
+	valIsSingleQuotes := false
+	valIsDoubleQuotes := false
+	if valFirstChar != "\"" && valLastChar != "\"" {
+		valIsDoubleQuotes = true
+	}
+	if valFirstChar != "'" && valLastChar != "'" {
+		valIsSingleQuotes = true
+	}
+	if !valIsDoubleQuotes && !valIsSingleQuotes {
+		msg := purse.Fmt(`
+	invalid $prop rune found: %s
+	$prop must contain a single string wrapped in quotes such as $prop("varName")
+	$prop may only contain characters; no symbols, numbers, or spaces
+	`, r.Data)
+		return fmt.Errorf(msg)
+	}
+
+	if valIsDoubleQuotes {
+		if strings.Count(val, "\"") > 2 {
+			msg := purse.Fmt(`
+			invalid $prop rune found: %s
+			$prop must contain a single string wrapped in quotes such as $prop("varName")
+			$prop may only contain characters; no symbols, numbers, or spaces
+			`, r.Data)
+			return fmt.Errorf(msg)
+		}
+	}
+
+	if valIsSingleQuotes {
+		if strings.Count(val, "'") > 2 {
+			msg := purse.Fmt(`
+			invalid $prop rune found: %s
+			$prop must contain a single string wrapped in quotes such as $prop("varName")
+			$prop may only contain characters; no symbols, numbers, or spaces
+			`, r.Data)
+			return fmt.Errorf(msg)
+		}
+	}
+
+	whitelist := purse.GetAllLetters()
+	if valIsSingleQuotes {
+		whitelist = append(whitelist, "\"")
+	}
+	if valIsDoubleQuotes {
+		whitelist = append(whitelist, "'")
+	}
+	if !purse.EnforeWhitelist(val, whitelist) {
+		msg := purse.Fmt(`
+invalid $prop rune found: %s
+$prop must contain a single string wrapped in quotes such as $prop("varName")
+$prop may only contain characters; no symbols, numbers, or spaces
+`, r.Data)
+		return fmt.Errorf(msg)
+	}
+
+	val = strings.ReplaceAll(val, "\"", "")
+	val = strings.ReplaceAll(val, "'", "")
+	r.Value = purse.Squeeze(val)
+	return nil
+}
 
 // ##==================================================================
 

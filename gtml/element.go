@@ -544,7 +544,7 @@ func GetElementParams(elm Element) ([]Param, error) {
 	// pulling params from runes from the root and its elements
 	err := WalkElementChildrenIncludingRoot(elm, func(child Element) error {
 		err := WalkElementRunes(child, func(rn GtmlRune) error {
-			if rn.GetType() == KeyRuneProp {
+			if rn.GetType() == KeyRuneProp || rn.GetType() == KeyRuneSlot {
 				param, err := NewParam(rn.GetValue(), "string")
 				if err != nil {
 					return err
@@ -561,6 +561,21 @@ func GetElementParams(elm Element) ([]Param, error) {
 	if err != nil {
 		return params, err
 	}
+	// pulling element specific params
+	elementSpecificParams := make([]Param, 0)
+	err = WalkElementChildrenIncludingRoot(elm, func(child Element) error {
+		params, err := child.GetParams()
+		if err != nil {
+			return err
+		}
+		elementSpecificParams = append(elementSpecificParams, params...)
+		return nil
+	})
+	if err != nil {
+		return params, err
+	}
+	// merging the params
+	params = append(params, elementSpecificParams...)
 	return params, nil
 }
 
@@ -700,6 +715,7 @@ func NewElementFor(htmlStr string, sel *goquery.Selection, compNames []string) (
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
+		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -789,6 +805,15 @@ func (elm *ElementFor) initName() error {
 	return nil
 }
 
+func (elm *ElementFor) initRunes() error {
+	r, err := GetElementRunes(elm)
+	if err != nil {
+		return err
+	}
+	elm.Runes = r
+	return nil
+}
+
 // ##==================================================================
 type ElementIf struct {
 	Selection *goquery.Selection
@@ -813,6 +838,7 @@ func NewElementIf(htmlStr string, sel *goquery.Selection, compNames []string) (*
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
+		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -896,6 +922,15 @@ func (elm *ElementIf) initName() error {
 	return nil
 }
 
+func (elm *ElementIf) initRunes() error {
+	r, err := GetElementRunes(elm)
+	if err != nil {
+		return err
+	}
+	elm.Runes = r
+	return nil
+}
+
 // ##==================================================================
 type ElementElse struct {
 	Selection *goquery.Selection
@@ -920,6 +955,7 @@ func NewElementElse(htmlStr string, sel *goquery.Selection, compNames []string) 
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
+		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -1003,6 +1039,15 @@ func (elm *ElementElse) initName() error {
 	return nil
 }
 
+func (elm *ElementElse) initRunes() error {
+	r, err := GetElementRunes(elm)
+	if err != nil {
+		return err
+	}
+	elm.Runes = r
+	return nil
+}
+
 // ##==================================================================
 type ElementPlaceholder struct {
 	Selection *goquery.Selection
@@ -1027,6 +1072,7 @@ func NewElementPlaceholder(htmlStr string, sel *goquery.Selection, compNames []s
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
+		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -1116,6 +1162,15 @@ func (elm *ElementPlaceholder) initName() error {
 	return nil
 }
 
+func (elm *ElementPlaceholder) initRunes() error {
+	r, err := GetElementRunes(elm)
+	if err != nil {
+		return err
+	}
+	elm.Runes = r
+	return nil
+}
+
 // ##==================================================================
 type ElementSlot struct {
 	Selection *goquery.Selection
@@ -1140,6 +1195,7 @@ func NewElementSlot(htmlStr string, sel *goquery.Selection, compNames []string) 
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
+		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -1215,6 +1271,15 @@ func (elm *ElementSlot) initAttrs() error {
 
 func (elm *ElementSlot) initName() error {
 	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
+	return nil
+}
+
+func (elm *ElementSlot) initRunes() error {
+	r, err := GetElementRunes(elm)
+	if err != nil {
+		return err
+	}
+	elm.Runes = r
 	return nil
 }
 
