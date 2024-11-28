@@ -217,10 +217,10 @@ invalid $prop rune found: %s`, r.Data)
 	valLastChar := string(val[len(val)-1])
 	valIsSingleQuotes := false
 	valIsDoubleQuotes := false
-	if valFirstChar == "\"" && valLastChar == "\"" {
+	if valFirstChar != "\"" && valLastChar != "\"" {
 		valIsDoubleQuotes = true
 	}
-	if valFirstChar == "'" && valLastChar == "'" {
+	if valFirstChar != "'" && valLastChar != "'" {
 		valIsSingleQuotes = true
 	}
 	if !valIsDoubleQuotes && !valIsSingleQuotes {

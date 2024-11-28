@@ -1,5 +1,12 @@
-<div _component="AdminPage">
-    <div _else="isLoggedIn">
-        <p>you are not logged in!</p>
+For example:
+<div _component="GuestLayout">
+    <navbar>my navbar</navbar>
+    $slot("content")
+    <footer></footer>
+<div>
+
+<GuestLayout _component="HomePage">
+    <div _slot="content">
+        I will appear in the content section!
     </div>
-</div>
+</GuestLayout>

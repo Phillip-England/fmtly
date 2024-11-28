@@ -217,6 +217,53 @@ For example, this `LoginForm` uses `CustomButton` as a `placeholder`
 </div>
 ```
 
+Now, imagine a scenario where you are going to use certain components on each page, like maybe each page of your website has the same navbar and footer?
+
+That is where `_slot`'s are useful.
+
+For example:
+```html
+<div _component="GuestLayout">
+    <navbar>my navbar</navbar>
+    $slot("content")
+    <footer></footer>
+<div>
+
+<GuestLayout _component="HomePage">
+    <div _slot="content">
+        I will appear in the content section!
+    </div>
+</GuestLayout>
+```
+
+outputs:
+```go
+func GuestLayout(content string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="GuestLayout" _id="0"><navbar>my navbar</navbar>`)
+	builder.WriteString(content)
+	builder.WriteString(`<footer></footer><div><guestlayout _component="HomePage" _placeholder="GuestLayout" _id="0"><div _slot="content" _id="1">I will appear in the content section!</div></guestlayout></div></div>`)
+	return builder.String()
+}
+
+func HomePage() string {
+	var builder strings.Builder
+	guestlayoutPlaceholder0 := func() string {
+		contentSlot1 := gtmlSlot(func() string {
+			var contentBuilder strings.Builder
+			contentBuilder.WriteString(`<div _slot="content" _id="1">I will appear in the content section!</div>`)
+			return contentBuilder.String()
+		})
+		return GuestLayout(contentSlot1)
+	}
+	builder.WriteString(guestlayoutPlaceholder0())
+	return builder.String()
+}
+```
+
+> ✅ You may use as many `_slot`s as you'd like 
+
+
 
 
 ## Runes Define Data

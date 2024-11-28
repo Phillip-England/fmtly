@@ -33,19 +33,25 @@ func gtmlSlot(contentFunc func() string) string {
 return contentFunc()
 }
 
-func AdminPage(isLoggedIn bool) string {
+func GuestLayout(content string) string {
 	var builder strings.Builder
-	isLoggedInElse1 := gtmlElse(isLoggedIn, func() string {
-		var isLoggedInBuilder strings.Builder
-		isLoggedInBuilder.WriteString(`<div _else="isLoggedIn" _id="1"><p>you are not logged in!</p></div>`)
-		if !isLoggedIn {
-			return isLoggedInBuilder.String()
-		}
-		return ""
-	})
-	builder.WriteString(`<div _component="AdminPage" _id="0">`)
-	builder.WriteString(isLoggedInElse1)
-	builder.WriteString(`</div>`)
+	builder.WriteString(`<div _component="GuestLayout" _id="0"><navbar>my navbar</navbar>`)
+	builder.WriteString(content)
+	builder.WriteString(`<footer></footer><div><guestlayout _component="HomePage" _placeholder="GuestLayout" _id="0"><div _slot="content" _id="1">I will appear in the content section!</div></guestlayout></div></div>`)
+	return builder.String()
+}
+
+func HomePage() string {
+	var builder strings.Builder
+	guestlayoutPlaceholder0 := func() string {
+		contentSlot1 := gtmlSlot(func() string {
+			var contentBuilder strings.Builder
+			contentBuilder.WriteString(`<div _slot="content" _id="1">I will appear in the content section!</div>`)
+			return contentBuilder.String()
+		})
+		return GuestLayout(contentSlot1)
+	}
+	builder.WriteString(guestlayoutPlaceholder0())
 	return builder.String()
 }
 
