@@ -1,12 +1,6 @@
-For example:
-<div _component="GuestLayout">
-    <navbar>my navbar</navbar>
-    $slot("content")
-    <footer></footer>
-<div>
+<div _component="NameTag">
+    <h1>$prop("firstName")</h1>
+    <p>$prop("message")</p>
+</div>
 
-<GuestLayout _component="HomePage">
-    <div _slot="content">
-        I will appear in the content section!
-    </div>
-</GuestLayout>
+<NameTag _component="PlaceholderWithAttrs" message="is the best" first-name="gtml"></NameTag>

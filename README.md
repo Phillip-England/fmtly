@@ -225,7 +225,7 @@ For example:
 ```html
 <div _component="GuestLayout">
     <navbar>my navbar</navbar>
-    $slot("content")  <============= this is a rune, will discuss them later
+    $slot("content")
     <footer></footer>
 <div>
 
@@ -262,29 +262,136 @@ func HomePage() string {
 ```
 
 ## Runes Define Data
-In gtml, we make use of runes to manage the way data flows throughout our components. Here is a quick list of the available runes in gtml:
+In gtml, we make use of `runes` to manage the way data flows throughout our components. Certain `runes` accept string values while others expect raw values. Here is a quick list of the available runes in gtml:
 
 - $prop()
 - $val()
 - $slot()
 - $pipe()
 
+
 ## $prop()
-`$prop()` is used to define a `prop` within our `_component`. The value passed into `$prop()` will end up in the function arguments of our output component.
+`$prop()` is used to define a `prop` within our `_component`. A `prop` is a value which is usable by sibling and child elements. The value passed into `$prop()` will end up in the arguments of our output function.
 
-🚨: `$prop()` only accepts strings: `$prop("someStr")`
+> 🚨: `$prop()` only accepts strings: `$prop("someStr")`
 
-Once a `$prop()` has been defined, it can used in elsewhere in the same component using `$val()`
+For example, we may define a `$prop()` like so:
+```html
+<div _component="RuneProp">
+    <p>Hello, $prop("name")!</p>
+</div>
+```
 
-Also, you can pipe the value of a `$prop()` into a child `_component` using `$pipe()`
+The output:
+```go
+func RuneProp(name string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="RuneProp" _id="0"><p>Hello, `)
+	builder.WriteString(name)
+	builder.WriteString(`!</p></div>`)
+	return builder.String()
+}
+```
+
+Once a `$prop()` has been defined, it can used in elsewhere in the same component using `$val()`. Also, you can pipe the value of a `$prop()` into a child `_component` using `$pipe()`
 
 
 ## $val()
-`$val()` is used to access the value of another prop within the component.
+`$val()` is used to access the value of `prop`.
 
-For example, in a `_for` element, `$val()` may access the value of the slice we are looping over using `$val(item.Property)`.
+> 🚨: `$val()` only accepts raw values: `$val(rawValue)`
 
-If a value has been defined using `$prop()`, you may access the value of the `$prop()` using `$val(propName)`
+For example, here we make use of `$val()` to access a neighboring `prop`:
+```html
+<div _component="Echo">
+    <p>$prop("message")</p>
+    <p>$val(message)</p>
+</div>
+```
+
+```go
+func Echo(message string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="Echo" _id="0"><p>`)
+	builder.WriteString(message)
+	builder.WriteString(`</p><p>`)
+	builder.WriteString(message)
+	builder.WriteString(`</p></div>`)
+	return builder.String()
+}
+```
+
+`$val()` is also used to access the data of iteration items in `_for` elements.
+
+For example:
+```html
+<div _component="GuestList">
+    <ul _for='guest of Guests []Guest'>
+        <p>$val(guest.Name)</p>
+    </ul>
+</div>
+```
+
+the output:
+```go
+func GuestList(Guests []Guest) string {
+	var builder strings.Builder
+	guestFor1 := gtmlFor(Guests, func(i int, guest Guest) string {
+		var guestBuilder strings.Builder
+		guestBuilder.WriteString(`<ul _for="guest of Guests []Guest" _id="1"><p>`)
+		guestBuilder.WriteString(guest.Name)
+		guestBuilder.WriteString(`</p></ul>`)
+		return guestBuilder.String()
+	})
+	builder.WriteString(`<div _component="GuestList" _id="0">`)
+	builder.WriteString(guestFor1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+```
+
+## $pipe()
+`$pipe()` is used in situations where you want to `pipe` data from a parent `_component` into a child `placeholder`.
+
+> 🚨: `$pipe()` only accepts raw values: `$pipe(rawValue)`
+
+For example:
+```html
+<div _component="RunePipe">
+    <p>Sally is $prop("age") years old</p>
+    <Greeting age="$pipe(age)"></Greeting> <== piping in the age
+</div>
+
+<div _component="Greeting">
+    <h1>This age was piped in!</h1> 
+    <p>$prop("age")</p>
+</div>
+```
+
+The output:
+```go
+func RunePipe(age string) string {
+	var builder strings.Builder
+	greetingPlaceholder1 := func() string {
+		return Greeting(age)
+	}
+	builder.WriteString(`<div _component="RunePipe" _id="0"><p>Sally is `)
+	builder.WriteString(age)
+	builder.WriteString(` years old</p>`)
+	builder.WriteString(greetingPlaceholder1())
+	builder.WriteString(` &lt;== piping in the age</div>`)
+	return builder.String()
+}
+
+func Greeting(age string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="Greeting" _id="0"><h1>This age was piped in!</h1> <p>`)
+	builder.WriteString(age)
+	builder.WriteString(`</p></div>`)
+	return builder.String()
+}
+```
+
 
 
 

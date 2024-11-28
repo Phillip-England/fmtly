@@ -33,25 +33,22 @@ func gtmlSlot(contentFunc func() string) string {
 return contentFunc()
 }
 
-func GuestLayout(content string) string {
+func NameTag(firstName string, message string) string {
 	var builder strings.Builder
-	builder.WriteString(`<div _component="GuestLayout" _id="0"><navbar>my navbar</navbar>`)
-	builder.WriteString(content)
-	builder.WriteString(`<footer></footer><div><guestlayout _component="HomePage" _placeholder="GuestLayout" _id="0"><div _slot="content" _id="1">I will appear in the content section!</div></guestlayout></div></div>`)
+	builder.WriteString(`<div _component="NameTag" _id="0"><h1>`)
+	builder.WriteString(firstName)
+	builder.WriteString(`</h1><p>`)
+	builder.WriteString(message)
+	builder.WriteString(`</p></div>`)
 	return builder.String()
 }
 
-func HomePage() string {
+func PlaceholderWithAttrs() string {
 	var builder strings.Builder
-	guestlayoutPlaceholder0 := func() string {
-		contentSlot1 := gtmlSlot(func() string {
-			var contentBuilder strings.Builder
-			contentBuilder.WriteString(`<div _slot="content" _id="1">I will appear in the content section!</div>`)
-			return contentBuilder.String()
-		})
-		return GuestLayout(contentSlot1)
+	nametagPlaceholder0 := func() string {
+		return NameTag("gtml", "is the best")
 	}
-	builder.WriteString(guestlayoutPlaceholder0())
+	builder.WriteString(nametagPlaceholder0())
 	return builder.String()
 }
 
