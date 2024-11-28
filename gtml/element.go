@@ -353,16 +353,12 @@ func ReadComponentSelectionsFromFile(path string) ([]*goquery.Selection, error) 
 	if err != nil {
 		return selections, err
 	}
-	var potErr error
 	doc.Find("*").Each(func(i int, sel *goquery.Selection) {
 		_, exists := sel.Attr(KeyElementComponent)
 		if exists {
 			selections = append(selections, sel)
 		}
 	})
-	if potErr != nil {
-		return selections, potErr
-	}
 	return selections, nil
 }
 
