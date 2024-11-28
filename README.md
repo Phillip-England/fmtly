@@ -58,7 +58,7 @@ In gtml, we make use of html attributes to determine a components structure. Her
 ### _component
 When gtml is scanning `.html` files, it is searching for _component elements. When it finds a component element, it will generate a function in go which will output the _component's html.
 
-> 🚨 _component elements may not be placed within other component elements
+>> 🚨 _component elements may not be placed within other _component elements
 
 When defining a _component, you must give it a name:
 ```html
