@@ -4,7 +4,7 @@ Convert HTML to Golang 💦
 ## Hello, World
 Turn this:
 ```html
-<div _component='Greeting'>
+<div _component="Greeting">
     <h1>Hello, $prop("name")</h1>
 </div>
 ```
@@ -13,7 +13,7 @@ Into this:
 ```go
 func Greeting(name string) string {
     var builder strings.Builder
-    builder.WriteString(`<div _component='Greeting'><h1>Hello, `)
+    builder.WriteString(`<div _component="Greeting" _id="0"><h1>Hello, `)
     builder.WriteString(name)
     builder.WriteString(`!</h1>`)
     return builder.String()
@@ -58,7 +58,25 @@ In gtml, we make use of html attributes to determine a components structure. Her
 ### _component
 When gtml is scanning `.html` files, it is searching for _component elements. When it finds a component element, it will generate a function in go which will output the _component's html.
 
+🚨 _component elements may not be placed within other component elements
+
+When defining a _component, you must give it a name:
+```html
+<button _component="CustomButton">Click Me!</button>
+```
+
+The above component will be converted into:
+```go
+func CustomButton() string {
+	var builder strings.Builder
+	builder.WriteString(`<button _component="CustomButton" _id="0">Click Me!</button>`)
+	return builder.String()
+}
+```
+
+
 ### _for
+
 
 ### _if
 
@@ -68,7 +86,13 @@ When gtml is scanning `.html` files, it is searching for _component elements. Wh
 
 
 
-# Runes
+## Runes Define Data
+In gtml, we make use of runes to manage the way data flows throughout our components. Here is a quick list of the available runes in gtml:
+
+- $prop()
+- $val()
+- $slot()
+- $pipe()
 
 ## $prop()
 `$prop()` is used to define a `prop` within our `_component`. The value passed into `$prop()` will end up in the function arguments of our output component.
@@ -107,4 +131,5 @@ This section contains notes related to the ongoing development of gtml.
 # Error Handling Todos
 - If two components have the same name, throw an error
 - What if we place an invalid rune into one of our attributes?
+- make gtml force you to use a valid name for _components
 

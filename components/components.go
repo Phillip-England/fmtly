@@ -33,24 +33,9 @@ func gtmlSlot(contentFunc func() string) string {
 return contentFunc()
 }
 
-func RunePipe(age string) string {
+func CustomButton() string {
 	var builder strings.Builder
-	greetingPlaceholder1 := func() string {
-		return Greeting(age)
-	}
-	builder.WriteString(`<div _component="RunePipe" _id="0"><p>Sally is `)
-	builder.WriteString(age)
-	builder.WriteString(` years old</p>`)
-	builder.WriteString(greetingPlaceholder1())
-	builder.WriteString(`</div>`)
-	return builder.String()
-}
-
-func Greeting(age string) string {
-	var builder strings.Builder
-	builder.WriteString(`<div _component="Greeting" _id="0"><h1>This age was piped in!</h1> <p>`)
-	builder.WriteString(age)
-	builder.WriteString(`</p></div>`)
+	builder.WriteString(`<button _component="CustomButton" _id="0">Click Me!</button>`)
 	return builder.String()
 }
 
