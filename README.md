@@ -43,17 +43,14 @@ When I first dived into gtml, I was using `{{}}` everywhere for my syntax. When 
 ### HTMX
 When I was thinking about how I wanted my templating directives to be declared, I thought of [HTMX](https://htmx.org/) and the way it uses attributes to define behaviour. I really liked the idea of using attributes as a way to tell gtml about how the component should be structured. I got this idea from HTMX.
 
+### Tailwind
+[Tailwind](https://tailwindcss.com/docs/installation) really challenged me on what was possible from simple markup. Tailwind made me ask the question, "What if there is more to html?" Without Tailwind, I may very well still be apprehensive about adding more to my html.
 
 
 
 
-
-# Rules Noted
-- all HTML attribute names must be written in kebab casing while attribute values may be camel case
-- when declaring a prop using {{ propName }} syntax, you must use camel casing to define the name
-- use @ to pipe props into an child Elements
-- use @ to pipe props into a child Element
-- use {{ propName }} within an attribute to define a prop as well
+## Dev Notes
+This section contains notes related to the ongoing development of gtml.
 
 # Feature Wish List (v0.2.0)
 - JSX <SingleTag/> support
