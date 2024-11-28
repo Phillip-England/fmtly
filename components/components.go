@@ -33,9 +33,19 @@ func gtmlSlot(contentFunc func() string) string {
 return contentFunc()
 }
 
-func CustomButton() string {
+func AdminPage(isLoggedIn bool) string {
 	var builder strings.Builder
-	builder.WriteString(`<button _component="CustomButton" _id="0">Click Me!</button>`)
+	isLoggedInElse1 := gtmlElse(isLoggedIn, func() string {
+		var isLoggedInBuilder strings.Builder
+		isLoggedInBuilder.WriteString(`<div _else="isLoggedIn" _id="1"><p>you are not logged in!</p></div>`)
+		if !isLoggedIn {
+			return isLoggedInBuilder.String()
+		}
+		return ""
+	})
+	builder.WriteString(`<div _component="AdminPage" _id="0">`)
+	builder.WriteString(isLoggedInElse1)
+	builder.WriteString(`</div>`)
 	return builder.String()
 }
 

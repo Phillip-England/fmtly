@@ -357,6 +357,7 @@ $val may only contain characters; no symbols, numbers, or spaces`, r.Data)
 	}
 
 	whitelist := purse.GetAllLetters()
+	whitelist = append(whitelist, ".")
 	if !purse.EnforeWhitelist(val, whitelist) {
 		msg := purse.Fmt(`
 invalid $val rune found: %s

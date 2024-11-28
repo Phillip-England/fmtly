@@ -58,7 +58,7 @@ In gtml, we make use of html attributes to determine a components structure. Her
 ### _component
 When gtml is scanning `.html` files, it is searching for _component elements. When it finds a component element, it will generate a function in go which will output the _component's html.
 
->> 🚨 _component elements may not be placed within other _component elements
+> 🚨 _component elements may not be placed within other _component elements
 
 When defining a _component, you must give it a name:
 ```html
@@ -74,15 +74,148 @@ func CustomButton() string {
 }
 ```
 
-
 ### _for
+_for elements are used to iterate over a slice. The slice may be a custom type or a string slice. 
 
+_for elements require their attribute value to be structured in the following way:
+```bash
+_for="ITEM OF ITEMS []TYPE"
+```
+
+Such as:
+```html
+<div _component="ColorList">
+    <ul _for='color of colors []string'>
+        <p>$val(color)</p>
+    </ul>
+</div>
+```
+
+The above component will generate:
+```go
+func ColorList(colors []string) string {
+	var builder strings.Builder
+	colorFor1 := gtmlFor(colors, func(i int, color string) string {
+		var colorBuilder strings.Builder
+		colorBuilder.WriteString(`<ul _for="color of colors []string" _id="1"><p>`)
+		colorBuilder.WriteString(color)
+		colorBuilder.WriteString(`</p></ul>`)
+		return colorBuilder.String()
+	})
+	builder.WriteString(`<div _component="ColorList" _id="0">`)
+	builder.WriteString(colorFor1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+```
+
+We can also do the same with a slice of custom types:
+```html
+<div _component="GuestList">
+    <ul _for='guest of Guests []Guest'>
+        <p>$val(guest.Name)</p>
+    </ul>
+</div>
+```
+
+Which outputs:
+```go
+func GuestList(Guests []Guest) string {
+	var builder strings.Builder
+	guestFor1 := gtmlFor(Guests, func(i int, guest Guest) string {
+		var guestBuilder strings.Builder
+		guestBuilder.WriteString(`<ul _for="guest of Guests []Guest" _id="1"><p>`)
+		guestBuilder.WriteString(guest.Name)
+		guestBuilder.WriteString(`</p></ul>`)
+		return guestBuilder.String()
+	})
+	builder.WriteString(`<div _component="GuestList" _id="0">`)
+	builder.WriteString(guestFor1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+```
+
+> 🚨 bring your own types, gtml will not autogenerate them (yet..? 🦄)
 
 ### _if
+_if elements are used to conditionally render a piece of html.
+
+input:
+```html
+<div _component="AdminPage">
+    <div _if="isLoggedIn">
+        <p>you are logged in!</p>
+    </div>
+</div>
+```
+
+output:
+```go
+func AdminPage(isLoggedIn bool) string {
+	var builder strings.Builder
+	isLoggedInIf1 := gtmlIf(isLoggedIn, func() string {
+		var isLoggedInBuilder strings.Builder
+		isLoggedInBuilder.WriteString(`<div _if="isLoggedIn" _id="1"><p>you are logged in!</p></div>`)
+		if isLoggedIn {
+			return isLoggedInBuilder.String()
+		}
+		return ""
+	})
+	builder.WriteString(`<div _component="AdminPage" _id="0">`)
+	builder.WriteString(isLoggedInIf1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+```
 
 ### _else
+_if elements are used to conditionally render a piece of html.
+
+input:
+```html
+<div _component="AdminPage">
+    <div _else="isLoggedIn">
+        <p>you are not logged in!</p>
+    </div>
+</div>
+```
+
+output:
+```go
+func AdminPage(isLoggedIn bool) string {
+	var builder strings.Builder
+	isLoggedInElse1 := gtmlElse(isLoggedIn, func() string {
+		var isLoggedInBuilder strings.Builder
+		isLoggedInBuilder.WriteString(`<div _else="isLoggedIn" _id="1"><p>you are not logged in!</p></div>`)
+		if !isLoggedIn {
+			return isLoggedInBuilder.String()
+		}
+		return ""
+	})
+	builder.WriteString(`<div _component="AdminPage" _id="0">`)
+	builder.WriteString(isLoggedInElse1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+```
 
 ### _slot
+_slot elements are unique in the sense that they are not used within a _component itself, rather, they are used in it's placeholder.
+
+We will discuss placeholders more in a bit, but for now, just know that a placeholder is what we refer to a component as when it is being used *within another component*.
+
+For example, this `LoginForm` uses `CustomButton` as a `placeholder`
+```html
+<form _component="LoginForm">
+    ...
+    <CustomButton></CustomButton>
+</form>
+
+<div _component="CustomButton">
+    <button>Submit</button>
+</div>
+```
 
 
 
@@ -132,4 +265,5 @@ This section contains notes related to the ongoing development of gtml.
 - If two components have the same name, throw an error
 - What if we place an invalid rune into one of our attributes?
 - make gtml force you to use a valid name for _components
+- what if a component element has no name?
 
