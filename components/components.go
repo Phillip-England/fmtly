@@ -8,36 +8,47 @@ package components
 import "strings"
 
 func gtmlFor[T any](slice []T, callback func(i int, item T) string) string {
-	var builder strings.Builder
-	for i, item := range slice {
-		builder.WriteString(callback(i, item))
-	}
-	return builder.String()
+var builder strings.Builder
+for i, item := range slice {
+	builder.WriteString(callback(i, item))
+}
+return builder.String()
 }
 
 func gtmlIf(condition bool, fn func() string) string {
-	if condition {
-		return fn()
-	}
-	return ""
+if condition {
+	return fn()
+}
+return ""
 }
 
 func gtmlElse(condition bool, fn func() string) string {
-	if !condition {
-		return fn()
-	}
-	return ""
+if !condition {
+	return fn()
+}
+return ""
 }
 
 func gtmlSlot(contentFunc func() string) string {
-	return contentFunc()
+return contentFunc()
 }
 
-func RuneAttrProp(name string) string {
+func NameTag(firstName string, message string) string {
 	var builder strings.Builder
-	builder.WriteString(`<div _component="RuneAttrProp" _id="0"><p class="text-sm `)
-	builder.WriteString(name)
-	builder.WriteString(`">My class is set to what?</p></div>`)
+	builder.WriteString(`<div _component="NameTag" _id="0"><h1>`)
+	builder.WriteString(firstName)
+	builder.WriteString(`</h1><p>`)
+	builder.WriteString(message)
+	builder.WriteString(`</p></div>`)
+	return builder.String()
+}
+
+func PlaceholderWithProps() string {
+	var builder strings.Builder
+	nametagPlaceholder0 := func() string {
+		return NameTag()
+	}
+	builder.WriteString(nametagPlaceholder0())
 	return builder.String()
 }
 
