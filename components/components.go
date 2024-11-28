@@ -33,32 +33,18 @@ func gtmlSlot(contentFunc func() string) string {
 return contentFunc()
 }
 
-func SlotBasic(top string, bottom string) string {
+func RuneVal(colors []string) string {
 	var builder strings.Builder
-	builder.WriteString(`<div _component="SlotBasic" _id="0">`)
-	builder.WriteString(top)
-	builder.WriteString(`<h1>🥪</h1>`)
-	builder.WriteString(bottom)
+	colorFor1 := gtmlFor(colors, func(i int, color string) string {
+		var colorBuilder strings.Builder
+		colorBuilder.WriteString(`<ul _for="color of colors []string" _id="1"><p>`)
+		colorBuilder.WriteString(color)
+		colorBuilder.WriteString(`</p></ul>`)
+		return colorBuilder.String()
+	})
+	builder.WriteString(`<div _component="RuneVal" _id="0">`)
+	builder.WriteString(colorFor1)
 	builder.WriteString(`</div>`)
-	return builder.String()
-}
-
-func Sandwich() string {
-	var builder strings.Builder
-	slotbasicPlaceholder0 := func() string {
-		bottomSlot1 := gtmlSlot(func() string {
-			var bottomBuilder strings.Builder
-			bottomBuilder.WriteString(`<p _slot="bottom" _id="1">I am on bottom</p>`)
-			return bottomBuilder.String()
-		})
-		topSlot2 := gtmlSlot(func() string {
-			var topBuilder strings.Builder
-			topBuilder.WriteString(`<p _slot="top" _id="2">I am on top</p>`)
-			return topBuilder.String()
-		})
-		return SlotBasic(topSlot2, bottomSlot1)
-	}
-	builder.WriteString(slotbasicPlaceholder0())
 	return builder.String()
 }
 

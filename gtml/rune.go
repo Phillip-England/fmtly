@@ -13,6 +13,7 @@ import (
 const (
 	KeyRuneProp = "$prop"
 	KeyRuneSlot = "$slot"
+	KeyRuneVal  = "$val"
 )
 
 const (
@@ -22,7 +23,7 @@ const (
 
 // ##==================================================================
 func GetRuneNames() []string {
-	return []string{KeyRuneProp, KeyRuneSlot}
+	return []string{KeyRuneProp, KeyRuneSlot, KeyRuneVal}
 }
 
 // ##==================================================================
@@ -44,6 +45,13 @@ func NewGtmlRune(runeStr string, location string) (GtmlRune, error) {
 	}
 	if strings.HasPrefix(runeStr, KeyRuneSlot) {
 		r, err := NewRuneSlot(runeStr)
+		if err != nil {
+			return nil, err
+		}
+		return r, nil
+	}
+	if strings.HasPrefix(runeStr, KeyRuneVal) {
+		r, err := NewRuneVal(runeStr)
 		if err != nil {
 			return nil, err
 		}
@@ -165,11 +173,11 @@ type RuneSlot struct {
 	Location    string
 }
 
-func NewRuneSlot(data string) (*RuneProp, error) {
-	r := &RuneProp{
+func NewRuneSlot(data string) (*RuneSlot, error) {
+	r := &RuneSlot{
 		DecodedData: data,
 		Data:        html.UnescapeString(data),
-		Type:        KeyRuneProp,
+		Type:        KeyRuneSlot,
 	}
 	err := fungi.Process(
 		func() error { return r.initValue() },
@@ -201,17 +209,17 @@ invalid $prop rune found: %s`, r.Data)
 	valLastChar := string(val[len(val)-1])
 	valIsSingleQuotes := false
 	valIsDoubleQuotes := false
-	if valFirstChar != "\"" && valLastChar != "\"" {
+	if valFirstChar == "\"" && valLastChar == "\"" {
 		valIsDoubleQuotes = true
 	}
-	if valFirstChar != "'" && valLastChar != "'" {
+	if valFirstChar == "'" && valLastChar == "'" {
 		valIsSingleQuotes = true
 	}
 	if !valIsDoubleQuotes && !valIsSingleQuotes {
 		msg := purse.Fmt(`
-	invalid $prop rune found: %s
-	$prop must contain a single string wrapped in quotes such as $prop("varName")
-	$prop may only contain characters; no symbols, numbers, or spaces
+	invalid $slot rune found: %s
+	$slot must contain a single string wrapped in quotes such as $slot("varName")
+	$slot may only contain characters; no symbols, numbers, or spaces
 	`, r.Data)
 		return fmt.Errorf(msg)
 	}
@@ -219,9 +227,9 @@ invalid $prop rune found: %s`, r.Data)
 	if valIsDoubleQuotes {
 		if strings.Count(val, "\"") > 2 {
 			msg := purse.Fmt(`
-			invalid $prop rune found: %s
-			$prop must contain a single string wrapped in quotes such as $prop("varName")
-			$prop may only contain characters; no symbols, numbers, or spaces
+			invalid $slot rune found: %s
+			$slot must contain a single string wrapped in quotes such as $slot("varName")
+			$slot may only contain characters; no symbols, numbers, or spaces
 			`, r.Data)
 			return fmt.Errorf(msg)
 		}
@@ -230,9 +238,9 @@ invalid $prop rune found: %s`, r.Data)
 	if valIsSingleQuotes {
 		if strings.Count(val, "'") > 2 {
 			msg := purse.Fmt(`
-			invalid $prop rune found: %s
-			$prop must contain a single string wrapped in quotes such as $prop("varName")
-			$prop may only contain characters; no symbols, numbers, or spaces
+			invalid $slot rune found: %s
+			$slot must contain a single string wrapped in quotes such as $slot("varName")
+			$slot may only contain characters; no symbols, numbers, or spaces
 			`, r.Data)
 			return fmt.Errorf(msg)
 		}
@@ -247,9 +255,9 @@ invalid $prop rune found: %s`, r.Data)
 	}
 	if !purse.EnforeWhitelist(val, whitelist) {
 		msg := purse.Fmt(`
-invalid $prop rune found: %s
-$prop must contain a single string wrapped in quotes such as $prop("varName")
-$prop may only contain characters; no symbols, numbers, or spaces
+invalid $slot rune found: %s
+$slot must contain a single string wrapped in quotes such as $slot("varName")
+$slot may only contain characters; no symbols, numbers, or spaces
 `, r.Data)
 		return fmt.Errorf(msg)
 	}
@@ -261,6 +269,97 @@ $prop may only contain characters; no symbols, numbers, or spaces
 }
 
 // ##==================================================================
+type RuneVal struct {
+	Data        string
+	DecodedData string
+	Value       string
+	Type        string
+	Location    string
+}
+
+func NewRuneVal(data string) (*RuneVal, error) {
+	r := &RuneVal{
+		DecodedData: data,
+		Data:        html.UnescapeString(data),
+		Type:        KeyRuneVal,
+	}
+	err := fungi.Process(
+		func() error { return r.initValue() },
+	)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func (r *RuneVal) Print()                 { fmt.Println(r.Data) }
+func (r *RuneVal) GetValue() string       { return r.Value }
+func (r *RuneVal) GetType() string        { return r.Type }
+func (r *RuneVal) GetDecodedData() string { return r.DecodedData }
+func (r *RuneVal) GetLocation() string    { return r.Location }
+
+func (r *RuneVal) initValue() error {
+	index := strings.Index(r.Data, "(") + 1
+	part := r.Data[index:]
+	lastChar := string(part[len(part)-1])
+	if lastChar != ")" {
+		msg := purse.Fmt(`
+			invalid $val rune found: %s`, r.Data)
+		return fmt.Errorf(msg)
+	}
+	val := part[:len(part)-1]
+
+	valFirstChar := string(val[0])
+	valLastChar := string(val[len(val)-1])
+	valIsSingleQuotes := false
+	valIsDoubleQuotes := false
+	if valFirstChar == "\"" && valLastChar == "\"" {
+		valIsDoubleQuotes = true
+	}
+	if valFirstChar == "'" && valLastChar == "'" {
+		valIsSingleQuotes = true
+	}
+
+	if valIsDoubleQuotes || valIsSingleQuotes {
+		msg := purse.Fmt(`
+invalid $val rune found: %s
+$val must contain a single value (not a string) such as $val(someValue)
+$val may only contain characters; no symbols, numbers, or spaces`, r.Data)
+		return fmt.Errorf(msg)
+	}
+
+	if valIsDoubleQuotes {
+		if strings.Count(val, "\"") > 2 {
+			msg := purse.Fmt(`
+				invalid $val rune found: %s
+				$val must contain a single value (not a string) such as $val(someValue)
+				$val may only contain characters; no symbols, numbers, or spaces`, r.Data)
+			return fmt.Errorf(msg)
+		}
+	}
+
+	if valIsSingleQuotes {
+		if strings.Count(val, "'") > 2 {
+			msg := purse.Fmt(`
+				invalid $val rune found: %s
+				$val must contain a single value (not a string) such as $val(someValue)
+				$val may only contain characters; no symbols, numbers, or spaces`, r.Data)
+			return fmt.Errorf(msg)
+		}
+	}
+
+	whitelist := purse.GetAllLetters()
+	if !purse.EnforeWhitelist(val, whitelist) {
+		msg := purse.Fmt(`
+			invalid $val rune found: %s
+			$val must contain a single value (not a string) such as $val(someValue)
+			$val may only contain characters; no symbols, numbers, or spaces`, r.Data)
+		return fmt.Errorf(msg)
+	}
+
+	r.Value = purse.Squeeze(val)
+	return nil
+}
 
 // ##==================================================================
 

@@ -1,13 +1,7 @@
-<div _component="SlotBasic">
-    $slot("top")
-    <h1>🥪</h1>
-    $slot("bottom")
+<div _component="RuneVal">
+    <ul _for="color of colors []string">
+        <p>$val(color)</p>
+    </ul>
 </div>
-
-<SlotBasic _component="Sandwich">
-    <p _slot="bottom">I am on bottom</p>
-    <p _slot="top">I am on top</p>
-</SlotBasic>
-
 
 

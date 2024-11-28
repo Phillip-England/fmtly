@@ -231,6 +231,10 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
 			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
 		}
+		if rn.GetType() == KeyRuneVal {
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
+			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
+		}
 		return nil
 	})
 	if err != nil {
