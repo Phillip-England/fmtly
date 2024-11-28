@@ -225,7 +225,7 @@ For example:
 ```html
 <div _component="GuestLayout">
     <navbar>my navbar</navbar>
-    $slot("content")
+    $slot("content")  <============= this is a rune, will discuss them later
     <footer></footer>
 <div>
 
@@ -260,11 +260,6 @@ func HomePage() string {
 	return builder.String()
 }
 ```
-
-> ✅ You may use as many `_slot`s as you'd like 
-
-
-
 
 ## Runes Define Data
 In gtml, we make use of runes to manage the way data flows throughout our components. Here is a quick list of the available runes in gtml:
