@@ -38,6 +38,7 @@ func NewCallPlaceholder(str string) (*CallPlaceholder, error) {
 	}
 	err := fungi.Process(
 		func() error { return call.initParams() },
+		func() error { return call.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -65,6 +66,28 @@ func (call *CallPlaceholder) initParams() error {
 	}
 	parts := strings.Split(data, ",")
 	call.Params = parts
+	return nil
+}
+
+func (call *CallPlaceholder) initRunes() error {
+	for i, param := range call.Params {
+		rns, err := NewRunesFromStr(param)
+		if err != nil {
+			return err
+		}
+		for _, rn := range rns {
+			if rn.GetType() == KeyRuneProp || rn.GetType() == KeyRunePipe {
+				runeVal := rn.GetValue()
+				param = strings.Replace(param, rn.GetDecodedData(), runeVal, 1)
+				param = purse.RemoveAllSubStr(param, "'", "\"")
+				call.Params[i] = param
+			} else {
+				purse.Fmt(`
+_placeholder component found with the following rune in its attributes: %s
+only $prop and $pipe runes are usable within _placeholder component attributes`, rn.GetDecodedData())
+			}
+		}
+	}
 	return nil
 }
 

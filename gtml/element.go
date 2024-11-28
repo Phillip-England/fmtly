@@ -235,6 +235,10 @@ func GetElementAsBuilderSeries(elm Element, builderName string) (string, error) 
 			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
 			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
 		}
+		if rn.GetType() == KeyRunePipe {
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
+			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
+		}
 		return nil
 	})
 	if err != nil {
@@ -496,14 +500,10 @@ func MarkSelectionsAsUnique(selections []*goquery.Selection) {
 	}
 }
 
-func GetElementRunes(elm Element) ([]GtmlRune, error) {
+func NewRunesFromStr(s string) ([]GtmlRune, error) {
 	runes := make([]GtmlRune, 0)
-	elmHtml, err := GetElementHtmlWithoutChildren(elm)
-	if err != nil {
-		return runes, err
-	}
-	parts := purse.ScanBetweenSubStrs(elmHtml, "$", ")")
-	clay := elmHtml
+	parts := purse.ScanBetweenSubStrs(s, "$", ")")
+	clay := s
 	for _, part := range parts {
 		index := strings.Index(part, "(")
 		if index == -1 {
@@ -514,7 +514,13 @@ func GetElementRunes(elm Element) ([]GtmlRune, error) {
 			continue
 		}
 		index = strings.Index(clay, part)
+		if index == -1 {
+			continue // Skip if the part is not found in `clay`
+		}
 		potentialEqualSignIndex := index - 2
+		if potentialEqualSignIndex < 0 || potentialEqualSignIndex+2 > len(clay) {
+			continue // Skip if accessing `clay[potentialEqualSignIndex : potentialEqualSignIndex+2]` would go out of bounds
+		}
 		potentialAttrStart := clay[potentialEqualSignIndex : potentialEqualSignIndex+2]
 		attrLocation := KeyLocationElsewhere
 		if potentialAttrStart == "=\"" || potentialAttrStart == "='" {
@@ -527,6 +533,18 @@ func GetElementRunes(elm Element) ([]GtmlRune, error) {
 		runes = append(runes, r)
 	}
 	return runes, nil
+}
+
+func GetElementRunes(elm Element) ([]GtmlRune, error) {
+	elmHtml, err := GetElementHtmlWithoutChildren(elm)
+	if err != nil {
+		return make([]GtmlRune, 0), err
+	}
+	rns, err := NewRunesFromStr(elmHtml)
+	if err != nil {
+		return rns, err
+	}
+	return rns, nil
 }
 
 func WalkElementRunes(elm Element, fn func(rn GtmlRune) error) error {

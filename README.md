@@ -62,6 +62,7 @@ Usage of `{{}}` and it's multiple use-cases is odd, for example, within an attri
 
 # Error Handling Todos
 - If two components have the same name, throw an error
+- What if we place an invalid rune into one of our attributes?
 
 # Runes
 

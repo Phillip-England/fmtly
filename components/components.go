@@ -33,18 +33,24 @@ func gtmlSlot(contentFunc func() string) string {
 return contentFunc()
 }
 
-func RuneVal(colors []string) string {
+func RunePipe(age string) string {
 	var builder strings.Builder
-	colorFor1 := gtmlFor(colors, func(i int, color string) string {
-		var colorBuilder strings.Builder
-		colorBuilder.WriteString(`<ul _for="color of colors []string" _id="1"><p>`)
-		colorBuilder.WriteString(color)
-		colorBuilder.WriteString(`</p></ul>`)
-		return colorBuilder.String()
-	})
-	builder.WriteString(`<div _component="RuneVal" _id="0">`)
-	builder.WriteString(colorFor1)
+	greetingPlaceholder1 := func() string {
+		return Greeting(age)
+	}
+	builder.WriteString(`<div _component="RunePipe" _id="0"><p>Sally is `)
+	builder.WriteString(age)
+	builder.WriteString(` years old</p>`)
+	builder.WriteString(greetingPlaceholder1())
 	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func Greeting(age string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="Greeting" _id="0"><h1>This age was piped in!</h1> <p>`)
+	builder.WriteString(age)
+	builder.WriteString(`</p></div>`)
 	return builder.String()
 }
 
