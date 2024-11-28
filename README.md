@@ -1,24 +1,5 @@
 # Gtml
-   _____ _______ __  __ _      
-  / ____|__   __|  \/  | |     
- | |  __   | |  | \  / | |     
- | | |_ |  | |  | |\/| | |     
- | |__| |  | |  | |  | | |____ 
-  \_____|  |_|  |_|  |_|______|
- ---------------------------------------
- Convert HTML to Golang 💦
- Version 0.1.0 (2024-11-26)
- https://github.com/phillip-england/gtml
- ---------------------------------------
-
- Usage: 
-  gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE]
-
-Example: 
-  gtml --watch ./components output.go
-
-Options:
-  --watch       rebuild when source files are modified
+Convert HTML to Golang 💦
 
 ## Hello, World
 Turn this:
@@ -42,13 +23,40 @@ func Greeting(name string) string {
 ## Installation
 To install, simply clone the repo and build the binary on your system.
 
+Then you'll be left with a binary you can move onto your PATH.
+
 ```bash
 git clone https://github.com/phillip-england/gtml
 cd gtml
 go build gtml ## go version 1.22.3 or later
 ```
 
-Then you'll be left with a binary you can move onto your PATH.
+## Usage
+```bash
+   _____ _______ __  __ _      
+  / ____|__   __|  \/  | |     
+ | |  __   | |  | \  / | |     
+ | | |_ |  | |  | |\/| | |     
+ | |__| |  | |  | |  | | |____ 
+  \_____|  |_|  |_|  |_|______|
+ ---------------------------------------
+ Convert HTML to Golang 💦
+ Version 0.1.0 (2024-11-26)
+ https://github.com/phillip-england/gtml
+ ---------------------------------------
+
+Usage: 
+  gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE]
+
+Example: 
+  gtml --watch ./components output.go
+
+Options:
+  --watch       rebuild when source files are modified
+
+```
+
+
 
 ## Inspirations
 Before you dive in an check out the features of gtml, I want to take a moment to give thanks to the technologies which have directly inspired this project.
