@@ -49,7 +49,7 @@ Usage:
   gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE]
 
 Example: 
-  gtml --watch ./components output.go
+  gtml --watch build ./components output.go output
 
 Options:
   --watch       rebuild when source files are modified
@@ -532,4 +532,5 @@ This section contains notes related to the ongoing development of gtml.
 - What if we place an invalid rune into one of our attributes?
 - make gtml force you to use a valid name for _components
 - what if a component element has no name?
+- take into consideration which funcs are private / public
 

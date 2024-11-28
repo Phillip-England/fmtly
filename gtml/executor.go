@@ -298,10 +298,10 @@ func (ex *ExecutorHelp) Run() error {
 	message := fmt.Sprintf(`
 %s
 Usage: 
-  gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE]
+  gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE] [GO PACKAGE NAME]
 
 Example: 
-  gtml --watch ./components output.go
+  gtml --watch build ./components output.go output
 
 Options:
   --watch       rebuild when source files are modified

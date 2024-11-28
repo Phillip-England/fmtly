@@ -1,14 +1,14 @@
 <div _component="GuestMesh">
-    <h1>{{ someTitle }}</h1>
+    <h1>$prop("someTitle")</h1>
     <div _for="guest of guests []Guest">
-        <h1>{{ guest.Name }}</h1>
+        <h1>$val(guest.Name)</h1>
         <p>The guest has brought the following items:</p>
         <div _for="item of guest.Items []Item">
-            <p>{{ item.Name }}</p>
-            <p>{{ item.Price }}</p>
+            <p>$val(item.Name)</p>
+            <p>$val(item.Price)</p>
             <div _for="color of item.Colors []Color">
-                <p>{{ color.Shade }}</p>
-                <p>{{ color.Hue }}</p>
+                <p>$val(color.Hue)</p>
+                <p>$val(color.Name)</p>
                 <div _if="isAdmin">
                     <p>Hello Admin!</p>
                 </div>
@@ -16,8 +16,8 @@
         </div>
     </div>
     <div _for="color of colors []string">
-        <p>{{ .color }}</p>
-        <p>{{ .color }}</p>
+        <p>$val(color)</p>
+        <p>$val(color)</p>
     </div>
     <div _if="loggedIn">
         <p>Logged in!</p>

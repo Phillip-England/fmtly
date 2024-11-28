@@ -1,0 +1,20 @@
+<div _component="GreetingCard">
+    <h1>$prop("name")</h1>
+    <GreetingSlot name="$prop('guestFirstName')" age="20">
+        <div _slot="message">
+            <p>testin!</p>
+        </div>
+        <div _slot="loop">
+            <ul _for="color of colors []string">
+                <li>$val(color)</li>
+            </ul>
+        </div>
+    </GreetingSlot>
+</div>
+
+<div _component="GreetingSlot">
+    $slot("message")
+    <h1>Hello, $prop("name")</h1> 
+    <p>you are $prop("age") years old!</p>
+    $slot("loop")
+</div>
