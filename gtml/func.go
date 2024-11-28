@@ -227,55 +227,84 @@ func (fn *GoComponentFunc) initPlaceholderCalls() error {
 }
 
 func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []Element) error {
+	// Initialize an empty slice to hold the ordered placeholder call strings.
 	ordered := make([]string, 0)
 
-	// need to get runes here instead
+	// Iterate through all sibling elements.
+	for _, sib := range siblings {
+		// Skip processing if the sibling element has the same name as the current element.
+		if fn.Element.GetName() == sib.GetName() {
+			continue
+		}
 
-	// for _, sib := range siblings {
-	// 	if fn.Element.GetName() == sib.GetName() {
-	// 		continue
-	// 	}
-	// 	params, err := GetElementParams(sib)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	sibParams := make([]Param, 0)
-	// 	found := make([]string, 0)
-	// 	for _, param := range params {
-	// 		if purse.SliceContains(found, param.GetStr()) {
-	// 			continue
-	// 		}
-	// 		sibParams = append(sibParams, param)
-	// 		found = append(found, param.GetStr())
-	// 	}
-	// 	for _, sibParam := range sibParams {
-	// 		for _, call := range fn.PlaceholderCalls {
-	// 			callParams := call.GetParams()
-	// 			for _, callParam := range callParams {
-	// 				clay := callParam
-	// 				clay = strings.Replace(clay, "ATTRID", "", 1)
-	// 				clay = strings.Replace(clay, "ATTRID", " ", 1)
-	// 				callParamParts := strings.Split(clay, " ")
-	// 				filtered := make([]string, 0)
-	// 				for _, part := range callParamParts {
-	// 					if len(part) == 0 {
-	// 						continue
-	// 					}
-	// 					filtered = append(filtered, part)
-	// 				}
-	// 				callParamParts = filtered
-	// 				callParamId := callParamParts[0]
-	// 				sibParamName := sibParam.GetName()
-	// 				if callParamId == sibParamName {
-	// 					writeAs := strings.Replace(callParam, "ATTRID", "", 1)
-	// 					i := strings.Index(writeAs, "ATTRID") + len("ATTRID")
-	// 					writeAs = writeAs[i:]
-	// 					ordered = append(ordered, writeAs)
-	// 				}
-	// 			}
-	// 		}
-	// 	}
+		// Retrieve parameters for the sibling element.
+		params, err := GetElementParams(sib)
+		if err != nil {
+			return err // Return any error encountered during parameter retrieval.
+		}
+
+		// Initialize slices for unique sibling parameters and already processed parameter names.
+		sibParams := make([]Param, 0)
+		found := make([]string, 0)
+
+		// Filter out duplicate parameters from the sibling element.
+		for _, param := range params {
+			if purse.SliceContains(found, param.GetStr()) {
+				continue // Skip if the parameter has already been processed.
+			}
+			sibParams = append(sibParams, param) // Add unique parameters.
+			found = append(found, param.GetStr())
+		}
+
+		// Iterate through each unique sibling parameter.
+		for _, sibParam := range sibParams {
+			// Loop through all placeholder calls in the current function.
+			for _, call := range fn.PlaceholderCalls {
+				// Retrieve parameters for the current placeholder call.
+				callParams := call.GetParams()
+
+				// Process each parameter in the call.
+				for _, callParam := range callParams {
+					clay := callParam
+
+					// Clean up the parameter string by removing "ATTRID" substrings.
+					clay = strings.Replace(clay, "ATTRID", "", 1)
+					clay = strings.Replace(clay, "ATTRID", " ", 1)
+
+					// Split the cleaned parameter string into parts.
+					callParamParts := strings.Split(clay, " ")
+
+					// Filter out empty parts from the split results.
+					filtered := make([]string, 0)
+					for _, part := range callParamParts {
+						if len(part) == 0 {
+							continue
+						}
+						filtered = append(filtered, part)
+					}
+					callParamParts = filtered
+
+					// Extract the identifier (first part) of the cleaned parameter string.
+					callParamId := callParamParts[0]
+					sibParamName := sibParam.GetName()
+
+					// Check if the call parameter ID matches the sibling parameter name.
+					if callParamId == sibParamName {
+						// Extract the part of the call parameter string after "ATTRID" and append it to the ordered list.
+						writeAs := strings.Replace(callParam, "ATTRID", "", 1)
+						i := strings.Index(writeAs, "ATTRID") + len("ATTRID")
+						writeAs = writeAs[i:]
+						ordered = append(ordered, writeAs)
+					}
+				}
+			}
+		}
+	}
+
+	// Set the ordered placeholder calls for the function.
 	fn.OrderedPlaceholderCalls = ordered
+
+	// Return nil to indicate successful execution.
 	return nil
 }
 

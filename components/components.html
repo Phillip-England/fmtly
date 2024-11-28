@@ -1,10 +1,11 @@
-
-<div _component="NameTag">
-    <h1>$prop("firstName")</h1>
-    <p>$prop("message")</p>
+<div _component="SlotBasic">
+    <h1>Hello!</h1>
+    $slot("message")
 </div>
 
-<NameTag _component="PlaceholderWithProps"></NameTag>
+<SlotBasic _component="NoteToSelf">
+    <p _slot="message">gtml is awesome 💦</p>
+</SlotBasic>
 
 
 

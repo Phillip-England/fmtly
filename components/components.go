@@ -33,22 +33,23 @@ func gtmlSlot(contentFunc func() string) string {
 return contentFunc()
 }
 
-func NameTag(firstName string, message string) string {
+func SlotBasic() string {
 	var builder strings.Builder
-	builder.WriteString(`<div _component="NameTag" _id="0"><h1>`)
-	builder.WriteString(firstName)
-	builder.WriteString(`</h1><p>`)
-	builder.WriteString(message)
-	builder.WriteString(`</p></div>`)
+	builder.WriteString(`<div _component="SlotBasic" _id="0"><h1>Hello!</h1>$slot(&#34;message&#34;)</div>`)
 	return builder.String()
 }
 
-func PlaceholderWithProps() string {
+func NoteToSelf() string {
 	var builder strings.Builder
-	nametagPlaceholder0 := func() string {
-		return NameTag()
+	slotbasicPlaceholder0 := func() string {
+		messageSlot1 := gtmlSlot(func() string {
+			var messageBuilder strings.Builder
+			messageBuilder.WriteString(`<p _slot="message" _id="1">gtml is awesome 💦</p>`)
+			return messageBuilder.String()
+		})
+		return SlotBasic()
 	}
-	builder.WriteString(nametagPlaceholder0())
+	builder.WriteString(slotbasicPlaceholder0())
 	return builder.String()
 }
 

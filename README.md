@@ -55,10 +55,13 @@ When I was thinking about how I wanted my templating directives to be declared, 
 - Solid Error Handling
 - _component validations ran prior to building
 - Implement the Rune Idea from Below
+- allow the command line tool to take in a single file instead of a dir as well
 
 # Vision Of Changes (v0.2.0)
 Usage of `{{}}` and it's multiple use-cases is odd, for example, within an attribute, using `{{}}` will define a param in the output func. It also represents a kind of placeholder because the param name itself will be in the output, just without the `{{}}`. BUT if we use `{{}}` in the context of a _for loop, then it has a different meaning. It is also used to define slots. It just feels like {{}} is wearing a lot of different hats. I like the idea of splitting these functionalities across a series of runes (similar to Svelte but with different implementation). For example, we could introduce the `$prop("propName")` rune which is very direct in it's desire to define a prop and also represents the prop as a placeholder. Maybe if we wanted to take things further we could say, `$pipe("propName")` to grab `propName` from the current context and pipe it into another component. This would also eliminate the weird `@` syntax. We could do `$slot("slotName")` to eliminate our issue with slots. In _for loops, we could do `$val("guest.Name")` or `$val("color")` and it will be easy to tell which input is a string of a specific type. This way we get rid of `{{}}` completely and then we will be in the position to consider which runes can be used to inject client side interactivity and a bunch of other things 🦄
 
+# Error Handling Todos
+- If two components have the same name, throw an error
 
 # Runes
 
