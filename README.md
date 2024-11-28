@@ -1,5 +1,24 @@
 # Gtml
-Convert HTML to Golang 💦
+   _____ _______ __  __ _      
+  / ____|__   __|  \/  | |     
+ | |  __   | |  | \  / | |     
+ | | |_ |  | |  | |\/| | |     
+ | |__| |  | |  | |  | | |____ 
+  \_____|  |_|  |_|  |_|______|
+ ---------------------------------------
+ Convert HTML to Golang 💦
+ Version 0.1.0 (2024-11-26)
+ https://github.com/phillip-england/gtml
+ ---------------------------------------
+
+ Usage: 
+  gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE]
+
+Example: 
+  gtml --watch ./components output.go
+
+Options:
+  --watch       rebuild when source files are modified
 
 ## Hello, World
 Turn this:
@@ -392,10 +411,100 @@ func Greeting(age string) string {
 }
 ```
 
+## Placeholders
+When a `_component` is used within another `_component`, we refer to it as a `placeholder`. `placeholders` enable us to mix and match components with ease.
 
+> 🚨: This is not JSX and you cannot do self-closing tags like `<SomeComponent/>`. All tags must consist of both an opening tag and closing tag. This can be supported in future versions.
 
+For example, this `LoginForm` uses `CustomButton` as a `placeholder`
+```html
+<form _component="LoginForm">
+    ...
+    <CustomButton></CustomButton>
+</form>
 
+<div _component="CustomButton">
+    <button>Submit</button>
+</div>
+```
 
+### Placeholder Attributes
+You may pass data into a `placeholder` using it's attributes. These attributes must corrospond to the target `_component`'s `props`. 
+
+> 🚨: when passing values into `placeholder` attributes, you must refer to the attributes in kebab-casing. This will be patched in future version. For example, below we do `$prop("firstName")` to define `firstName`, but when we pass values into the `_element` we use `first-name` instead.
+
+For example:
+```html
+<div _component="NameTag">
+    <h1>$prop("firstName")</h1>
+    <p>$prop("message")</p>
+</div>
+
+<NameTag _component="PlaceholderWithAttrs" message="is the best" first-name="gtml"></NameTag>
+```
+
+The output:
+```go
+func NameTag(firstName string, message string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="NameTag" _id="0"><h1>`)
+	builder.WriteString(firstName)
+	builder.WriteString(`</h1><p>`)
+	builder.WriteString(message)
+	builder.WriteString(`</p></div>`)
+	return builder.String()
+}
+
+func PlaceholderWithAttrs() string {
+	var builder strings.Builder
+	nametagPlaceholder0 := func() string {
+		return NameTag("gtml", "is the best")
+	}
+	builder.WriteString(nametagPlaceholder0())
+	return builder.String()
+}
+```
+
+### Placeholder Piping
+If a `placeholder` needs to access a value from a parent `_component`, the value may be piped in using the `$pipe()` `rune`.
+
+For example:
+For example:
+```html
+<div _component="RunePipe">
+    <p>Sally is $prop("age") years old</p>
+    <Greeting age="$pipe(age)"></Greeting> <== piping in the age
+</div>
+
+<div _component="Greeting">
+    <h1>This age was piped in!</h1> 
+    <p>$prop("age")</p>
+</div>
+```
+
+The output:
+```go
+func RunePipe(age string) string {
+	var builder strings.Builder
+	greetingPlaceholder1 := func() string {
+		return Greeting(age)
+	}
+	builder.WriteString(`<div _component="RunePipe" _id="0"><p>Sally is `)
+	builder.WriteString(age)
+	builder.WriteString(` years old</p>`)
+	builder.WriteString(greetingPlaceholder1())
+	builder.WriteString(` &lt;== piping in the age</div>`)
+	return builder.String()
+}
+
+func Greeting(age string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="Greeting" _id="0"><h1>This age was piped in!</h1> <p>`)
+	builder.WriteString(age)
+	builder.WriteString(`</p></div>`)
+	return builder.String()
+}
+```
 
 ## Dev Notes
 This section contains notes related to the ongoing development of gtml.
