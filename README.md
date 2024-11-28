@@ -5,7 +5,7 @@ Convert HTML to Golang 💦
 Turn this:
 ```html
 <div _component='Greeting'>
-    <h1>Hello, {{ name }}</h1>
+    <h1>Hello, $prop("name")</h1>
 </div>
 ```
 
@@ -21,7 +21,15 @@ func Greeting(name string) string {
 ```
 
 ## Installation
-Gtml was build with go version 1.23.3. 
+To install, simply clone the repo and build the binary on your system.
+
+```bash
+git clone https://github.com/phillip-england/gtml
+cd gtml
+go build gtml ## go version 1.22.3 or later
+```
+
+Then you'll be left with a binary you can move onto your PATH.
 
 ## Inspirations
 Before you dive in an check out the features of gtml, I want to take a moment to give thanks to the technologies which have directly inspired this project.
