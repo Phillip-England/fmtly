@@ -28,7 +28,7 @@ Then you'll be left with a binary you can move onto your PATH.
 ```bash
 git clone https://github.com/phillip-england/gtml
 cd gtml
-go build gtml ## go version 1.22.3 or later
+go build main.go ## go version 1.22.3 or later
 ```
 
 ## Usage
@@ -525,6 +525,9 @@ This section contains notes related to the ongoing development of gtml.
 - Solid Error Handling
 - _component validations ran prior to building
 - allow the command line tool to take in a single file instead of a dir as well
+- implement the $ctx() rune - stores a value in a global context which is made available to children and avoids the used of $pipe()
+- implement the $var() rune - creates a local variable (meaning it cannot be used in $pipe())
+- in this [reddit convo](https://www.reddit.com/r/golang/comments/1h1yb4w/gtml_convert_html_to_golang/), I talk to someone about growing out the buffers in the output components, need to do this!
 
 
 # Error Handling Todos

@@ -33,6 +33,106 @@ func gtmlSlot(contentFunc func() string) string {
 return contentFunc()
 }
 
+func DiningMenu(foodThree string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="DiningMenu" _id="0"><h1>Welcome!</h1><p>Please take a look at our menu, ask if you have questions!</p><foodlist food-one="Pizza" food-two="Tacos" food-three="`)
+	builder.WriteString(foodThree)
+	builder.WriteString(`"></foodlist></div>`)
+	return builder.String()
+}
+
+func IfElement(isLoggedIn bool) string {
+	var builder strings.Builder
+	isLoggedInElse1 := gtmlElse(isLoggedIn, func() string {
+		var isLoggedInBuilder strings.Builder
+		isLoggedInBuilder.WriteString(`<div _else="isLoggedIn" _id="1"><p>you are not logged in!</p></div>`)
+		if !isLoggedIn {
+			return isLoggedInBuilder.String()
+		}
+		return ""
+	})
+	builder.WriteString(`<div _component="IfElement" _id="0">`)
+	builder.WriteString(isLoggedInElse1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func ForCustomSlice(Guests []Guest) string {
+	var builder strings.Builder
+	guestFor1 := gtmlFor(Guests, func(i int, guest Guest) string {
+		var guestBuilder strings.Builder
+		guestBuilder.WriteString(`<ul _for="guest of Guests []Guest" _id="1"><p>`)
+		guestBuilder.WriteString(guest.Name)
+		guestBuilder.WriteString(`</p></ul>`)
+		return guestBuilder.String()
+	})
+	builder.WriteString(`<div _component="ForCustomSlice" _id="0">`)
+	builder.WriteString(guestFor1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func ForStringSlice(colors []string) string {
+	var builder strings.Builder
+	colorFor1 := gtmlFor(colors, func(i int, color string) string {
+		var colorBuilder strings.Builder
+		colorBuilder.WriteString(`<ul _for="color of colors []string" _id="1"><p>`)
+		colorBuilder.WriteString(color)
+		colorBuilder.WriteString(`</p></ul>`)
+		return colorBuilder.String()
+	})
+	builder.WriteString(`<div _component="ForStringSlice" _id="0">`)
+	builder.WriteString(colorFor1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func GreetingCard(name string, guestFirstName string, colors []string) string {
+	var builder strings.Builder
+	greetingslotPlaceholder1 := func() string {
+		messageSlot2 := gtmlSlot(func() string {
+			var messageBuilder strings.Builder
+			messageBuilder.WriteString(`<div _slot="message" _id="2"><p>testin!</p></div>`)
+			return messageBuilder.String()
+		})
+		loopSlot3 := gtmlSlot(func() string {
+			var loopBuilder strings.Builder
+			colorFor4 := gtmlFor(colors, func(i int, color string) string {
+				var colorBuilder strings.Builder
+				colorBuilder.WriteString(`<ul _for="color of colors []string" _id="4"><li>`)
+				colorBuilder.WriteString(color)
+				colorBuilder.WriteString(`</li></ul>`)
+				return colorBuilder.String()
+			})
+			loopBuilder.WriteString(`<div _slot="loop" _id="3">`)
+			loopBuilder.WriteString(colorFor4)
+			loopBuilder.WriteString(`</div>`)
+			return loopBuilder.String()
+		})
+		return GreetingSlot(messageSlot2, guestFirstName, "20", loopSlot3)
+	}
+	builder.WriteString(`<div _component="GreetingCard" _id="0"><h1>`)
+	builder.WriteString(name)
+	builder.WriteString(`</h1>`)
+	builder.WriteString(greetingslotPlaceholder1())
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func GreetingSlot(message string, name string, age string, loop string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="GreetingSlot" _id="0">`)
+	builder.WriteString(message)
+	builder.WriteString(`<h1>Hello, `)
+	builder.WriteString(name)
+	builder.WriteString(`</h1> <p>you are `)
+	builder.WriteString(age)
+	builder.WriteString(` years old!</p>`)
+	builder.WriteString(loop)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
 func GuestMesh(someTitle string, guests []Guest, isAdmin bool, colors []string, loggedIn bool) string {
 	var builder strings.Builder
 	guestFor1 := gtmlFor(guests, func(i int, guest Guest) string {
@@ -98,6 +198,166 @@ func GuestMesh(someTitle string, guests []Guest, isAdmin bool, colors []string, 
 	builder.WriteString(colorFor5)
 	builder.WriteString(loggedInIf6)
 	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func IfElement(isLoggedIn bool) string {
+	var builder strings.Builder
+	isLoggedInIf1 := gtmlIf(isLoggedIn, func() string {
+		var isLoggedInBuilder strings.Builder
+		isLoggedInBuilder.WriteString(`<div _if="isLoggedIn" _id="1"><p>you are logged in!</p></div>`)
+		if isLoggedIn {
+			return isLoggedInBuilder.String()
+		}
+		return ""
+	})
+	builder.WriteString(`<div _component="IfElement" _id="0">`)
+	builder.WriteString(isLoggedInIf1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func PlaceholderBasic() string {
+	var builder strings.Builder
+	buttonplaceholderPlaceholder0 := func() string {
+		return ButtonPlaceholder()
+	}
+	builder.WriteString(buttonplaceholderPlaceholder0())
+	return builder.String()
+}
+
+func ButtonPlaceholder() string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="ButtonPlaceholder" _id="0"><button>Submit</button></div>`)
+	return builder.String()
+}
+
+func PlaceholderPropInAttr(name string) string {
+	var builder strings.Builder
+	greetingPlaceholder1 := func() string {
+		return Greeting(name)
+	}
+	builder.WriteString(`<div _component="PlaceholderPropInAttr" _id="0">`)
+	builder.WriteString(greetingPlaceholder1())
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func Greeting(name string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="Greeting" _id="0"><h1>`)
+	builder.WriteString(name)
+	builder.WriteString(`</h1></div>`)
+	return builder.String()
+}
+
+func NameTag(firstName string, message string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="NameTag" _id="0"><h1>`)
+	builder.WriteString(firstName)
+	builder.WriteString(`</h1><p>`)
+	builder.WriteString(message)
+	builder.WriteString(`</p></div>`)
+	return builder.String()
+}
+
+func PlaceholderWithAttrs() string {
+	var builder strings.Builder
+	nametagPlaceholder0 := func() string {
+		return NameTag("Melody", "you are amazing!")
+	}
+	builder.WriteString(nametagPlaceholder0())
+	return builder.String()
+}
+
+func RunePipe(age string) string {
+	var builder strings.Builder
+	greetingPlaceholder1 := func() string {
+		return Greeting(age)
+	}
+	builder.WriteString(`<div _component="RunePipe" _id="0"><p>Sally is `)
+	builder.WriteString(age)
+	builder.WriteString(` years old</p>`)
+	builder.WriteString(greetingPlaceholder1())
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func Greeting(age string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="Greeting" _id="0"><h1>This age was piped in!</h1> <p>`)
+	builder.WriteString(age)
+	builder.WriteString(`</p></div>`)
+	return builder.String()
+}
+
+func RuneProp(name string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="RuneProp" _id="0"><p>Hello, `)
+	builder.WriteString(name)
+	builder.WriteString(`!</p></div>`)
+	return builder.String()
+}
+
+func RuneAttrProp(name string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="RuneAttrProp" _id="0"><p class="text-sm `)
+	builder.WriteString(name)
+	builder.WriteString(`">My class is set to what?</p></div>`)
+	return builder.String()
+}
+
+func RuneSlot(top string, bottom string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="RuneSlot" _id="0">`)
+	builder.WriteString(top)
+	builder.WriteString(`<h1>🥪</h1>`)
+	builder.WriteString(bottom)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func Sandwich() string {
+	var builder strings.Builder
+	runeslotPlaceholder0 := func() string {
+		bottomSlot1 := gtmlSlot(func() string {
+			var bottomBuilder strings.Builder
+			bottomBuilder.WriteString(`<p _slot="bottom" _id="1">I am on bottom</p>`)
+			return bottomBuilder.String()
+		})
+		topSlot2 := gtmlSlot(func() string {
+			var topBuilder strings.Builder
+			topBuilder.WriteString(`<p _slot="top" _id="2">I am on top</p>`)
+			return topBuilder.String()
+		})
+		return RuneSlot(topSlot2, bottomSlot1)
+	}
+	builder.WriteString(runeslotPlaceholder0())
+	return builder.String()
+}
+
+func RuneVal(colors []string) string {
+	var builder strings.Builder
+	colorFor1 := gtmlFor(colors, func(i int, color string) string {
+		var colorBuilder strings.Builder
+		colorBuilder.WriteString(`<ul _for="color of colors []string" _id="1"><p>`)
+		colorBuilder.WriteString(color)
+		colorBuilder.WriteString(`</p></ul>`)
+		return colorBuilder.String()
+	})
+	builder.WriteString(`<div _component="RuneVal" _id="0">`)
+	builder.WriteString(colorFor1)
+	builder.WriteString(`</div>`)
+	return builder.String()
+}
+
+func Echo(message string) string {
+	var builder strings.Builder
+	builder.WriteString(`<div _component="Echo" _id="0"><p>`)
+	builder.WriteString(message)
+	builder.WriteString(`</p><p>`)
+	builder.WriteString(message)
+	builder.WriteString(`</p></div>`)
 	return builder.String()
 }
 
