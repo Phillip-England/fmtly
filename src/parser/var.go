@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"gtml/src/parser/attr"
 	"strings"
 
 	"github.com/phillip-england/fungi"
@@ -340,8 +341,7 @@ type VarGoPlaceholder struct {
 	BuilderSeries string
 	Type          string
 	ComponentName string
-	Attrs         []Attr
-	AttrsCalledAs []Attr
+	Attrs         []attr.Attr
 	ParamStr      string
 	CallParams    []string
 	CallParamStr  string
@@ -386,37 +386,11 @@ func (v *VarGoPlaceholder) initAttrs() error {
 		if strings.HasPrefix(a.Key, "_") {
 			continue
 		}
-		attr, err := NewAttr(a.Key, a.Val)
+		attr, err := attr.NewAttr(a.Key, a.Val)
 		if err != nil {
 			return err
 		}
 		v.Attrs = append(v.Attrs, attr)
-	}
-	for _, a := range v.Attrs {
-		val := purse.Squeeze(a.GetValue())
-		if val == "" {
-			v.AttrsCalledAs = append(v.AttrsCalledAs, a)
-			continue
-		}
-		if string(val[0]) == "@" {
-			val = val[1:]
-			attr, err := NewAttr(a.GetKey(), val)
-			if err != nil {
-				return err
-			}
-			v.AttrsCalledAs = append(v.AttrsCalledAs, attr)
-			continue
-		}
-		if strings.HasPrefix(val, "{{") && strings.HasSuffix(val, "}}") {
-			val = purse.RemoveAllSubStr(val, "{{", "}}")
-			attr, err := NewAttr(a.GetKey(), val)
-			if err != nil {
-				return err
-			}
-			v.AttrsCalledAs = append(v.AttrsCalledAs, attr)
-			continue
-		}
-		v.AttrsCalledAs = append(v.AttrsCalledAs, a)
 	}
 	return nil
 }
@@ -450,10 +424,6 @@ func (v *VarGoPlaceholder) initBuilderSeries() error {
 
 func (v *VarGoPlaceholder) initCallParams() error {
 	for _, attr := range v.Attrs {
-		if attr.GetType() == KeyAttrInitParam || attr.GetType() == KeyAttrAtParam {
-			v.CallParams = append(v.CallParams, "ATTRID"+attr.GetKey()+"ATTRID"+attr.GetValue())
-			continue
-		}
 		v.CallParams = append(v.CallParams, "ATTRID"+attr.GetKey()+"ATTRID\""+attr.GetValue()+"\"")
 	}
 	vars, err := GetElementVars(v.Element)

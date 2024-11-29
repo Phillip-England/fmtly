@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"gtml/src/parser/attr"
 	"os"
 	"strconv"
 	"strings"
@@ -33,7 +34,7 @@ type Element interface {
 	GetAttr() string
 	GetAttrParts() []string
 	GetCompNames() []string
-	GetAttrs() []Attr
+	GetAttrs() []attr.Attr
 	GetName() string
 	GetId() string
 }
@@ -609,7 +610,7 @@ type ElementComponent struct {
 	AttrParts []string
 	Name      string
 	CompNames []string
-	Attrs     []Attr
+	Attrs     []attr.Attr
 	Runes     []GtmlRune
 }
 
@@ -645,7 +646,7 @@ func (elm *ElementComponent) GetAttr() string        { return elm.Attr }
 func (elm *ElementComponent) GetAttrParts() []string { return elm.AttrParts }
 func (elm *ElementComponent) GetName() string        { return elm.Name }
 func (elm *ElementComponent) GetCompNames() []string { return elm.CompNames }
-func (elm *ElementComponent) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementComponent) GetAttrs() []attr.Attr  { return elm.Attrs }
 func (elm *ElementComponent) GetId() string {
 	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
@@ -689,7 +690,7 @@ func (elm *ElementComponent) initAttrs() error {
 		if purse.MustEqualOneOf(a.Key, GetChildElementList()...) {
 			continue
 		}
-		attr, err := NewAttr(a.Key, a.Val)
+		attr, err := attr.NewAttr(a.Key, a.Val)
 		if err != nil {
 			return err
 		}
@@ -721,7 +722,7 @@ type ElementFor struct {
 	AttrParts []string
 	Name      string
 	CompNames []string
-	Attrs     []Attr
+	Attrs     []attr.Attr
 	Runes     []GtmlRune
 }
 
@@ -768,7 +769,7 @@ func (elm *ElementFor) GetAttr() string        { return elm.Attr }
 func (elm *ElementFor) GetAttrParts() []string { return elm.AttrParts }
 func (elm *ElementFor) GetName() string        { return elm.Name }
 func (elm *ElementFor) GetCompNames() []string { return elm.CompNames }
-func (elm *ElementFor) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementFor) GetAttrs() []attr.Attr  { return elm.Attrs }
 func (elm *ElementFor) GetId() string {
 	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
@@ -812,7 +813,7 @@ func (elm *ElementFor) initAttrs() error {
 		if purse.MustEqualOneOf(a.Key, GetChildElementList()...) {
 			continue
 		}
-		attr, err := NewAttr(a.Key, a.Val)
+		attr, err := attr.NewAttr(a.Key, a.Val)
 		if err != nil {
 			return err
 		}
@@ -844,7 +845,7 @@ type ElementIf struct {
 	AttrParts []string
 	Name      string
 	CompNames []string
-	Attrs     []Attr
+	Attrs     []attr.Attr
 	Runes     []GtmlRune
 }
 
@@ -885,7 +886,7 @@ func (elm *ElementIf) GetAttr() string        { return elm.Attr }
 func (elm *ElementIf) GetAttrParts() []string { return elm.AttrParts }
 func (elm *ElementIf) GetName() string        { return elm.Name }
 func (elm *ElementIf) GetCompNames() []string { return elm.CompNames }
-func (elm *ElementIf) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementIf) GetAttrs() []attr.Attr  { return elm.Attrs }
 func (elm *ElementIf) GetId() string {
 	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
@@ -929,7 +930,7 @@ func (elm *ElementIf) initAttrs() error {
 		if purse.MustEqualOneOf(a.Key, GetChildElementList()...) {
 			continue
 		}
-		attr, err := NewAttr(a.Key, a.Val)
+		attr, err := attr.NewAttr(a.Key, a.Val)
 		if err != nil {
 			return err
 		}
@@ -961,7 +962,7 @@ type ElementElse struct {
 	AttrParts []string
 	Name      string
 	CompNames []string
-	Attrs     []Attr
+	Attrs     []attr.Attr
 	Runes     []GtmlRune
 }
 
@@ -1002,7 +1003,7 @@ func (elm *ElementElse) GetAttr() string        { return elm.Attr }
 func (elm *ElementElse) GetAttrParts() []string { return elm.AttrParts }
 func (elm *ElementElse) GetName() string        { return elm.Name }
 func (elm *ElementElse) GetCompNames() []string { return elm.CompNames }
-func (elm *ElementElse) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementElse) GetAttrs() []attr.Attr  { return elm.Attrs }
 func (elm *ElementElse) GetId() string {
 	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
@@ -1046,7 +1047,7 @@ func (elm *ElementElse) initAttrs() error {
 		if purse.MustEqualOneOf(a.Key, GetChildElementList()...) {
 			continue
 		}
-		attr, err := NewAttr(a.Key, a.Val)
+		attr, err := attr.NewAttr(a.Key, a.Val)
 		if err != nil {
 			return err
 		}
@@ -1078,7 +1079,7 @@ type ElementPlaceholder struct {
 	AttrParts []string
 	Name      string
 	CompNames []string
-	Attrs     []Attr
+	Attrs     []attr.Attr
 	Runes     []GtmlRune
 }
 
@@ -1106,15 +1107,6 @@ func (elm *ElementPlaceholder) GetParams() ([]Param, error) {
 	// working on building out attribute params and making
 	// sure they are being pulled into the () of the component func
 	params := make([]Param, 0)
-	for _, attr := range elm.Attrs {
-		if attr.GetType() == KeyAttrInitParam {
-			param, err := NewParam(attr.GetValue(), "string")
-			if err != nil {
-				return params, err
-			}
-			params = append(params, param)
-		}
-	}
 	return params, nil
 }
 func (elm *ElementPlaceholder) GetHtml() string        { return elm.Html }
@@ -1125,7 +1117,7 @@ func (elm *ElementPlaceholder) GetAttr() string        { return elm.Attr }
 func (elm *ElementPlaceholder) GetAttrParts() []string { return elm.AttrParts }
 func (elm *ElementPlaceholder) GetName() string        { return elm.Name }
 func (elm *ElementPlaceholder) GetCompNames() []string { return elm.CompNames }
-func (elm *ElementPlaceholder) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementPlaceholder) GetAttrs() []attr.Attr  { return elm.Attrs }
 func (elm *ElementPlaceholder) GetId() string {
 	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
@@ -1169,7 +1161,7 @@ func (elm *ElementPlaceholder) initAttrs() error {
 		if purse.MustEqualOneOf(a.Key, GetChildElementList()...) {
 			continue
 		}
-		attr, err := NewAttr(a.Key, a.Val)
+		attr, err := attr.NewAttr(a.Key, a.Val)
 		if err != nil {
 			return err
 		}
@@ -1201,7 +1193,7 @@ type ElementSlot struct {
 	AttrParts []string
 	Name      string
 	CompNames []string
-	Attrs     []Attr
+	Attrs     []attr.Attr
 	Runes     []GtmlRune
 }
 
@@ -1237,7 +1229,7 @@ func (elm *ElementSlot) GetAttr() string        { return elm.Attr }
 func (elm *ElementSlot) GetAttrParts() []string { return elm.AttrParts }
 func (elm *ElementSlot) GetName() string        { return elm.Name }
 func (elm *ElementSlot) GetCompNames() []string { return elm.CompNames }
-func (elm *ElementSlot) GetAttrs() []Attr       { return elm.Attrs }
+func (elm *ElementSlot) GetAttrs() []attr.Attr  { return elm.Attrs }
 func (elm *ElementSlot) GetId() string {
 	salt, _ := elm.GetSelection().Attr("_id")
 	return salt
@@ -1281,7 +1273,7 @@ func (elm *ElementSlot) initAttrs() error {
 		if purse.MustEqualOneOf(a.Key, GetChildElementList()...) {
 			continue
 		}
-		attr, err := NewAttr(a.Key, a.Val)
+		attr, err := attr.NewAttr(a.Key, a.Val)
 		if err != nil {
 			return err
 		}
