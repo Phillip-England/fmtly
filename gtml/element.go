@@ -94,7 +94,6 @@ func NewElement(htmlStr string, compNames []string) (Element, error) {
 		}
 		return elm, nil
 	}
-
 	return nil, fmt.Errorf("provided selection is not a valid element: %s", htmlStr)
 }
 
