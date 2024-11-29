@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"gtml/gtml"
+	"gtml/src/cli"
 	"os"
 )
 
 func main() {
 
-	cmd, err := gtml.NewCommand()
+	cmd, err := cli.NewCommand()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		return
@@ -17,7 +17,7 @@ func main() {
 		return
 	}
 
-	ex, err := gtml.NewExecutor(cmd)
+	ex, err := cli.NewExecutor(cmd)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		return

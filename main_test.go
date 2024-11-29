@@ -17,7 +17,7 @@ func TestMain(t *testing.T) {
 		t.Fatalf("Error: %s", err)
 	}
 
-	cmd = exec.Command("./main", "build", "./components", "./output/output.go", "output")
+	cmd = exec.Command("./main", "build", "./test/test_components", "./test/output/output.go", "output")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
