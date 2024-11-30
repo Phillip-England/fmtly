@@ -2,7 +2,7 @@
 Make Writing HTML in Go a Breeze 🍃
 
 ## How Does It Work?
-GTML is a compiler which converts `.html` files into composable `.go` functions. These functions can then be used to structure the UI of your application. Think of it like `JSX` for go.
+GTML is a compiler which converts `.html` files into composable `.go` functions. These functions can then be used to structure the UI of your application. Think of it like [JSX](https://react.dev/learn/writing-markup-with-jsx) for go.
 
 ## Hello, World
 Turn this:
@@ -26,12 +26,15 @@ func Greeting(name string) string {
 ## Installation
 To install, simply clone the repo and build the binary on your system.
 
-Then you'll be left with a binary you can move onto your PATH.
-
 ```bash
 git clone https://github.com/phillip-england/gtml
 cd gtml
-go build main.go ## go version 1.22.3 or later
+go build -o gtml main.go ## go version 1.22.3 or later
+```
+
+Then you'll be left with a binary you can move onto your PATH.
+```bash
+mv gtml ./some/dir/on/your/path
 ```
 
 ## Usage
@@ -104,24 +107,6 @@ Such as:
 </div>
 ```
 
-The above component will generate:
-```go
-func ColorList(colors []string) string {
-	var builder strings.Builder
-	colorFor1 := gtmlFor(colors, func(i int, color string) string {
-		var colorBuilder strings.Builder
-		colorBuilder.WriteString(`<ul _for="color of colors []string" _id="1"><p>`)
-		colorBuilder.WriteString(color)
-		colorBuilder.WriteString(`</p></ul>`)
-		return colorBuilder.String()
-	})
-	builder.WriteString(`<div _component="ColorList" _id="0">`)
-	builder.WriteString(colorFor1)
-	builder.WriteString(`</div>`)
-	return builder.String()
-}
-```
-
 We can also do the same with a slice of custom types:
 ```html
 <div _component="GuestList">
@@ -129,24 +114,6 @@ We can also do the same with a slice of custom types:
         <p>$val(guest.Name)</p>
     </ul>
 </div>
-```
-
-Which outputs:
-```go
-func GuestList(Guests []Guest) string {
-	var builder strings.Builder
-	guestFor1 := gtmlFor(Guests, func(i int, guest Guest) string {
-		var guestBuilder strings.Builder
-		guestBuilder.WriteString(`<ul _for="guest of Guests []Guest" _id="1"><p>`)
-		guestBuilder.WriteString(guest.Name)
-		guestBuilder.WriteString(`</p></ul>`)
-		return guestBuilder.String()
-	})
-	builder.WriteString(`<div _component="GuestList" _id="0">`)
-	builder.WriteString(guestFor1)
-	builder.WriteString(`</div>`)
-	return builder.String()
-}
 ```
 
 > 🚨 bring your own types, gtml will not autogenerate them (yet..? 🦄)
@@ -163,25 +130,6 @@ input:
 </div>
 ```
 
-output:
-```go
-func AdminPage(isLoggedIn bool) string {
-	var builder strings.Builder
-	isLoggedInIf1 := gtmlIf(isLoggedIn, func() string {
-		var isLoggedInBuilder strings.Builder
-		isLoggedInBuilder.WriteString(`<div _if="isLoggedIn" _id="1"><p>you are logged in!</p></div>`)
-		if isLoggedIn {
-			return isLoggedInBuilder.String()
-		}
-		return ""
-	})
-	builder.WriteString(`<div _component="AdminPage" _id="0">`)
-	builder.WriteString(isLoggedInIf1)
-	builder.WriteString(`</div>`)
-	return builder.String()
-}
-```
-
 ### _else
 `_else` elements are used to render a piece of html if a condition is not met.
 
@@ -192,25 +140,6 @@ input:
         <p>you are not logged in!</p>
     </div>
 </div>
-```
-
-output:
-```go
-func AdminPage(isLoggedIn bool) string {
-	var builder strings.Builder
-	isLoggedInElse1 := gtmlElse(isLoggedIn, func() string {
-		var isLoggedInBuilder strings.Builder
-		isLoggedInBuilder.WriteString(`<div _else="isLoggedIn" _id="1"><p>you are not logged in!</p></div>`)
-		if !isLoggedIn {
-			return isLoggedInBuilder.String()
-		}
-		return ""
-	})
-	builder.WriteString(`<div _component="AdminPage" _id="0">`)
-	builder.WriteString(isLoggedInElse1)
-	builder.WriteString(`</div>`)
-	return builder.String()
-}
 ```
 
 ### _slot
@@ -249,31 +178,6 @@ For example:
 </GuestLayout>
 ```
 
-outputs:
-```go
-func GuestLayout(content string) string {
-	var builder strings.Builder
-	builder.WriteString(`<div _component="GuestLayout" _id="0"><navbar>my navbar</navbar>`)
-	builder.WriteString(content)
-	builder.WriteString(`<footer></footer><div><guestlayout _component="HomePage" _placeholder="GuestLayout" _id="0"><div _slot="content" _id="1">I will appear in the content section!</div></guestlayout></div></div>`)
-	return builder.String()
-}
-
-func HomePage() string {
-	var builder strings.Builder
-	guestlayoutPlaceholder0 := func() string {
-		contentSlot1 := gtmlSlot(func() string {
-			var contentBuilder strings.Builder
-			contentBuilder.WriteString(`<div _slot="content" _id="1">I will appear in the content section!</div>`)
-			return contentBuilder.String()
-		})
-		return GuestLayout(contentSlot1)
-	}
-	builder.WriteString(guestlayoutPlaceholder0())
-	return builder.String()
-}
-```
-
 ## Runes Define Data
 In gtml, we make use of `runes` to manage the way data flows throughout our components. Certain `runes` accept string values while others expect raw values. Here is a quick list of the available runes in gtml:
 
@@ -295,17 +199,6 @@ For example, we may define a `$prop()` like so:
 </div>
 ```
 
-The output:
-```go
-func RuneProp(name string) string {
-	var builder strings.Builder
-	builder.WriteString(`<div _component="RuneProp" _id="0"><p>Hello, `)
-	builder.WriteString(name)
-	builder.WriteString(`!</p></div>`)
-	return builder.String()
-}
-```
-
 Once a `$prop()` has been defined, it can used in elsewhere in the same component using `$val()`. Also, you can pipe the value of a `$prop()` into a child `_component` using `$pipe()`
 
 
@@ -322,18 +215,6 @@ For example, here we make use of `$val()` to access a neighboring `prop`:
 </div>
 ```
 
-```go
-func Echo(message string) string {
-	var builder strings.Builder
-	builder.WriteString(`<div _component="Echo" _id="0"><p>`)
-	builder.WriteString(message)
-	builder.WriteString(`</p><p>`)
-	builder.WriteString(message)
-	builder.WriteString(`</p></div>`)
-	return builder.String()
-}
-```
-
 `$val()` is also used to access the data of iteration items in `_for` elements.
 
 For example:
@@ -343,24 +224,6 @@ For example:
         <p>$val(guest.Name)</p>
     </ul>
 </div>
-```
-
-the output:
-```go
-func GuestList(Guests []Guest) string {
-	var builder strings.Builder
-	guestFor1 := gtmlFor(Guests, func(i int, guest Guest) string {
-		var guestBuilder strings.Builder
-		guestBuilder.WriteString(`<ul _for="guest of Guests []Guest" _id="1"><p>`)
-		guestBuilder.WriteString(guest.Name)
-		guestBuilder.WriteString(`</p></ul>`)
-		return guestBuilder.String()
-	})
-	builder.WriteString(`<div _component="GuestList" _id="0">`)
-	builder.WriteString(guestFor1)
-	builder.WriteString(`</div>`)
-	return builder.String()
-}
 ```
 
 ## $pipe()
@@ -379,30 +242,6 @@ For example:
     <h1>This age was piped in!</h1> 
     <p>$prop("age")</p>
 </div>
-```
-
-The output:
-```go
-func RunePipe(age string) string {
-	var builder strings.Builder
-	greetingPlaceholder1 := func() string {
-		return Greeting(age)
-	}
-	builder.WriteString(`<div _component="RunePipe" _id="0"><p>Sally is `)
-	builder.WriteString(age)
-	builder.WriteString(` years old</p>`)
-	builder.WriteString(greetingPlaceholder1())
-	builder.WriteString(` &lt;== piping in the age</div>`)
-	return builder.String()
-}
-
-func Greeting(age string) string {
-	var builder strings.Builder
-	builder.WriteString(`<div _component="Greeting" _id="0"><h1>This age was piped in!</h1> <p>`)
-	builder.WriteString(age)
-	builder.WriteString(`</p></div>`)
-	return builder.String()
-}
 ```
 
 ## Placeholders
@@ -437,28 +276,6 @@ For example:
 <NameTag _component="PlaceholderWithAttrs" message="is the best" first-name="gtml"></NameTag>
 ```
 
-The output:
-```go
-func NameTag(firstName string, message string) string {
-	var builder strings.Builder
-	builder.WriteString(`<div _component="NameTag" _id="0"><h1>`)
-	builder.WriteString(firstName)
-	builder.WriteString(`</h1><p>`)
-	builder.WriteString(message)
-	builder.WriteString(`</p></div>`)
-	return builder.String()
-}
-
-func PlaceholderWithAttrs() string {
-	var builder strings.Builder
-	nametagPlaceholder0 := func() string {
-		return NameTag("gtml", "is the best")
-	}
-	builder.WriteString(nametagPlaceholder0())
-	return builder.String()
-}
-```
-
 ### Placeholder Piping
 If a `placeholder` needs to access a value from a parent `_component`, the value may be piped in using the `$pipe()` `rune`.
 
@@ -474,30 +291,6 @@ For example:
     <h1>This age was piped in!</h1> 
     <p>$prop("age")</p>
 </div>
-```
-
-The output:
-```go
-func RunePipe(age string) string {
-	var builder strings.Builder
-	greetingPlaceholder1 := func() string {
-		return Greeting(age)
-	}
-	builder.WriteString(`<div _component="RunePipe" _id="0"><p>Sally is `)
-	builder.WriteString(age)
-	builder.WriteString(` years old</p>`)
-	builder.WriteString(greetingPlaceholder1())
-	builder.WriteString(` &lt;== piping in the age</div>`)
-	return builder.String()
-}
-
-func Greeting(age string) string {
-	var builder strings.Builder
-	builder.WriteString(`<div _component="Greeting" _id="0"><h1>This age was piped in!</h1> <p>`)
-	builder.WriteString(age)
-	builder.WriteString(`</p></div>`)
-	return builder.String()
-}
 ```
 
 ## Dev Notes
