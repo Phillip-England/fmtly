@@ -24,11 +24,11 @@ func Greeting(name string) string {
 ```
 
 ## Installation
-To install, simply clone the repo and build the binary on your system.
+With `go 1.22.3` or later, clone the repo and build the binary on your system.
 
 ```bash
 git clone https://github.com/phillip-england/gtml;
-go build -o gtml main.go; ## go version 1.22.3 or later
+go build -o gtml main.go;
 cd gtml;
 ```
 
