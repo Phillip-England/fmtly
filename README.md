@@ -1,7 +1,8 @@
-# Gtml
+# GTML
 Make Writing HTML in Go a Breeze 🍃
 
-GTML is a compiler which converts `.html` files into composable `.go` functions.
+## How Does It Work?
+GTML is a compiler which converts `.html` files into composable `.go` functions. These functions can then be used to structure the UI of your application. Think of it like `JSX` for go.
 
 ## Hello, World
 Turn this:
