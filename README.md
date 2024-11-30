@@ -71,7 +71,7 @@ In gtml, we make use of html attributes to determine a components structure. Her
 - _else
 - _slot
 
-### _component
+## _component
 When gtml is scanning `.html` files, it is searching for `_component` elements. When it finds a `_component`, it will generate a function in go which will output the  `_component`'s html.
 
 > 🚨 `_component` may not be defined within another `_component`. However, you can use a `_component` as a `placeholder` within another `_component`
@@ -90,7 +90,7 @@ func CustomButton() string {
 }
 ```
 
-### _for
+## _for
 `_for` elements are used to iterate over a slice. The slice may be a custom type or a string slice. 
 
 `_for` elements require their attribute value to be structured in the following way:
@@ -118,7 +118,7 @@ We can also do the same with a slice of custom types:
 
 > 🚨 bring your own types, gtml will not autogenerate them (yet..? 🦄)
 
-### _if
+## _if
 `_if` elements are used to render a piece of html if a condition is met.
 
 input:
@@ -130,7 +130,7 @@ input:
 </div>
 ```
 
-### _else
+## _else
 `_else` elements are used to render a piece of html if a condition is not met.
 
 input:
@@ -142,7 +142,7 @@ input:
 </div>
 ```
 
-### _slot
+## _slot
 `_slot` elements are unique in the sense that they are not used within a `_component` itself, rather, they are used in it's `placeholder`.
 
 We will discuss placeholders more in a bit, but for now, just know that a placeholder is what we refer to a `_component` as when it is being used *within another component*.
