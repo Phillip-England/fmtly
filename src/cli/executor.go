@@ -270,16 +270,8 @@ func gtmlSlot(contentFunc func() string) string {
 }
 
 func gtmlEscape(input string) string {
-	escaped := html.EscapeString(input)
-	var builder strings.Builder
-	for _, r := range escaped {
-		if unicode.Is(unicode.S, r) || unicode.Is(unicode.So, r) {
-			builder.WriteRune(r)
-		} else {
-			builder.WriteString(html.EscapeString(string(r)))
-		}
-	}
-	return builder.String()
+	// Use the html.EscapeString function to escape the HTML content.
+	return html.EscapeString(input)
 }
 
 `))
