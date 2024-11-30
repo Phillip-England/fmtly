@@ -28,8 +28,8 @@ With `go 1.22.3` or later, clone the repo and build the binary on your system.
 
 ```bash
 git clone https://github.com/phillip-england/gtml;
-go build -o gtml main.go;
 cd gtml;
+go build -o gtml main.go;
 ```
 
 Then you'll be left with a binary you can move onto your PATH.
