@@ -25,7 +25,7 @@ func NewParamsFromElement(elm element.Element) ([]Param, error) {
 	params := make([]Param, 0)
 	// pulling params from runes from the root and its elements
 	err := element.WalkElementChildrenIncludingRoot(elm, func(child element.Element) error {
-		runes, err := gtmlrune.NewRunesFromElement(elm)
+		runes, err := gtmlrune.NewRunesFromElement(child)
 		if err != nil {
 			return err
 		}

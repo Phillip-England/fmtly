@@ -3,7 +3,6 @@ package gtmlvar
 import (
 	"fmt"
 	"gtml/src/parser/element"
-	"gtml/src/parser/gtmlrune"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/purse"
@@ -73,26 +72,11 @@ func (v *GoSlot) initWriteVarsAs() error {
 }
 
 func (v *GoSlot) initBuilderSeries() error {
-	varCalls, err := GetVarsAsWriteStringCalls(v.Element, v.BuilderName)
+	series, err := GetElementAsBuilderSeries(v.Element, v.BuilderName)
 	if err != nil {
 		return err
 	}
-	runeCalls, err := gtmlrune.GetRunesAsWriteStringCalls(v.Element, v.BuilderName)
-	if err != nil {
-		return err
-	}
-	allCalls := make([]string, 0)
-	allCalls = append(allCalls, varCalls...)
-	allCalls = append(allCalls, runeCalls...)
-	if len(allCalls) == 0 {
-		singleCall := fmt.Sprintf("%s.WriteString(`%s`)", v.BuilderName, v.Element.GetHtml())
-		allCalls = append(allCalls, singleCall)
-	}
-	// series, err := parser.GetElementAsBuilderSeries(v.Element, allCalls, v.BuilderName)
-	// if err != nil {
-	// 	return err
-	// }
-	// v.BuilderSeries = series
+	v.BuilderSeries = series
 	return nil
 }
 

@@ -2,10 +2,8 @@ package gtmlfunc
 
 import (
 	"fmt"
-	"go/format"
 	"gtml/src/parser/call"
 	"gtml/src/parser/element"
-	"gtml/src/parser/gtmlrune"
 	"gtml/src/parser/gtmlvar"
 	"gtml/src/parser/param"
 	"strings"
@@ -126,45 +124,26 @@ func (fn *GoComponentFunc) initParams() error {
 }
 
 func (fn *GoComponentFunc) initData() error {
-	series := ""
+	goVar, err := gtmlvar.NewVar(fn.Element)
+	if err != nil {
+		return err
+	}
+	series := goVar.GetData()
+
+	returnCall := ""
 	if fn.Element.GetType() == element.KeyElementComponent {
-		varCalls, err := gtmlvar.GetVarsAsWriteStringCalls(fn.Element, "builder")
-		if err != nil {
-			return err
-		}
-		runeCalls, err := gtmlrune.GetRunesAsWriteStringCalls(fn.Element, "builder")
-		if err != nil {
-			return err
-		}
-		allCalls := make([]string, 0)
-		allCalls = append(allCalls, varCalls...)
-		allCalls = append(allCalls, runeCalls...)
-		if len(allCalls) == 0 {
-			singleCall := fmt.Sprintf("%s.WriteString(`%s`)", "builder", fn.Element.GetHtml())
-			allCalls = append(allCalls, singleCall)
-		}
-		// str, err := parser.GetElementAsBuilderSeries(fn.Element, allCalls, "builder")
-		// if err != nil {
-		// 	return err
-		// }
-		// series = str
+		returnCall = fmt.Sprintf("return %s()", strings.ToLower(fn.Name))
 	}
 	if fn.Element.GetType() == element.KeyElementPlaceholder {
-		goVar, err := gtmlvar.NewVar(fn.Element)
-		if err != nil {
-			return err
-		}
-		series += "builder.WriteString(" + goVar.GetVarName() + "())"
+		returnCall = fmt.Sprintf("return %s()", goVar.GetVarName())
 	}
+
 	data := purse.RemoveFirstLine(fmt.Sprintf(`
 func %s(%s) string {
-var builder strings.Builder
 %s
 %s
-return builder.String()
 }
-	`, fn.Name, fn.ParamStr, fn.VarStr, series))
-
+`, fn.Name, fn.ParamStr, series, returnCall))
 	data = purse.RemoveEmptyLines(data)
 	fn.Data = data
 	return nil
@@ -329,11 +308,11 @@ func (fn *GoComponentFunc) initFormatData() error {
 
 	}
 	data := purse.JoinLines(newLines)
-	code, err := format.Source([]byte(data))
-	if err != nil {
-		return err
-	}
-	data = string(code)
+	// code, err := format.Source([]byte(data))
+	// if err != nil {
+	// 	return err
+	// }
+	// data = string(code)
 	fn.Data = data
 	return nil
 }

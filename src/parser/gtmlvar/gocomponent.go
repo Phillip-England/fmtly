@@ -3,12 +3,13 @@ package gtmlvar
 import (
 	"fmt"
 	"gtml/src/parser/element"
+	"strings"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/purse"
 )
 
-type GoElse struct {
+type GoComponent struct {
 	Element       element.Element
 	VarName       string
 	BuilderName   string
@@ -16,12 +17,11 @@ type GoElse struct {
 	WriteVarsAs   string
 	Data          string
 	BuilderSeries string
-	BoolToCheck   string
 	Type          string
 }
 
-func NewGoElse(elm element.Element) (*GoElse, error) {
-	v := &GoElse{
+func NewGoComponent(elm element.Element) (*GoComponent, error) {
+	v := &GoComponent{
 		Element: elm,
 	}
 	err := fungi.Process(
@@ -37,23 +37,22 @@ func NewGoElse(elm element.Element) (*GoElse, error) {
 	return v, nil
 }
 
-func (v *GoElse) GetData() string             { return v.Data }
-func (v *GoElse) GetVarName() string          { return v.VarName }
-func (v *GoElse) GetBuilderName() string      { return v.BuilderName }
-func (v *GoElse) GetType() string             { return v.Type }
-func (v *GoElse) GetElement() element.Element { return v.Element }
-func (v *GoElse) Print()                      { fmt.Print(v.Data) }
+func (v *GoComponent) GetData() string             { return v.Data }
+func (v *GoComponent) GetVarName() string          { return v.VarName }
+func (v *GoComponent) GetBuilderName() string      { return v.BuilderName }
+func (v *GoComponent) GetType() string             { return v.Type }
+func (v *GoComponent) GetElement() element.Element { return v.Element }
+func (v *GoComponent) Print()                      { fmt.Print(v.Data) }
 
-func (v *GoElse) initBasicInfo() error {
+func (v *GoComponent) initBasicInfo() error {
 	attr := v.Element.GetAttr()
-	v.VarName = attr + "Else" + v.Element.GetId()
-	v.BuilderName = attr + "Builder"
-	v.BoolToCheck = attr
+	v.VarName = strings.ToLower(attr)
+	v.BuilderName = v.VarName + "Builder"
 	v.Type = KeyVarGoElse
 	return nil
 }
 
-func (v *GoElse) initVars() error {
+func (v *GoComponent) initVars() error {
 	vars, err := NewVarsFromElement(v.Element)
 	if err != nil {
 		return err
@@ -62,7 +61,7 @@ func (v *GoElse) initVars() error {
 	return nil
 }
 
-func (v *GoElse) initWriteVarsAs() error {
+func (v *GoComponent) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
 		varsToWrite += inner.GetData()
@@ -71,7 +70,7 @@ func (v *GoElse) initWriteVarsAs() error {
 	return nil
 }
 
-func (v *GoElse) initBuilderSeries() error {
+func (v *GoComponent) initBuilderSeries() error {
 	series, err := GetElementAsBuilderSeries(v.Element, v.BuilderName)
 	if err != nil {
 		return err
@@ -80,17 +79,14 @@ func (v *GoElse) initBuilderSeries() error {
 	return nil
 }
 
-func (v *GoElse) initData() error {
+func (v *GoComponent) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
-%s := gtmlElse(%s, func() string {
+%s := func() string {
 var %s strings.Builder
 %s
 %s
-if !%s {
-	return %s.String()
-}
-return ""
-})`+"\n", v.VarName, v.BoolToCheck, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BoolToCheck, v.BuilderName))
+return %s.String()
+}`+"\n", v.VarName, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
 	// v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }
