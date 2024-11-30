@@ -25,7 +25,7 @@ func getGtmlArt() string {
  | |__| |  | |  | |  | | |____ 
   \_____|  |_|  |_|  |_|______|
  ---------------------------------------
- Convert HTML to Golang 💦
+ HTML Components in Go Made Easy 💦
  Version 0.1.0 (2024-11-26)
  https://github.com/phillip-england/gtml
  ---------------------------------------`

@@ -1,5 +1,7 @@
 # Gtml
-Convert HTML to Golang 💦
+Make Writing HTML in Go a Breeze 🍃
+
+GTML is a compiler which converts `.html` files into composable `.go` functions.
 
 ## Hello, World
 Turn this:
@@ -40,13 +42,13 @@ go build main.go ## go version 1.22.3 or later
  | |__| |  | |  | |  | | |____ 
   \_____|  |_|  |_|  |_|______|
  ---------------------------------------
- Convert HTML to Golang 💦
+ Make Writing HTML in Go a Breeze 🍃
  Version 0.1.0 (2024-11-26)
  https://github.com/phillip-england/gtml
- ---------------------------------------
+ ---------------------------------------`
 
 Usage: 
-  gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE]
+  gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE] [PACKAGE NAME]
 
 Example: 
   gtml --watch build ./components output.go output
@@ -55,23 +57,6 @@ Options:
   --watch       rebuild when source files are modified
 
 ```
-
-
-
-## Inspirations
-Before you dive in an check out the features of gtml, I want to take a moment to give thanks to the technologies which have directly inspired this project.
-
-### Templ
-Most notable, my project is inspired by [Templ](https://templ.guide). Templ really challenged me to start looking into code generation. I don't think gtml would be what it is without Templ.
-
-### Svelte
-When I first dived into gtml, I was using `{{}}` everywhere for my syntax. When thinking of clean alternatives, the rune system from [Svelte](https://svelte.dev/) came to mind. The syntax used in my rune system is inspired by Svelte.
-
-### HTMX
-When I was thinking about how I wanted my templating directives to be declared, I thought of [HTMX](https://htmx.org/) and the way it uses attributes to define behaviour. I really liked the idea of using attributes as a way to tell gtml about how the component should be structured. I got this idea from HTMX.
-
-### Tailwind
-[Tailwind](https://tailwindcss.com/docs/installation) really challenged me on what was possible from simple markup. Tailwind made me ask the question, "What if there is more to html?" Without Tailwind, I may very well still be apprehensive about adding more to my html.
 
 ## Attributes Define Structure
 In gtml, we make use of html attributes to determine a components structure. Here is a quick list of the available attributes:
