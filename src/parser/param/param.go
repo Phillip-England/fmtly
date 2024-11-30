@@ -1,8 +1,7 @@
-package parser
+package param
 
 import "fmt"
 
-// ##==================================================================
 type Param interface {
 	GetStr() string
 	GetName() string
@@ -15,7 +14,6 @@ func NewParam(name string, typeof string) (Param, error) {
 	return param, nil
 }
 
-// ##==================================================================
 type ParamGoFunc struct {
 	Name string
 	Type string
@@ -32,17 +30,3 @@ func (param *ParamGoFunc) GetStr() string  { return param.Name + " " + param.Typ
 func (param *ParamGoFunc) GetName() string { return param.Name }
 func (param *ParamGoFunc) GetType() string { return param.Type }
 func (param *ParamGoFunc) Print()          { fmt.Println(param.GetStr()) }
-
-// ##==================================================================
-
-// ##==================================================================
-
-// ##==================================================================
-
-// ##==================================================================
-
-// ##==================================================================
-
-// ##==================================================================
-
-// ##==================================================================

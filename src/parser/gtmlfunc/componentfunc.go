@@ -1,60 +1,36 @@
-package parser
+package gtmlfunc
 
 import (
 	"fmt"
 	"go/format"
+	"gtml/src/parser"
+	"gtml/src/parser/call"
+	"gtml/src/parser/element"
+	"gtml/src/parser/gtmlvar"
+	"gtml/src/parser/param"
 	"strings"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/gqpp"
-
 	"github.com/phillip-england/purse"
 )
 
-// ##==================================================================
-type Func interface {
-	GetData() string
-	SetData(str string)
-	GetVars() []Var
-	GetParams() []Param
-	Print()
-}
-
-func NewFunc(elm Element, siblings []Element) (Func, error) {
-	filtered := make([]Element, 0)
-	for _, sibling := range siblings {
-		if sibling.GetName() == elm.GetName() {
-			continue
-		}
-		filtered = append(filtered, sibling)
-	}
-	if elm.GetType() == KeyElementComponent || elm.GetType() == KeyElementPlaceholder {
-		fn, err := NewGoComponentFunc(elm, filtered)
-		if err != nil {
-			return nil, err
-		}
-		return fn, nil
-	}
-	return nil, fmt.Errorf("provided element does not corrospond to a valid GoFunc: %s", elm.GetHtml())
-}
-
-// ##==================================================================
 type GoComponentFunc struct {
-	Element                 Element
-	Vars                    []Var
+	Element                 element.Element
+	Vars                    []gtmlvar.Var
 	BuilderNames            []string
 	Data                    string
 	VarStr                  string
 	Name                    string
-	Params                  []Param
+	Params                  []param.Param
 	ParamStr                string
 	BuilderCalls            []string
 	ReturnCalls             []string
-	PlaceholderCalls        []Call
+	PlaceholderCalls        []call.Call
 	OrderedPlaceholderCalls []string
 }
 
-func NewGoComponentFunc(elm Element, siblings []Element) (*GoComponentFunc, error) {
+func NewGoComponentFunc(elm element.Element, siblings []element.Element) (*GoComponentFunc, error) {
 	fn := &GoComponentFunc{
 		Element: elm,
 	}
@@ -78,15 +54,14 @@ func NewGoComponentFunc(elm Element, siblings []Element) (*GoComponentFunc, erro
 
 	return fn, nil
 }
-
-func (fn *GoComponentFunc) GetData() string    { return fn.Data }
-func (fn *GoComponentFunc) SetData(str string) { fn.Data = str }
-func (fn *GoComponentFunc) GetVars() []Var     { return fn.Vars }
-func (fn *GoComponentFunc) GetParams() []Param { return fn.Params }
-func (fn *GoComponentFunc) Print()             { fmt.Println(fn.GetData()) }
+func (fn *GoComponentFunc) GetData() string          { return fn.Data }
+func (fn *GoComponentFunc) SetData(str string)       { fn.Data = str }
+func (fn *GoComponentFunc) GetVars() []gtmlvar.Var   { return fn.Vars }
+func (fn *GoComponentFunc) GetParams() []param.Param { return fn.Params }
+func (fn *GoComponentFunc) Print()                   { fmt.Println(fn.GetData()) }
 
 func (fn *GoComponentFunc) initName() error {
-	compAttr, err := gqpp.ForceElementAttr(fn.Element.GetSelection(), KeyElementComponent)
+	compAttr, err := gqpp.ForceElementAttr(fn.Element.GetSelection(), element.KeyElementComponent)
 	if err != nil {
 		return err
 	}
@@ -95,15 +70,15 @@ func (fn *GoComponentFunc) initName() error {
 }
 
 func (fn *GoComponentFunc) initVars() error {
-	if fn.Element.GetType() == KeyElementPlaceholder {
-		goVar, err := NewVar(fn.Element)
+	if fn.Element.GetType() == element.KeyElementPlaceholder {
+		goVar, err := gtmlvar.NewVar(fn.Element)
 		if err != nil {
 			return err
 		}
 		fn.Vars = append(fn.Vars, goVar)
 	}
-	err := WalkElementDirectChildren(fn.Element, func(child Element) error {
-		goVar, err := NewVar(child)
+	err := element.WalkElementDirectChildren(fn.Element, func(child element.Element) error {
+		goVar, err := gtmlvar.NewVar(child)
 		if err != nil {
 			return err
 		}
@@ -122,7 +97,7 @@ func (fn *GoComponentFunc) initVarStr() error {
 		// if a _component is also a _placeholder, we must only include the first var in its var string
 		// not doing so will result in the outer func body becoming polluted with unneeded vars from the _placeholder element itself.
 		// its vars will become present in the func body
-		if fn.Element.GetType() == KeyElementPlaceholder {
+		if fn.Element.GetType() == element.KeyElementPlaceholder {
 			if i == 0 {
 				data := v.GetData()
 				str += data + "\n"
@@ -137,7 +112,7 @@ func (fn *GoComponentFunc) initVarStr() error {
 }
 
 func (fn *GoComponentFunc) initParams() error {
-	params, err := GetElementParams(fn.Element)
+	params, err := element.GetElementParams(fn.Element)
 	if err != nil {
 		return err
 	}
@@ -152,15 +127,15 @@ func (fn *GoComponentFunc) initParams() error {
 
 func (fn *GoComponentFunc) initData() error {
 	series := ""
-	if fn.Element.GetType() == KeyElementComponent {
-		str, err := GetElementAsBuilderSeries(fn.Element, "builder")
+	if fn.Element.GetType() == element.KeyElementComponent {
+		str, err := parser.GetElementAsBuilderSeries(fn.Element, "builder")
 		if err != nil {
 			return err
 		}
 		series = str
 	}
-	if fn.Element.GetType() == KeyElementPlaceholder {
-		goVar, err := NewVar(fn.Element)
+	if fn.Element.GetType() == element.KeyElementPlaceholder {
+		goVar, err := gtmlvar.NewVar(fn.Element)
 		if err != nil {
 			return err
 		}
@@ -213,10 +188,10 @@ func (fn *GoComponentFunc) initReturnCalls() error {
 }
 
 func (fn *GoComponentFunc) initPlaceholderCalls() error {
-	for _, call := range fn.ReturnCalls {
-		if strings.Contains(call, "ATTRID") {
-			call = strings.Replace(call, "return ", "", 1)
-			newCall, err := NewCall(call)
+	for _, returnCall := range fn.ReturnCalls {
+		if strings.Contains(returnCall, "ATTRID") {
+			returnCall = strings.Replace(returnCall, "return ", "", 1)
+			newCall, err := call.NewCall(returnCall)
 			if err != nil {
 				return err
 			}
@@ -226,7 +201,7 @@ func (fn *GoComponentFunc) initPlaceholderCalls() error {
 	return nil
 }
 
-func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []Element) error {
+func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []element.Element) error {
 	// Initialize an empty slice to hold the ordered placeholder call strings.
 	ordered := make([]string, 0)
 
@@ -238,13 +213,13 @@ func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []Element) error {
 		}
 
 		// Retrieve parameters for the sibling element.
-		params, err := GetElementParams(sib)
+		params, err := element.GetElementParams(sib)
 		if err != nil {
 			return err // Return any error encountered during parameter retrieval.
 		}
 
 		// Initialize slices for unique sibling parameters and already processed parameter names.
-		sibParams := make([]Param, 0)
+		sibParams := make([]param.Param, 0)
 		found := make([]string, 0)
 
 		// Filter out duplicate parameters from the sibling element.
