@@ -2,6 +2,7 @@ package gtmlfunc
 
 import (
 	"fmt"
+	"go/format"
 	"gtml/src/parser/call"
 	"gtml/src/parser/element"
 	"gtml/src/parser/gtmlvar"
@@ -132,16 +133,16 @@ func (fn *GoComponentFunc) initData() error {
 
 	returnCall := ""
 	if fn.Element.GetType() == element.KeyElementComponent {
-		returnCall = fmt.Sprintf("return %s()", strings.ToLower(fn.Name))
+		returnCall = fmt.Sprintf("%s()", strings.ToLower(fn.Name))
 	}
 	if fn.Element.GetType() == element.KeyElementPlaceholder {
-		returnCall = fmt.Sprintf("return %s()", goVar.GetVarName())
+		returnCall = fmt.Sprintf("%s()", goVar.GetVarName())
 	}
 
 	data := purse.RemoveFirstLine(fmt.Sprintf(`
 func %s(%s) string {
 %s
-%s
+return gtmlEscape(%s)
 }
 `, fn.Name, fn.ParamStr, series, returnCall))
 	data = purse.RemoveEmptyLines(data)
@@ -308,11 +309,11 @@ func (fn *GoComponentFunc) initFormatData() error {
 
 	}
 	data := purse.JoinLines(newLines)
-	// code, err := format.Source([]byte(data))
-	// if err != nil {
-	// 	return err
-	// }
-	// data = string(code)
+	code, err := format.Source([]byte(data))
+	if err != nil {
+		return err
+	}
+	data = string(code)
 	fn.Data = data
 	return nil
 }

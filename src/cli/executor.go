@@ -150,7 +150,11 @@ func (ex *ExecutorBuild) initOutputFileExists() error {
 
 func (ex *ExecutorBuild) initImportBlock() error {
 	ex.ImportBlock = purse.Fmt(`
-import "strings"`)
+import (
+"html"
+"strings"
+"unicode"
+)`)
 	return nil
 }
 
@@ -240,29 +244,42 @@ func (ex *ExecutorBuild) writeComponentFuncs(funcs []gtmlfunc.Func) error {
 	// Write helper functions
 	_, err = file.WriteString(purse.Fmt(`
 func gtmlFor[T any](slice []T, callback func(i int, item T) string) string {
-var builder strings.Builder
-for i, item := range slice {
-	builder.WriteString(callback(i, item))
-}
-return builder.String()
+	var builder strings.Builder
+	for i, item := range slice {
+		builder.WriteString(callback(i, item))
+	}
+	return builder.String()
 }
 
 func gtmlIf(condition bool, fn func() string) string {
 if condition {
 	return fn()
 }
-return ""
+	return ""
 }
 
 func gtmlElse(condition bool, fn func() string) string {
-if !condition {
-	return fn()
-}
-return ""
+	if !condition {
+		return fn()
+	}
+	return ""
 }
 
 func gtmlSlot(contentFunc func() string) string {
-return contentFunc()
+	return contentFunc()
+}
+
+func gtmlEscape(input string) string {
+	escaped := html.EscapeString(input)
+	var builder strings.Builder
+	for _, r := range escaped {
+		if unicode.Is(unicode.S, r) || unicode.Is(unicode.So, r) {
+			builder.WriteRune(r)
+		} else {
+			builder.WriteString(html.EscapeString(string(r)))
+		}
+	}
+	return builder.String()
 }
 
 `))
