@@ -150,11 +150,9 @@ func (ex *ExecutorBuild) initOutputFileExists() error {
 
 func (ex *ExecutorBuild) initImportBlock() error {
 	ex.ImportBlock = purse.Fmt(`
-import (
-"html"
-"strings"
-"unicode"
-)`)
+import "strings"
+
+`)
 	return nil
 }
 
@@ -270,8 +268,7 @@ func gtmlSlot(contentFunc func() string) string {
 }
 
 func gtmlEscape(input string) string {
-	// Use the html.EscapeString function to escape the HTML content.
-	return html.EscapeString(input)
+	return input
 }
 
 `))
