@@ -3,8 +3,6 @@ package element
 import (
 	"fmt"
 	"gtml/src/parser/attr"
-	"gtml/src/parser/gtmlrune"
-	"gtml/src/parser/param"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/fungi"
@@ -21,7 +19,6 @@ type ElementSlot struct {
 	Name      string
 	CompNames []string
 	Attrs     []attr.Attr
-	Runes     []gtmlrune.GtmlRune
 }
 
 func NewSlot(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementSlot, error) {
@@ -35,7 +32,6 @@ func NewSlot(htmlStr string, sel *goquery.Selection, compNames []string) (*Eleme
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
-		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -44,10 +40,11 @@ func NewSlot(htmlStr string, sel *goquery.Selection, compNames []string) (*Eleme
 }
 
 func (elm *ElementSlot) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ElementSlot) GetParams() ([]param.Param, error) {
-	params := make([]param.Param, 0)
-	return params, nil
-}
+
+//	func (elm *ElementSlot) GetParams() ([]param.Param, error) {
+//		params := make([]param.Param, 0)
+//		return params, nil
+//	}
 func (elm *ElementSlot) GetHtml() string        { return elm.Html }
 func (elm *ElementSlot) SetHtml(htmlStr string) { elm.Html = htmlStr }
 func (elm *ElementSlot) Print()                 { fmt.Println(elm.Html) }
@@ -111,14 +108,5 @@ func (elm *ElementSlot) initAttrs() error {
 
 func (elm *ElementSlot) initName() error {
 	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
-	return nil
-}
-
-func (elm *ElementSlot) initRunes() error {
-	r, err := GetElementRunes(elm)
-	if err != nil {
-		return err
-	}
-	elm.Runes = r
 	return nil
 }

@@ -3,8 +3,6 @@ package element
 import (
 	"fmt"
 	"gtml/src/parser/attr"
-	"gtml/src/parser/gtmlrune"
-	"gtml/src/parser/param"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/fungi"
@@ -21,7 +19,6 @@ type ElementIf struct {
 	Name      string
 	CompNames []string
 	Attrs     []attr.Attr
-	Runes     []gtmlrune.GtmlRune
 }
 
 func NewIf(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementIf, error) {
@@ -35,7 +32,6 @@ func NewIf(htmlStr string, sel *goquery.Selection, compNames []string) (*Element
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
-		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -44,15 +40,16 @@ func NewIf(htmlStr string, sel *goquery.Selection, compNames []string) (*Element
 }
 
 func (elm *ElementIf) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ElementIf) GetParams() ([]param.Param, error) {
-	params := make([]param.Param, 0)
-	param, err := param.NewParam(elm.Attr, "bool")
-	if err != nil {
-		return nil, err
-	}
-	params = append(params, param)
-	return params, nil
-}
+
+//	func (elm *ElementIf) GetParams() ([]param.Param, error) {
+//		params := make([]param.Param, 0)
+//		param, err := param.NewParam(elm.Attr, "bool")
+//		if err != nil {
+//			return nil, err
+//		}
+//		params = append(params, param)
+//		return params, nil
+//	}
 func (elm *ElementIf) GetHtml() string        { return elm.Html }
 func (elm *ElementIf) SetHtml(htmlStr string) { elm.Html = htmlStr }
 func (elm *ElementIf) Print()                 { fmt.Println(elm.Html) }
@@ -116,14 +113,5 @@ func (elm *ElementIf) initAttrs() error {
 
 func (elm *ElementIf) initName() error {
 	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
-	return nil
-}
-
-func (elm *ElementIf) initRunes() error {
-	r, err := GetElementRunes(elm)
-	if err != nil {
-		return err
-	}
-	elm.Runes = r
 	return nil
 }

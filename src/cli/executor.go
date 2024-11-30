@@ -2,7 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"gtml/src/parser"
+	"gtml/src/parser/element"
+	"gtml/src/parser/gtmlfunc"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -160,8 +161,8 @@ building %s 💦`, ex.OutputFile)
 	return nil
 }
 
-func (ex *ExecutorBuild) buildComponentFuncs() ([]parser.Func, error) {
-	funcs := make([]parser.Func, 0)
+func (ex *ExecutorBuild) buildComponentFuncs() ([]gtmlfunc.Func, error) {
+	funcs := make([]gtmlfunc.Func, 0)
 	err := filepath.Walk(ex.InputDir, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil // skip all dirs
@@ -170,29 +171,27 @@ func (ex *ExecutorBuild) buildComponentFuncs() ([]parser.Func, error) {
 			return nil // skip all non .html files
 		}
 		// extract the html _components from the file
-		compNames, err := parser.ReadComponentElementNamesFromFile(path)
+		compNames, err := element.ReadComponentElementNamesFromFile(path)
 		if err != nil {
 			return err
 		}
-		compSels, err := parser.ReadComponentSelectionsFromFile(path)
+		compSels, err := element.ReadComponentSelectionsFromFile(path)
 		if err != nil {
 			return err
 		}
 		for _, sel := range compSels {
-			err := parser.MarkSelectionPlaceholders(sel, compNames)
+			err := element.MarkSelectionPlaceholders(sel, compNames)
 			if err != nil {
 				return err
 			}
 		}
-		parser.MarkSelectionsAsUnique(compSels)
-		compElms, err := parser.ConvertSelectionsIntoElements(compSels, compNames)
+		element.MarkSelectionsAsUnique(compSels)
+		compElms, err := element.ConvertSelectionsIntoElements(compSels, compNames)
 		if err != nil {
 			return err
 		}
-		// REMOVE: here is where i am working to test runes
-
 		for _, elm := range compElms {
-			fn, err := parser.NewFunc(elm, compElms)
+			fn, err := gtmlfunc.NewFunc(elm, compElms)
 			if err != nil {
 				return err
 			}
@@ -206,7 +205,7 @@ func (ex *ExecutorBuild) buildComponentFuncs() ([]parser.Func, error) {
 	return funcs, nil
 }
 
-func (ex *ExecutorBuild) writeComponentFuncs(funcs []parser.Func) error {
+func (ex *ExecutorBuild) writeComponentFuncs(funcs []gtmlfunc.Func) error {
 	// Ensure the directory exists
 	outputDir := filepath.Dir(ex.OutputFile)
 	err := os.MkdirAll(outputDir, 0755) // Create directories if they don't exist

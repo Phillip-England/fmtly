@@ -3,8 +3,6 @@ package element
 import (
 	"fmt"
 	"gtml/src/parser/attr"
-	"gtml/src/parser/gtmlrune"
-	"gtml/src/parser/param"
 	"os"
 	"strconv"
 	"strings"
@@ -15,7 +13,6 @@ import (
 
 type Element interface {
 	GetSelection() *goquery.Selection
-	GetParams() ([]param.Param, error)
 	SetHtml(htmlStr string)
 	GetHtml() string
 	Print()
@@ -389,70 +386,4 @@ func MarkSelectionsAsUnique(selections []*goquery.Selection) {
 	for _, sel := range selections {
 		MarkSelectionAsUnique(sel)
 	}
-}
-
-func GetElementRunes(elm Element) ([]gtmlrune.GtmlRune, error) {
-	elmHtml, err := GetElementHtmlWithoutChildren(elm)
-	if err != nil {
-		return make([]gtmlrune.GtmlRune, 0), err
-	}
-	rns, err := gtmlrune.NewRunesFromStr(elmHtml)
-	if err != nil {
-		return rns, err
-	}
-	return rns, nil
-}
-
-func WalkElementRunes(elm Element, fn func(rn gtmlrune.GtmlRune) error) error {
-	rns, err := GetElementRunes(elm)
-	if err != nil {
-		return err
-	}
-	for _, rn := range rns {
-		err := fn(rn)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func GetElementParams(elm Element) ([]param.Param, error) {
-	params := make([]param.Param, 0)
-	// pulling params from runes from the root and its elements
-	err := WalkElementChildrenIncludingRoot(elm, func(child Element) error {
-		err := WalkElementRunes(child, func(rn gtmlrune.GtmlRune) error {
-			if rn.GetType() == gtmlrune.KeyRuneProp || rn.GetType() == gtmlrune.KeyRuneSlot {
-				param, err := param.NewParam(rn.GetValue(), "string")
-				if err != nil {
-					return err
-				}
-				params = append(params, param)
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return params, err
-	}
-	// pulling element specific params
-	elementSpecificParams := make([]param.Param, 0)
-	err = WalkElementChildrenIncludingRoot(elm, func(child Element) error {
-		params, err := child.GetParams()
-		if err != nil {
-			return err
-		}
-		elementSpecificParams = append(elementSpecificParams, params...)
-		return nil
-	})
-	if err != nil {
-		return params, err
-	}
-	// merging the params
-	params = append(params, elementSpecificParams...)
-	return params, nil
 }

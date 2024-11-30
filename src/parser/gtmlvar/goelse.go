@@ -2,8 +2,8 @@ package gtmlvar
 
 import (
 	"fmt"
-	"gtml/src/parser"
 	"gtml/src/parser/element"
+	"gtml/src/parser/gtmlrune"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/purse"
@@ -38,11 +38,12 @@ func NewGoElse(elm element.Element) (*GoElse, error) {
 	return v, nil
 }
 
-func (v *GoElse) GetData() string        { return v.Data }
-func (v *GoElse) GetVarName() string     { return v.VarName }
-func (v *GoElse) GetBuilderName() string { return v.BuilderName }
-func (v *GoElse) GetType() string        { return v.Type }
-func (v *GoElse) Print()                 { fmt.Print(v.Data) }
+func (v *GoElse) GetData() string             { return v.Data }
+func (v *GoElse) GetVarName() string          { return v.VarName }
+func (v *GoElse) GetBuilderName() string      { return v.BuilderName }
+func (v *GoElse) GetType() string             { return v.Type }
+func (v *GoElse) GetElement() element.Element { return v.Element }
+func (v *GoElse) Print()                      { fmt.Print(v.Data) }
 
 func (v *GoElse) initBasicInfo() error {
 	attr := v.Element.GetAttr()
@@ -72,11 +73,26 @@ func (v *GoElse) initWriteVarsAs() error {
 }
 
 func (v *GoElse) initBuilderSeries() error {
-	series, err := parser.GetElementAsBuilderSeries(v.Element, v.BuilderName)
+	varCalls, err := GetVarsAsWriteStringCalls(v.Element, v.BuilderName)
 	if err != nil {
 		return err
 	}
-	v.BuilderSeries = series
+	runeCalls, err := gtmlrune.GetRunesAsWriteStringCalls(v.Element, v.BuilderName)
+	if err != nil {
+		return err
+	}
+	allCalls := make([]string, 0)
+	allCalls = append(allCalls, varCalls...)
+	allCalls = append(allCalls, runeCalls...)
+	if len(allCalls) == 0 {
+		singleCall := fmt.Sprintf("%s.WriteString(`%s`)", v.BuilderName, v.Element.GetHtml())
+		allCalls = append(allCalls, singleCall)
+	}
+	// series, err := parser.GetElementAsBuilderSeries(v.Element, allCalls, v.BuilderName)
+	// if err != nil {
+	// 	return err
+	// }
+	// v.BuilderSeries = series
 	return nil
 }
 

@@ -3,8 +3,6 @@ package element
 import (
 	"fmt"
 	"gtml/src/parser/attr"
-	"gtml/src/parser/gtmlrune"
-	"gtml/src/parser/param"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/fungi"
@@ -21,7 +19,6 @@ type ElementPlaceholder struct {
 	Name      string
 	CompNames []string
 	Attrs     []attr.Attr
-	Runes     []gtmlrune.GtmlRune
 }
 
 func NewPlaceholder(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementPlaceholder, error) {
@@ -35,7 +32,6 @@ func NewPlaceholder(htmlStr string, sel *goquery.Selection, compNames []string) 
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
-		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -44,12 +40,13 @@ func NewPlaceholder(htmlStr string, sel *goquery.Selection, compNames []string) 
 }
 
 func (elm *ElementPlaceholder) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ElementPlaceholder) GetParams() ([]param.Param, error) {
-	// working on building out attribute params and making
-	// sure they are being pulled into the () of the component func
-	params := make([]param.Param, 0)
-	return params, nil
-}
+
+//	func (elm *ElementPlaceholder) GetParams() ([]param.Param, error) {
+//		// working on building out attribute params and making
+//		// sure they are being pulled into the () of the component func
+//		params := make([]param.Param, 0)
+//		return params, nil
+//	}
 func (elm *ElementPlaceholder) GetHtml() string        { return elm.Html }
 func (elm *ElementPlaceholder) SetHtml(htmlStr string) { elm.Html = htmlStr }
 func (elm *ElementPlaceholder) Print()                 { fmt.Println(elm.Html) }
@@ -113,14 +110,5 @@ func (elm *ElementPlaceholder) initAttrs() error {
 
 func (elm *ElementPlaceholder) initName() error {
 	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
-	return nil
-}
-
-func (elm *ElementPlaceholder) initRunes() error {
-	r, err := GetElementRunes(elm)
-	if err != nil {
-		return err
-	}
-	elm.Runes = r
 	return nil
 }

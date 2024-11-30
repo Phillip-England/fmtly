@@ -2,14 +2,14 @@ package gtmlvar
 
 import (
 	"fmt"
-	"gtml/src/parser"
 	"gtml/src/parser/element"
+	"gtml/src/parser/gtmlrune"
 
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/purse"
 )
 
-type VarGoIf struct {
+type GoIf struct {
 	Element       element.Element
 	VarName       string
 	BuilderName   string
@@ -21,8 +21,8 @@ type VarGoIf struct {
 	Type          string
 }
 
-func NewGoIf(elm element.Element) (*VarGoIf, error) {
-	v := &VarGoIf{
+func NewGoIf(elm element.Element) (*GoIf, error) {
+	v := &GoIf{
 		Element: elm,
 	}
 	err := fungi.Process(
@@ -38,13 +38,14 @@ func NewGoIf(elm element.Element) (*VarGoIf, error) {
 	return v, nil
 }
 
-func (v *VarGoIf) GetData() string        { return v.Data }
-func (v *VarGoIf) GetVarName() string     { return v.VarName }
-func (v *VarGoIf) GetBuilderName() string { return v.BuilderName }
-func (v *VarGoIf) GetType() string        { return v.Type }
-func (v *VarGoIf) Print()                 { fmt.Print(v.Data) }
+func (v *GoIf) GetData() string             { return v.Data }
+func (v *GoIf) GetVarName() string          { return v.VarName }
+func (v *GoIf) GetBuilderName() string      { return v.BuilderName }
+func (v *GoIf) GetType() string             { return v.Type }
+func (v *GoIf) GetElement() element.Element { return v.Element }
+func (v *GoIf) Print()                      { fmt.Print(v.Data) }
 
-func (v *VarGoIf) initBasicInfo() error {
+func (v *GoIf) initBasicInfo() error {
 	attr := v.Element.GetAttr()
 	v.VarName = attr + "If" + v.Element.GetId()
 	v.BuilderName = attr + "Builder"
@@ -53,7 +54,7 @@ func (v *VarGoIf) initBasicInfo() error {
 	return nil
 }
 
-func (v *VarGoIf) initVars() error {
+func (v *GoIf) initVars() error {
 	vars, err := NewVarsFromElement(v.Element)
 	if err != nil {
 		return err
@@ -62,7 +63,7 @@ func (v *VarGoIf) initVars() error {
 	return nil
 }
 
-func (v *VarGoIf) initWriteVarsAs() error {
+func (v *GoIf) initWriteVarsAs() error {
 	varsToWrite := ""
 	for _, inner := range v.Vars {
 		varsToWrite += inner.GetData()
@@ -71,16 +72,31 @@ func (v *VarGoIf) initWriteVarsAs() error {
 	return nil
 }
 
-func (v *VarGoIf) initBuilderSeries() error {
-	series, err := parser.GetElementAsBuilderSeries(v.Element, v.BuilderName)
+func (v *GoIf) initBuilderSeries() error {
+	varCalls, err := GetVarsAsWriteStringCalls(v.Element, v.BuilderName)
 	if err != nil {
 		return err
 	}
-	v.BuilderSeries = series
+	runeCalls, err := gtmlrune.GetRunesAsWriteStringCalls(v.Element, v.BuilderName)
+	if err != nil {
+		return err
+	}
+	allCalls := make([]string, 0)
+	allCalls = append(allCalls, varCalls...)
+	allCalls = append(allCalls, runeCalls...)
+	if len(allCalls) == 0 {
+		singleCall := fmt.Sprintf("%s.WriteString(`%s`)", v.BuilderName, v.Element.GetHtml())
+		allCalls = append(allCalls, singleCall)
+	}
+	// series, err := parser.GetElementAsBuilderSeries(v.Element, allCalls, v.BuilderName)
+	// if err != nil {
+	// 	return err
+	// }
+	// v.BuilderSeries = series
 	return nil
 }
 
-func (v *VarGoIf) initData() error {
+func (v *GoIf) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := gtmlIf(%s, func() string {
 var %s strings.Builder

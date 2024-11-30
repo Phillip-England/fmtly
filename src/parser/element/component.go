@@ -3,8 +3,6 @@ package element
 import (
 	"fmt"
 	"gtml/src/parser/attr"
-	"gtml/src/parser/gtmlrune"
-	"gtml/src/parser/param"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/fungi"
@@ -21,7 +19,6 @@ type ElementComponent struct {
 	Name      string
 	CompNames []string
 	Attrs     []attr.Attr
-	Runes     []gtmlrune.GtmlRune
 }
 
 func NewComponent(htmlStr string, sel *goquery.Selection, compNames []string) (*ElementComponent, error) {
@@ -35,7 +32,6 @@ func NewComponent(htmlStr string, sel *goquery.Selection, compNames []string) (*
 		func() error { return elm.initAttr() },
 		func() error { return elm.initAttrs() },
 		func() error { return elm.initName() },
-		func() error { return elm.initRunes() },
 	)
 	if err != nil {
 		return nil, err
@@ -44,10 +40,11 @@ func NewComponent(htmlStr string, sel *goquery.Selection, compNames []string) (*
 }
 
 func (elm *ElementComponent) GetSelection() *goquery.Selection { return elm.Selection }
-func (elm *ElementComponent) GetParams() ([]param.Param, error) {
-	params := make([]param.Param, 0)
-	return params, nil
-}
+
+//	func (elm *ElementComponent) GetParams() ([]param.Param, error) {
+//		params := make([]param.Param, 0)
+//		return params, nil
+//	}
 func (elm *ElementComponent) GetHtml() string        { return elm.Html }
 func (elm *ElementComponent) SetHtml(htmlStr string) { elm.Html = htmlStr }
 func (elm *ElementComponent) Print()                 { fmt.Println(elm.Html) }
@@ -111,14 +108,5 @@ func (elm *ElementComponent) initAttrs() error {
 
 func (elm *ElementComponent) initName() error {
 	elm.Name = fmt.Sprintf("%s:%s", elm.GetType(), elm.GetAttr())
-	return nil
-}
-
-func (elm *ElementComponent) initRunes() error {
-	r, err := GetElementRunes(elm)
-	if err != nil {
-		return err
-	}
-	elm.Runes = r
 	return nil
 }

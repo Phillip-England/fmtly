@@ -13,6 +13,7 @@ type Var interface {
 	GetType() string
 	Print()
 	GetBuilderName() string
+	GetElement() element.Element
 }
 
 func NewVar(elm element.Element) (Var, error) {
@@ -67,7 +68,7 @@ func NewVarsFromElement(elm element.Element) ([]Var, error) {
 	return vars, nil
 }
 
-func GetVarsAsBuilderSeries(elm element.Element, builderName string) ([]string, error) {
+func GetVarsAsWriteStringCalls(elm element.Element, builderName string) ([]string, error) {
 	calls := make([]string, 0)
 	err := element.WalkElementDirectChildren(elm, func(child element.Element) error {
 		newVar, err := NewVar(child)

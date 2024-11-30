@@ -1,6 +1,8 @@
 package gtmlrune
 
 import (
+	"fmt"
+	"gtml/src/parser/element"
 	"strings"
 
 	"github.com/phillip-england/purse"
@@ -79,4 +81,43 @@ func NewRunesFromStr(s string) ([]GtmlRune, error) {
 		runes = append(runes, r)
 	}
 	return runes, nil
+}
+
+func NewRunesFromElement(elm element.Element) ([]GtmlRune, error) {
+	elmHtml, err := element.GetElementHtmlWithoutChildren(elm)
+	if err != nil {
+		return make([]GtmlRune, 0), err
+	}
+	rns, err := NewRunesFromStr(elmHtml)
+	if err != nil {
+		return rns, err
+	}
+	return rns, nil
+}
+
+func GetRunesAsWriteStringCalls(elm element.Element, builderName string) ([]string, error) {
+	calls := make([]string, 0)
+	runes, err := NewRunesFromElement(elm)
+	if err != nil {
+		return calls, err
+	}
+	for _, rn := range runes {
+		if rn.GetType() == KeyRuneProp {
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
+			calls = append(calls, call)
+		}
+		if rn.GetType() == KeyRuneVal {
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
+			calls = append(calls, call)
+		}
+		if rn.GetType() == KeyRunePipe {
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
+			calls = append(calls, call)
+		}
+		if rn.GetType() == KeyRuneSlot {
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
+			calls = append(calls, call)
+		}
+	}
+	return calls, nil
 }

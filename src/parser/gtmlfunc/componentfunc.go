@@ -3,9 +3,9 @@ package gtmlfunc
 import (
 	"fmt"
 	"go/format"
-	"gtml/src/parser"
 	"gtml/src/parser/call"
 	"gtml/src/parser/element"
+	"gtml/src/parser/gtmlrune"
 	"gtml/src/parser/gtmlvar"
 	"gtml/src/parser/param"
 	"strings"
@@ -112,7 +112,7 @@ func (fn *GoComponentFunc) initVarStr() error {
 }
 
 func (fn *GoComponentFunc) initParams() error {
-	params, err := element.GetElementParams(fn.Element)
+	params, err := param.NewParamsFromElement(fn.Element)
 	if err != nil {
 		return err
 	}
@@ -128,11 +128,26 @@ func (fn *GoComponentFunc) initParams() error {
 func (fn *GoComponentFunc) initData() error {
 	series := ""
 	if fn.Element.GetType() == element.KeyElementComponent {
-		str, err := parser.GetElementAsBuilderSeries(fn.Element, "builder")
+		varCalls, err := gtmlvar.GetVarsAsWriteStringCalls(fn.Element, "builder")
 		if err != nil {
 			return err
 		}
-		series = str
+		runeCalls, err := gtmlrune.GetRunesAsWriteStringCalls(fn.Element, "builder")
+		if err != nil {
+			return err
+		}
+		allCalls := make([]string, 0)
+		allCalls = append(allCalls, varCalls...)
+		allCalls = append(allCalls, runeCalls...)
+		if len(allCalls) == 0 {
+			singleCall := fmt.Sprintf("%s.WriteString(`%s`)", "builder", fn.Element.GetHtml())
+			allCalls = append(allCalls, singleCall)
+		}
+		// str, err := parser.GetElementAsBuilderSeries(fn.Element, allCalls, "builder")
+		// if err != nil {
+		// 	return err
+		// }
+		// series = str
 	}
 	if fn.Element.GetType() == element.KeyElementPlaceholder {
 		goVar, err := gtmlvar.NewVar(fn.Element)
@@ -213,7 +228,7 @@ func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []element.Element)
 		}
 
 		// Retrieve parameters for the sibling element.
-		params, err := element.GetElementParams(sib)
+		params, err := param.NewParamsFromElement(sib)
 		if err != nil {
 			return err // Return any error encountered during parameter retrieval.
 		}

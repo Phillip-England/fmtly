@@ -2,9 +2,9 @@ package gtmlvar
 
 import (
 	"fmt"
-	"gtml/src/parser"
 	"gtml/src/parser/attr"
 	"gtml/src/parser/element"
+	"gtml/src/parser/gtmlrune"
 	"strings"
 
 	"github.com/phillip-england/fungi"
@@ -46,11 +46,12 @@ func NewGoPlaceholder(elm element.Element) (*GoPlaceholder, error) {
 	return v, nil
 }
 
-func (v *GoPlaceholder) GetData() string        { return v.Data }
-func (v *GoPlaceholder) GetVarName() string     { return v.VarName }
-func (v *GoPlaceholder) GetBuilderName() string { return v.BuilderName }
-func (v *GoPlaceholder) GetType() string        { return v.Type }
-func (v *GoPlaceholder) Print()                 { fmt.Print(v.Data) }
+func (v *GoPlaceholder) GetData() string             { return v.Data }
+func (v *GoPlaceholder) GetVarName() string          { return v.VarName }
+func (v *GoPlaceholder) GetBuilderName() string      { return v.BuilderName }
+func (v *GoPlaceholder) GetType() string             { return v.Type }
+func (v *GoPlaceholder) GetElement() element.Element { return v.Element }
+func (v *GoPlaceholder) Print()                      { fmt.Print(v.Data) }
 
 func (v *GoPlaceholder) initBasicInfo() error {
 	attr := v.Element.GetAttr()
@@ -94,11 +95,26 @@ func (v *GoPlaceholder) initWriteVarsAs() error {
 }
 
 func (v *GoPlaceholder) initBuilderSeries() error {
-	series, err := parser.GetElementAsBuilderSeries(v.Element, v.BuilderName)
+	varCalls, err := GetVarsAsWriteStringCalls(v.Element, v.BuilderName)
 	if err != nil {
 		return err
 	}
-	v.BuilderSeries = series
+	runeCalls, err := gtmlrune.GetRunesAsWriteStringCalls(v.Element, v.BuilderName)
+	if err != nil {
+		return err
+	}
+	allCalls := make([]string, 0)
+	allCalls = append(allCalls, varCalls...)
+	allCalls = append(allCalls, runeCalls...)
+	if len(allCalls) == 0 {
+		singleCall := fmt.Sprintf("%s.WriteString(`%s`)", v.BuilderName, v.Element.GetHtml())
+		allCalls = append(allCalls, singleCall)
+	}
+	// series, err := parser.GetElementAsBuilderSeries(v.Element, allCalls, v.BuilderName)
+	// if err != nil {
+	// 	return err
+	// }
+	// v.BuilderSeries = series
 	return nil
 }
 
