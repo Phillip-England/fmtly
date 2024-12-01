@@ -172,6 +172,7 @@ func (ex *ExecutorBuild) buildComponentFuncs() ([]gtmlfunc.Func, error) {
 		if !strings.HasSuffix(path, ".html") {
 			return nil // skip all non .html files
 		}
+
 		// extract the html _components from the file
 		compNames, err := element.ReadComponentElementNamesFromFile(path)
 		if err != nil {
@@ -181,6 +182,7 @@ func (ex *ExecutorBuild) buildComponentFuncs() ([]gtmlfunc.Func, error) {
 		if err != nil {
 			return err
 		}
+
 		for _, sel := range compSels {
 			err := element.MarkSelectionPlaceholders(sel, compNames)
 			if err != nil {

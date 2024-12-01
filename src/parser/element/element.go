@@ -310,17 +310,17 @@ func MarkSelectionAsPlaceholder(inner *goquery.Selection, compNames []string, og
 	for _, compName := range compNames {
 		if strings.ToLower(compName) == innerNodeName {
 			inner.SetAttr("_placeholder", compName)
-			var potErr error
-			inner.Children().Each(func(i int, childSel *goquery.Selection) {
-				_, hasSlot := childSel.Attr("_slot")
-				if !hasSlot {
-					potErr = fmt.Errorf("_placeholder element has children which are not wrapped in an element with a _slot='slotName' attribute: %s", ogSelHtml)
-					return
-				}
-			})
-			if potErr != nil {
-				return potErr
-			}
+			// var potErr error
+			// inner.Children().Each(func(i int, childSel *goquery.Selection) {
+			// 	_, hasSlot := childSel.Attr("_slot")
+			// 	if !hasSlot {
+			// 		potErr = fmt.Errorf("_placeholder element has children which are not wrapped in an element with a _slot='slotName' attribute: %s", ogSelHtml)
+			// 		return
+			// 	}
+			// })
+			// if potErr != nil {
+			// 	return potErr
+			// }
 		}
 	}
 	return nil
