@@ -18,11 +18,11 @@ import (
 func getGtmlArt() string {
 
 	art := `
-   _____ _______ __  __ _      
-  / ____|__   __|  \/  | |     
- | |  __   | |  | \  / | |     
- | | |_ |  | |  | |\/| | |     
- | |__| |  | |  | |  | | |____ 
+   _____ _______ __  __ _
+  / ____|__   __|  \/  | |
+ | |  __   | |  | \  / | |
+ | | |_ |  | |  | |\/| | |
+ | |__| |  | |  | |  | | |____
   \_____|  |_|  |_|  |_|______|
  ---------------------------------------
  Make Writing HTML in Go a Breeze 🍃
@@ -303,10 +303,10 @@ func (ex *ExecutorHelp) GetCommand() Command { return ex.Command }
 func (ex *ExecutorHelp) Run() error {
 	message := fmt.Sprintf(`
 %s
-Usage: 
+Usage:
   gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE] [GO PACKAGE NAME]
 
-Example: 
+Example:
   gtml --watch build ./components output.go output
 
 Options:

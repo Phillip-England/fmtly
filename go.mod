@@ -6,7 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/phillip-england/fungi v1.0.1
-	github.com/phillip-england/gqpp v1.0.3
+	github.com/phillip-england/gqpp v1.0.4
 	github.com/phillip-england/purse v1.0.14
 )
 

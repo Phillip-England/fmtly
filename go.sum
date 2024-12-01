@@ -6,10 +6,8 @@ github.com/fsnotify/fsnotify v1.8.0 h1:dAwr6QBTBZIkG8roQaJjGof0pp0EeF+tNV7YBP3F/
 github.com/fsnotify/fsnotify v1.8.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
 github.com/phillip-england/fungi v1.0.1 h1:57r4aypUZ7BfYm70DGGzP7ho3Cg5ZXysr9Ow7eKooUs=
 github.com/phillip-england/fungi v1.0.1/go.mod h1:WCVeUhFvQq7C7lLS+eczqmoeeK2UXgtisZ8ZQtOCbmk=
-github.com/phillip-england/gqpp v1.0.2 h1:tGEurBLM4oUo2tBkcOq1td58+Pkqd+leTXjmXKt2M+s=
-github.com/phillip-england/gqpp v1.0.2/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
-github.com/phillip-england/gqpp v1.0.3 h1:dJox4m2VCwvwEm6DhmR7+DZbwblt1N96sAM7HA/x+34=
-github.com/phillip-england/gqpp v1.0.3/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
+github.com/phillip-england/gqpp v1.0.4 h1:1patt02o70Fyi4RyXuawkV7LdTaRHfB5hXzoWRJsdHk=
+github.com/phillip-england/gqpp v1.0.4/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
 github.com/phillip-england/purse v1.0.14 h1:QFlvupa+cqikNJLUGZTnPK6Kak8vZAG2Rq02V4vWXd8=
 github.com/phillip-england/purse v1.0.14/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
