@@ -121,6 +121,10 @@ func GetElementAsBuilderSeries(elm element.Element, builderName string) (string,
 			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
 			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
 		}
+		if rn.GetType() == gtmlrune.KeyRuneMd {
+			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
+			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
+		}
 	}
 
 	if strings.Index(clay, builderName) == -1 {

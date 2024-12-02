@@ -1,7 +1,6 @@
 package gtmlrune
 
 import (
-	"fmt"
 	"gtml/src/parser/element"
 	"strings"
 
@@ -19,6 +18,13 @@ type GtmlRune interface {
 func NewGtmlRune(runeStr string, location string) (GtmlRune, error) {
 	if strings.HasPrefix(runeStr, KeyRuneProp) {
 		r, err := NewProp(runeStr)
+		if err != nil {
+			return nil, err
+		}
+		return r, nil
+	}
+	if strings.HasPrefix(runeStr, KeyRuneMd) {
+		r, err := NewMd(runeStr)
 		if err != nil {
 			return nil, err
 		}
@@ -93,31 +99,4 @@ func NewRunesFromElement(elm element.Element) ([]GtmlRune, error) {
 		return rns, err
 	}
 	return rns, nil
-}
-
-func GetRunesAsWriteStringCalls(elm element.Element, builderName string) ([]string, error) {
-	calls := make([]string, 0)
-	runes, err := NewRunesFromElement(elm)
-	if err != nil {
-		return calls, err
-	}
-	for _, rn := range runes {
-		if rn.GetType() == KeyRuneProp {
-			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
-			calls = append(calls, call)
-		}
-		if rn.GetType() == KeyRuneVal {
-			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
-			calls = append(calls, call)
-		}
-		if rn.GetType() == KeyRunePipe {
-			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
-			calls = append(calls, call)
-		}
-		if rn.GetType() == KeyRuneSlot {
-			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
-			calls = append(calls, call)
-		}
-	}
-	return calls, nil
 }

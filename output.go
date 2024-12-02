@@ -38,21 +38,14 @@ func gtmlEscape(input string) string {
 	return input
 }
 
-func HeaderPlace() string {
-	headerplace := func() string {
-		var headerplaceBuilder strings.Builder
-		headerplaceBuilder.WriteString(`<div _component="HeaderPlace" _id="0"><h1>Hello</h1></div>`)
-		return headerplaceBuilder.String()
+func BlogPost() string {
+	blogpost := func() string {
+		var blogpostBuilder strings.Builder
+		blogpostBuilder.WriteString(`<div _component="BlogPost" _id="0">`)
+		blogpostBuilder.WriteString(#MyBlogPostThispostisawesomeandIloveit.Hereissomecode:```gofmt.Println(Hello,World)
+		blogpostBuilder.WriteString(````&#34;)</div>`)
+		return blogpostBuilder.String()
 	}
-	return gtmlEscape(headerplace())
-}
-
-func Greeting() string {
-	greeting := func() string {
-		var greetingBuilder strings.Builder
-		greetingBuilder.WriteString(`<div _component="Greeting" _id="0"><h1>Hello</h1></div>`)
-		return greetingBuilder.String()
-	}
-	return gtmlEscape(greeting())
+	return gtmlEscape(blogpost())
 }
 

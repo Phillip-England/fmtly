@@ -5,6 +5,7 @@ const (
 	KeyRuneSlot = "$slot"
 	KeyRuneVal  = "$val"
 	KeyRunePipe = "$pipe"
+	KeyRuneMd   = "$md"
 )
 
 const (
@@ -13,5 +14,5 @@ const (
 )
 
 func GetRuneNames() []string {
-	return []string{KeyRuneProp, KeyRuneSlot, KeyRuneVal, KeyRunePipe}
+	return []string{KeyRuneProp, KeyRuneSlot, KeyRuneVal, KeyRunePipe, KeyRuneMd}
 }
