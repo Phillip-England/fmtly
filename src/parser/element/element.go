@@ -321,7 +321,6 @@ func ReadComponentSelectionsFromFile(path string) ([]*goquery.Selection, error) 
 		return selections, err
 	}
 	for _, compStr := range compStrs {
-		fmt.Println(compStr)
 		doc, err := goquery.NewDocumentFromReader(strings.NewReader(compStr))
 		if err != nil {
 			return selections, err
