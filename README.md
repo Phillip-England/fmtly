@@ -302,9 +302,9 @@ This section contains notes related to the ongoing development of gtml.
 - implement the $ctx() rune - stores a value in a global context which is made available to children and avoids the used of $pipe()
 - implement the $var() rune - creates a local variable (meaning it cannot be used in $pipe())
 - $md() rune support - enable the ability to inline markdown content into components
-- _components cannot be named a traditional html tag name
-- required _components to have a name
-- _components cannot have the same name
+- _components cannot be named a traditional html tag name ✅
+- required _components to have a name ✅
+- _components cannot have the same name ✅
 
 # Feature Wish List (v0.3.0)
 - JSX <SingleTag/> support (preprocessing required)

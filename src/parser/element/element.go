@@ -26,6 +26,20 @@ type Element interface {
 	GetId() string
 }
 
+func GetValidHtmlTags() []string {
+	return []string{
+		"a", "abbr", "address", "area", "article", "aside", "audio", "b", "base", "bdi", "bdo", "blockquote", "body",
+		"br", "button", "canvas", "caption", "cite", "code", "col", "colgroup", "data", "datalist", "dd", "del",
+		"details", "dfn", "dialog", "div", "dl", "dt", "em", "embed", "fieldset", "figcaption", "figure", "footer",
+		"form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hr", "html", "i", "iframe", "img", "input",
+		"ins", "kbd", "label", "legend", "li", "link", "main", "map", "mark", "meta", "meter", "nav", "noscript",
+		"object", "ol", "optgroup", "option", "output", "p", "param", "picture", "pre", "progress", "q", "rb", "rp",
+		"rt", "rtc", "ruby", "s", "samp", "script", "section", "select", "small", "source", "span", "strong",
+		"style", "sub", "summary", "sup", "svg", "table", "tbody", "td", "template", "textarea", "tfoot", "th",
+		"thead", "time", "title", "tr", "track", "u", "ul", "var", "video", "wbr",
+	}
+}
+
 func GetFullElementList() []string {
 	childElements := GetChildElementList()
 	full := append(childElements, KeyElementComponent)
@@ -365,12 +379,40 @@ func ReadComponentElementNamesFromFile(path string) ([]string, error) {
 	if err != nil {
 		return names, err
 	}
+	var potErr error
 	doc.Find("*").Each(func(i int, sel *goquery.Selection) {
 		compAttr, exists := sel.Attr(KeyElementComponent)
 		if exists {
+			if purse.Squeeze(compAttr) == "" {
+				potErr = fmt.Errorf(`you have a _component which does not have a name`)
+				return
+			}
+			firstChar := string(compAttr[0])
+			if !purse.EnforeWhitelist(firstChar, purse.GetAllUpperCaseLetters()) {
+				potErr = fmt.Errorf(`change the first letter in the _component named %s to uppercase`, compAttr)
+				return
+			}
+			if purse.MustEqualOneOf(strings.ToLower(compAttr), GetValidHtmlTags()...) {
+				potErr = fmt.Errorf(`a _component may not be named %s as it is a valid HTML tag name, please try a different name`, compAttr)
+				return
+			}
 			names = append(names, compAttr)
 		}
 	})
+	if potErr != nil {
+		return names, potErr
+	}
+	// ensuring two names dont match
+	for i1, outerName := range names {
+		for i2, innerName := range names {
+			if i1 == i2 {
+				continue
+			}
+			if outerName == innerName {
+				return names, fmt.Errorf(`you have more than one _component named %s`, outerName)
+			}
+		}
+	}
 	return names, nil
 }
 

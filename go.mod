@@ -7,7 +7,7 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/phillip-england/fungi v1.0.1
 	github.com/phillip-england/gqpp v1.0.4
-	github.com/phillip-england/purse v1.0.14
+	github.com/phillip-england/purse v1.0.15
 )
 
 require (
