@@ -11,18 +11,18 @@
     </head>
     <body>
         <div class="flex flex-col gap-4">
-			<Header>
+			<MainHeader>
 				<div _slot="test">
 					<p>testing!</p>
 				</div>
-			</Header>
+			</MainHeader>
         </div>
     </body>
 </html>
 
 
 
-<header _component="Header" class="p-4 flex flex-col gap-2 border-b">
+<header _component="MainHeader" class="p-4 flex flex-col gap-2 border-b">
 	<h1 class="font-bold text-2xl">Staci</h1>
 	<p class="text-sm">Come visit sometime.. 💄</p>
 	$slot("test")

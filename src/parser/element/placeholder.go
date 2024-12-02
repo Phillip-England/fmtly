@@ -40,22 +40,15 @@ func NewPlaceholder(htmlStr string, sel *goquery.Selection, compNames []string) 
 }
 
 func (elm *ElementPlaceholder) GetSelection() *goquery.Selection { return elm.Selection }
-
-//	func (elm *ElementPlaceholder) GetParams() ([]param.Param, error) {
-//		// working on building out attribute params and making
-//		// sure they are being pulled into the () of the component func
-//		params := make([]param.Param, 0)
-//		return params, nil
-//	}
-func (elm *ElementPlaceholder) GetHtml() string        { return elm.Html }
-func (elm *ElementPlaceholder) SetHtml(htmlStr string) { elm.Html = htmlStr }
-func (elm *ElementPlaceholder) Print()                 { fmt.Println(elm.Html) }
-func (elm *ElementPlaceholder) GetType() string        { return elm.Type }
-func (elm *ElementPlaceholder) GetAttr() string        { return elm.Attr }
-func (elm *ElementPlaceholder) GetAttrParts() []string { return elm.AttrParts }
-func (elm *ElementPlaceholder) GetName() string        { return elm.Name }
-func (elm *ElementPlaceholder) GetCompNames() []string { return elm.CompNames }
-func (elm *ElementPlaceholder) GetAttrs() []attr.Attr  { return elm.Attrs }
+func (elm *ElementPlaceholder) GetHtml() string                  { return elm.Html }
+func (elm *ElementPlaceholder) SetHtml(htmlStr string)           { elm.Html = htmlStr }
+func (elm *ElementPlaceholder) Print()                           { fmt.Println(elm.Html) }
+func (elm *ElementPlaceholder) GetType() string                  { return elm.Type }
+func (elm *ElementPlaceholder) GetAttr() string                  { return elm.Attr }
+func (elm *ElementPlaceholder) GetAttrParts() []string           { return elm.AttrParts }
+func (elm *ElementPlaceholder) GetName() string                  { return elm.Name }
+func (elm *ElementPlaceholder) GetCompNames() []string           { return elm.CompNames }
+func (elm *ElementPlaceholder) GetAttrs() []attr.Attr            { return elm.Attrs }
 func (elm *ElementPlaceholder) GetId() string {
 	salt, _ := elm.GetSelection().Attr("_id")
 	return salt

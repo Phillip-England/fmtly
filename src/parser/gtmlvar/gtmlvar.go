@@ -78,31 +78,6 @@ func NewVarsFromElement(elm element.Element) ([]Var, error) {
 	return vars, nil
 }
 
-func GetVarsAsWriteStringCalls(elm element.Element, builderName string) ([]string, error) {
-	calls := make([]string, 0)
-	err := element.WalkElementDirectChildren(elm, func(child element.Element) error {
-		newVar, err := NewVar(child)
-		if err != nil {
-			return err
-		}
-		varType := newVar.GetType()
-		if purse.MustEqualOneOf(varType, GetFullVarList()...) {
-			if varType == KeyVarGoPlaceholder {
-				call := fmt.Sprintf("%s.WriteString(%s())", builderName, newVar.GetVarName())
-				calls = append(calls, call)
-				return nil
-			}
-			call := fmt.Sprintf("%s.WriteString(%s)", builderName, newVar.GetVarName())
-			calls = append(calls, call)
-		}
-		return nil
-	})
-	if err != nil {
-		return calls, err
-	}
-	return calls, nil
-}
-
 func GetElementAsBuilderSeries(elm element.Element, builderName string) (string, error) {
 	clay := elm.GetHtml()
 	err := element.WalkElementDirectChildren(elm, func(child element.Element) error {

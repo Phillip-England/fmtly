@@ -134,30 +134,72 @@ func WalkElementChildrenIncludingRoot(elm Element, fn func(child Element) error)
 	return nil
 }
 
-func WalkElementDirectChildren(elm Element, fn func(child Element) error) error {
+func CollectElementDirectChildren(sel *goquery.Selection, ogChildren []Element, compNames []string) ([]Element, error) {
 	var potErr error
-	elm.GetSelection().Children().Each(func(i int, childSel *goquery.Selection) {
-		if gqpp.HasAttr(childSel, GetChildElementList()...) {
+	sel.Children().Each(func(i int, childSel *goquery.Selection) {
+		childSelIsElement := gqpp.HasAttr(childSel, GetChildElementList()...)
+		if childSelIsElement {
 			childHtml, err := gqpp.NewHtmlFromSelection(childSel)
 			if err != nil {
 				potErr = err
 				return
 			}
-			childElm, err := NewElement(childHtml, elm.GetCompNames())
+			childElm, err := NewElement(childHtml, compNames)
 			if err != nil {
 				potErr = err
 				return
 			}
-			err = fn(childElm)
+			ogChildren = append(ogChildren, childElm)
+		} else {
+			children, err := CollectElementDirectChildren(childSel, ogChildren, compNames)
 			if err != nil {
 				potErr = err
 				return
 			}
+			ogChildren = children
 		}
 	})
 	if potErr != nil {
-		return potErr
+		return ogChildren, potErr
 	}
+	return ogChildren, nil
+}
+
+func WalkElementDirectChildren(elm Element, fn func(child Element) error) error {
+	childElms, err := CollectElementDirectChildren(elm.GetSelection(), make([]Element, 0), elm.GetCompNames())
+	if err != nil {
+		return err
+	}
+	for _, childElm := range childElms {
+		err = fn(childElm)
+		if err != nil {
+			return err
+		}
+	}
+
+	// var potErr error
+	// elm.GetSelection().Children().Each(func(i int, childSel *goquery.Selection) {
+	// 	if gqpp.HasAttr(childSel, GetChildElementList()...) {
+	// 		childHtml, err := gqpp.NewHtmlFromSelection(childSel)
+	// 		if err != nil {
+	// 			potErr = err
+	// 			return
+	// 		}
+	// 		childElm, err := NewElement(childHtml, elm.GetCompNames())
+	// 		if err != nil {
+	// 			potErr = err
+	// 			return
+	// 		}
+	// 		err = fn(childElm)
+	// 		if err != nil {
+	// 			potErr = err
+	// 			return
+	// 		}
+	// 	}
+	// })
+	// if potErr != nil {
+	// 	return potErr
+	// }
 	return nil
 }
 

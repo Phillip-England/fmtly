@@ -132,11 +132,9 @@ func (v *GoPlaceholder) initCallParams() error {
 func (v *GoPlaceholder) initData() error {
 	v.Data = purse.RemoveFirstLine(fmt.Sprintf(`
 %s := func() string {
-var %s strings.Builder
 %s
-%s
-return %s.String()
-}`+"\n", v.VarName, v.BuilderName, v.WriteVarsAs, v.BuilderSeries, v.BuilderName))
+return %s(%s)
+}`+"\n", v.VarName, v.WriteVarsAs, v.Element.GetAttr(), v.CallParamStr))
 	// v.Data = purse.RemoveEmptyLines(v.Data)
 	return nil
 }
