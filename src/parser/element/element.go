@@ -392,6 +392,10 @@ func ReadComponentElementNamesFromFile(path string) ([]string, error) {
 				potErr = fmt.Errorf(`change the first letter in the _component named %s to uppercase`, compAttr)
 				return
 			}
+			if !purse.EnforeWhitelist(compAttr, purse.GetAllLetters()) {
+				potErr = fmt.Errorf(`a _component may only contain letters in it's name, this is an invalid name: %s`, compAttr)
+				return
+			}
 			if purse.MustEqualOneOf(strings.ToLower(compAttr), GetValidHtmlTags()...) {
 				potErr = fmt.Errorf(`a _component may not be named %s as it is a valid HTML tag name, please try a different name`, compAttr)
 				return
