@@ -272,6 +272,7 @@ func WalkAllElementNodesWithoutChildren(elm Element, fn func(sel *goquery.Select
 	return nil
 }
 
+// think func will need testing and improvement
 func ExtractComponentStringsFromFile(fStr string) ([]string, error) {
 	compStrs := make([]string, 0)
 	clay := fStr
