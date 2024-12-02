@@ -182,7 +182,6 @@ func (ex *ExecutorBuild) buildComponentFuncs() ([]gtmlfunc.Func, error) {
 		if err != nil {
 			return err
 		}
-
 		for _, sel := range compSels {
 			err := element.MarkSelectionPlaceholders(sel, compNames)
 			if err != nil {

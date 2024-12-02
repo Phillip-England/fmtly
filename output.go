@@ -38,7 +38,7 @@ func gtmlEscape(input string) string {
 	return input
 }
 
-func Layout(title string, test string) string {
+func Layout(title string) string {
 	layout := func() string {
 		var layoutBuilder strings.Builder
 		mainheaderPlaceholder1 := func() string {
@@ -51,11 +51,9 @@ func Layout(title string, test string) string {
 		}
 		layoutBuilder.WriteString(`<html _component="Layout" _id="0"><head><meta name="viewport" content="width=device-width, initial-scale=1"/><meta charset="UTF-8"/><link rel="stylesheet" href="/static/css/output.css"/><script src="/static/js/staci.js"></script><title>`)
 		layoutBuilder.WriteString(title)
-		layoutBuilder.WriteString(`</title></head><body><div class="flex flex-col gap-4">`)
+		layoutBuilder.WriteString(`</title></head><body>`)
 		layoutBuilder.WriteString(mainheaderPlaceholder1())
-		layoutBuilder.WriteString(`</div><header _component="MainHeader" class="p-4 flex flex-col gap-2 border-b" _id="0"><h1 class="font-bold text-2xl">Staci</h1><p class="text-sm">Come visit sometime.. 💄</p>`)
-		layoutBuilder.WriteString(test)
-		layoutBuilder.WriteString(`</header></body></html>`)
+		layoutBuilder.WriteString(`</body></html>`)
 		return layoutBuilder.String()
 	}
 	return gtmlEscape(layout())

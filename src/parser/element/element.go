@@ -272,6 +272,42 @@ func WalkAllElementNodesWithoutChildren(elm Element, fn func(sel *goquery.Select
 	return nil
 }
 
+func ExtractComponentStringsFromFile(fStr string) ([]string, error) {
+	compStrs := make([]string, 0)
+	clay := fStr
+	parts := make([]string, 0)
+	for {
+		index := strings.Index(clay, "_component=")
+		if index == -1 {
+			break
+		}
+		part := clay[:index+len("_component=")]
+		parts = append(parts, part)
+		clay = clay[index+len("_component="):]
+	}
+	parts = append(parts, clay)
+	filtered := make([]string, 0)
+	for i, p := range parts {
+		if i%2 == 1 {
+			index := strings.LastIndex(p, "<")
+			first := p[:index]
+			second := p[index:]
+			filtered = append(filtered, first)
+			filtered = append(filtered, second)
+			continue
+		}
+		filtered = append(filtered, p)
+	}
+	for i, p := range filtered {
+		if i%2 == 1 {
+			lastPart := filtered[i-1]
+			compStr := lastPart + p
+			compStrs = append(compStrs, compStr)
+		}
+	}
+	return compStrs, nil
+}
+
 func ReadComponentSelectionsFromFile(path string) ([]*goquery.Selection, error) {
 	selections := make([]*goquery.Selection, 0)
 	f, err := os.ReadFile(path)
@@ -279,16 +315,23 @@ func ReadComponentSelectionsFromFile(path string) ([]*goquery.Selection, error) 
 		return selections, err
 	}
 	fStr := string(f)
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(fStr))
+	compStrs, err := ExtractComponentStringsFromFile(fStr)
 	if err != nil {
 		return selections, err
 	}
-	doc.Find("*").Each(func(i int, sel *goquery.Selection) {
-		_, exists := sel.Attr(KeyElementComponent)
-		if exists {
-			selections = append(selections, sel)
+	for _, compStr := range compStrs {
+		fmt.Println(compStr)
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(compStr))
+		if err != nil {
+			return selections, err
 		}
-	})
+		doc.Find("*").Each(func(i int, sel *goquery.Selection) {
+			_, exists := sel.Attr(KeyElementComponent)
+			if exists {
+				selections = append(selections, sel)
+			}
+		})
+	}
 	return selections, nil
 }
 
