@@ -9,6 +9,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/gqpp"
+	"github.com/phillip-england/purse"
 )
 
 type Element interface {
@@ -275,35 +276,37 @@ func WalkAllElementNodesWithoutChildren(elm Element, fn func(sel *goquery.Select
 // think func will need testing and improvement
 func ExtractComponentStringsFromFile(fStr string) ([]string, error) {
 	compStrs := make([]string, 0)
-	clay := fStr
-	parts := make([]string, 0)
-	for {
-		index := strings.Index(clay, "_component=")
-		if index == -1 {
-			break
-		}
-		part := clay[:index+len("_component=")]
-		parts = append(parts, part)
-		clay = clay[index+len("_component="):]
-	}
-	parts = append(parts, clay)
-	filtered := make([]string, 0)
-	for i, p := range parts {
-		if i%2 == 1 {
-			index := strings.LastIndex(p, "<")
-			first := p[:index]
-			second := p[index:]
-			filtered = append(filtered, first)
-			filtered = append(filtered, second)
-			continue
-		}
-		filtered = append(filtered, p)
-	}
-	for i, p := range filtered {
-		if i%2 == 1 {
-			lastPart := filtered[i-1]
-			compStr := lastPart + p
-			compStrs = append(compStrs, compStr)
+	lines := purse.MakeLines(fStr)
+	lookingFor := ""
+	inComponent := false
+	currentComp := make([]string, 0)
+	for _, line := range lines {
+		line = purse.TrimLeadingSpaces(line)
+		if inComponent {
+			currentComp = append(currentComp, line)
+			if line == lookingFor {
+				inComponent = false
+				compStrs = append(compStrs, strings.Join(currentComp, "\n"))
+				currentComp = make([]string, 0)
+			}
+		} else {
+			hasOpenBracket := strings.Contains(line, "<")
+			hasCloseBracket := strings.Contains(line, ">")
+			hasComponentKeyword := strings.Contains(line, KeyElementComponent)
+			doubleQuoteCount := strings.Count(line, "\"")
+			singleQuoteCount := strings.Count(line, "'")
+			hasTwoQuotes := false
+			if doubleQuoteCount >= 2 || singleQuoteCount >= 2 {
+				hasTwoQuotes = true
+			}
+			if hasOpenBracket && hasCloseBracket && hasTwoQuotes && hasComponentKeyword {
+				firstSpaceIndex := strings.Index(line, " ")
+				firstPart := line[:firstSpaceIndex]
+				firstPart = strings.Replace(firstPart, "<", "", 1)
+				lookingFor = "</" + firstPart + ">"
+				inComponent = true
+				currentComp = append(currentComp, line)
+			}
 		}
 	}
 	return compStrs, nil
