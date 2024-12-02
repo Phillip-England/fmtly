@@ -307,6 +307,7 @@ This section contains notes related to the ongoing development of gtml.
 - implement the $ctx() rune - stores a value in a global context which is made available to children and avoids the used of $pipe()
 - implement the $var() rune - creates a local variable (meaning it cannot be used in $pipe())
 - in this [reddit convo](https://www.reddit.com/r/golang/comments/1h1yb4w/gtml_convert_html_to_golang/), I talk to someone about growing out the buffers in the output components, need to do this!
+- $md() rune support - enable the ability to inline markdown content into components
 
 
 # Error Handling Todos
@@ -315,4 +316,5 @@ This section contains notes related to the ongoing development of gtml.
 - make gtml force you to use a valid name for _components
 - what if a component element has no name?
 - take into consideration which funcs are private / public
+- components should not be able to override conventional html tag names (it causes bugs)
 

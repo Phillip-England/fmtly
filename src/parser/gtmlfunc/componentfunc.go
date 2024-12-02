@@ -76,10 +76,6 @@ func (fn *GoComponentFunc) initVars() error {
 		}
 		fn.Vars = append(fn.Vars, goVar)
 	}
-	childelms, _ := element.CollectElementDirectChildren(fn.Element.GetSelection(), make([]element.Element, 0), fn.Element.GetCompNames())
-	for _, elm := range childelms {
-		elm.Print()
-	}
 	err := element.WalkElementDirectChildren(fn.Element, func(child element.Element) error {
 		goVar, err := gtmlvar.NewVar(child)
 		if err != nil {
