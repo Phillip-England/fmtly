@@ -297,24 +297,23 @@ For example:
 This section contains notes related to the ongoing development of gtml.
 
 # Feature Wish List (v0.2.0)
-- JSX <SingleTag/> support
-- camelCase Supported in Attributes
-- Type Generation (each component to have it's own ComponentNameProps type to match)
-- Output Cleanup
 - Solid Error Handling
 - _component validations ran prior to building
-- allow the command line tool to take in a single file instead of a dir as well
 - implement the $ctx() rune - stores a value in a global context which is made available to children and avoids the used of $pipe()
 - implement the $var() rune - creates a local variable (meaning it cannot be used in $pipe())
-- in this [reddit convo](https://www.reddit.com/r/golang/comments/1h1yb4w/gtml_convert_html_to_golang/), I talk to someone about growing out the buffers in the output components, need to do this!
 - $md() rune support - enable the ability to inline markdown content into components
+- _components cannot be named a traditional html tag name
+- required _components to have a name
+- _components cannot have the same name
 
+# Feature Wish List (v0.3.0)
+- JSX <SingleTag/> support (preprocessing required)
+- camelCase Supported in Attributes (preprocessing required)
+- Type Generation (feels more like a luxery feature?)
+- Output Cleanup (again, luxery?)
+- allow the command line tool to take in a single file instead of a dir as well (not vital)
+- in this [reddit convo](https://www.reddit.com/r/golang/comments/1h1yb4w/gtml_convert_html_to_golang/), I talk to someone about growing out the buffers in the output components, need to do this!
 
 # Error Handling Todos
-- If two components have the same name, throw an error
 - What if we place an invalid rune into one of our attributes?
-- make gtml force you to use a valid name for _components
-- what if a component element has no name?
 - take into consideration which funcs are private / public
-- components should not be able to override conventional html tag names (it causes bugs)
-
