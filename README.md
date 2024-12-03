@@ -185,7 +185,26 @@ In gtml, we make use of `runes` to manage the way data flows throughout our comp
 - $val()
 - $slot()
 - $pipe()
+- $md()
 
+## How To Properly Use a Rune
+Runes have a few restrictions in how they can be utilized within your components. Plainly put, **if** a `rune` is placed within your html, **and** it has a sibling html element, **then** you must ensure the `rune` is wrapped in direct parent itself. Not doing so will cause the rune to get lost during compilation. These types of runes are called `free floating runes`.
+
+Here is an example of a `free floating rune`:
+```html
+<div _component="LostRune">
+    <p>I am a sibling element</p>
+    $md("./content/intro.md")
+</div>
+```
+
+To resolve this issue, simple wrap the `rune` in a parent element:
+```html
+<div _component="FoundRune">
+    <p>I am a sibling element</p>
+    $md("./content/intro.md")
+</div>
+```
 
 ## $prop()
 `$prop()` is used to define a `prop` within our `_component`. A `prop` is a value which is usable by sibling and child elements. The value passed into `$prop()` will end up in the arguments of our output function.
@@ -317,3 +336,4 @@ This section contains notes related to the ongoing development of gtml.
 # Error Handling Todos
 - What if we place an invalid rune into one of our attributes?
 - take into consideration which funcs are private / public
+- how to catch and report free-floating runes?

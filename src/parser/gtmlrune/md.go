@@ -53,17 +53,16 @@ invalid $md rune found: %s`, r.Data)
 	valLastChar := string(val[len(val)-1])
 	valIsSingleQuotes := false
 	valIsDoubleQuotes := false
-	if valFirstChar != "\"" && valLastChar != "\"" {
+	if valFirstChar == "\"" && valLastChar == "\"" {
 		valIsDoubleQuotes = true
 	}
-	if valFirstChar != "'" && valLastChar != "'" {
+	if valFirstChar == "'" && valLastChar == "'" {
 		valIsSingleQuotes = true
 	}
 	if !valIsDoubleQuotes && !valIsSingleQuotes {
 		msg := purse.Fmt(`
-	invalid $md rune found: %s
-	$md must contain a single string wrapped in quotes such as $md("# Markdown Content")
-	$md may only contain characters; no symbols, numbers, or spaces
+invalid $md rune found: %s
+$md must containing a single string pointing to a .md file $md("./some/file.md")
 	`, r.Data)
 		return fmt.Errorf(msg)
 	}
@@ -71,9 +70,8 @@ invalid $md rune found: %s`, r.Data)
 	if valIsDoubleQuotes {
 		if strings.Count(val, "\"") > 2 {
 			msg := purse.Fmt(`
-			invalid $md rune found: %s
-			$md must contain a single string wrapped in quotes such as $md("# Markdown Content")
-			$md may only contain characters; no symbols, numbers, or spaces
+invalid $md rune found: %s
+$md must containing a single string pointing to a .md file $md("./some/file.md")
 			`, r.Data)
 			return fmt.Errorf(msg)
 		}
@@ -82,21 +80,20 @@ invalid $md rune found: %s`, r.Data)
 	if valIsSingleQuotes {
 		if strings.Count(val, "'") > 2 {
 			msg := purse.Fmt(`
-			invalid $md rune found: %s
-			$md must contain a single string wrapped in quotes such as $md("# Markdown Content")
-			$md may only contain characters; no symbols, numbers, or spaces
+invalid $md rune found: %s
+$md must containing a single string pointing to a .md file $md("./some/file.md")
 			`, r.Data)
 			return fmt.Errorf(msg)
 		}
 	}
 
-	whitelist := purse.GetAllLetters()
-	if valIsSingleQuotes {
-		whitelist = append(whitelist, "\"")
-	}
-	if valIsDoubleQuotes {
-		whitelist = append(whitelist, "'")
-	}
+	// whitelist := purse.GetAllLetters()
+	// if valIsSingleQuotes {
+	// 	whitelist = append(whitelist, "\"")
+	// }
+	// if valIsDoubleQuotes {
+	// 	whitelist = append(whitelist, "'")
+	// }
 	// 	if !purse.EnforeWhitelist(val, whitelist) {
 	// 		msg := purse.Fmt(`
 	// invalid $md rune found: %s
@@ -109,8 +106,6 @@ invalid $md rune found: %s`, r.Data)
 	val = strings.ReplaceAll(val, "\"", "")
 	val = strings.ReplaceAll(val, "'", "")
 	// here we have the md content, just convert it and write it into the HTML :)
-	fmt.Println(val)
-	fmt.Println("======")
-	r.Value = purse.Squeeze(val)
+	r.Value = val
 	return nil
 }

@@ -1,16 +1,24 @@
 package cli
 
 import (
+	"bytes"
 	"fmt"
 	"gtml/src/parser/element"
 	"gtml/src/parser/gtmlfunc"
+	"gtml/src/parser/gtmlrune"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/phillip-england/fungi"
+	"github.com/phillip-england/gqpp"
 	"github.com/phillip-england/purse"
+	"github.com/yuin/goldmark"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 // ##==================================================================
@@ -182,10 +190,56 @@ func (ex *ExecutorBuild) buildComponentFuncs() ([]gtmlfunc.Func, error) {
 		if err != nil {
 			return err
 		}
-		for _, sel := range compSels {
+		for i, sel := range compSels {
 			err := element.MarkSelectionPlaceholders(sel, compNames)
 			if err != nil {
 				return err
+			}
+			// replace $md runes with md content PRIOR to building
+			htmlStr, err := sel.Parent().Html()
+			if err != nil {
+				return err
+			}
+			rns, err := gtmlrune.NewRunesFromStr(htmlStr)
+			if err != nil {
+				return err
+			}
+			mdRunes := make([]gtmlrune.GtmlRune, 0)
+			for _, rn := range rns {
+				if rn.GetType() == gtmlrune.KeyRuneMd {
+					mdRunes = append(mdRunes, rn)
+				}
+			}
+			for _, rn := range mdRunes {
+				mdFilePath := rn.GetValue()
+				mdFileContent, _ := os.ReadFile(mdFilePath)
+				md := goldmark.New(
+					goldmark.WithExtensions(
+						highlighting.NewHighlighting(
+							highlighting.WithStyle("monokai"),
+							highlighting.WithFormatOptions(
+								chromahtml.WithLineNumbers(true),
+							),
+						),
+					),
+					goldmark.WithParserOptions(
+						parser.WithAutoHeadingID(),
+					),
+					goldmark.WithRendererOptions(
+						html.WithHardWraps(),
+						html.WithXHTML(),
+					),
+				)
+				var buf bytes.Buffer
+				if err := md.Convert([]byte(mdFileContent), &buf); err != nil {
+					panic(err)
+				}
+				htmlStr = strings.Replace(htmlStr, rn.GetDecodedData(), buf.String(), 1)
+				sel, err = gqpp.NewSelectionFromStr(htmlStr)
+				if err != nil {
+					return err
+				}
+				compSels[i] = sel
 			}
 		}
 		element.MarkSelectionsAsUnique(compSels)

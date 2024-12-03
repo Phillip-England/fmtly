@@ -122,8 +122,28 @@ func GetElementAsBuilderSeries(elm element.Element, builderName string) (string,
 			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
 		}
 		if rn.GetType() == gtmlrune.KeyRuneMd {
-			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
-			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
+			return "", fmt.Errorf(purse.Fmt(`
+discovered a $md rune while building out our component funcs,
+all $md runes should be transformed into markdown html prior to building
+rune: %s`, rn.GetDecodedData()))
+			// mdFilePath := rn.GetValue()
+			// mdFileContent, _ := os.ReadFile(mdFilePath)
+			// md := goldmark.New(
+			// 	goldmark.WithExtensions(extension.GFM),
+			// 	goldmark.WithParserOptions(
+			// 		parser.WithAutoHeadingID(),
+			// 	),
+			// 	goldmark.WithRendererOptions(
+			// 		html.WithHardWraps(),
+			// 		html.WithXHTML(),
+			// 	),
+			// )
+			// var buf bytes.Buffer
+			// if err := md.Convert([]byte(mdFileContent), &buf); err != nil {
+			// 	panic(err)
+			// }
+			// call := fmt.Sprintf("%s.WriteString(`\n%s\n`)", builderName, buf.String())
+			// clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
 		}
 	}
 
