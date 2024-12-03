@@ -202,7 +202,7 @@ To resolve this issue, simple wrap the `rune` in a parent element:
 ```html
 <div _component="FoundRune">
     <p>I am a sibling element</p>
-    $md("./content/intro.md")
+    <p>$md("./content/intro.md")</p>
 </div>
 ```
 
@@ -261,6 +261,18 @@ For example:
     <h1>This age was piped in!</h1> 
     <p>$prop("age")</p>
 </div>
+```
+
+## $md()
+`$md()` is used to inject content from a `.md` file into your html. All markdown content is generated into static html during compilation.
+
+For example:
+```html
+<div _component="MdContent">
+    <h1>My Blog</h1>
+    <article>$md("./content/intro.md")</article>
+</div>
+
 ```
 
 ## Placeholders
