@@ -47,7 +47,7 @@ mv gtml ./some/dir/on/your/path
   \_____|  |_|  |_|  |_|______|
  ---------------------------------------
  Make Writing HTML in Go a Breeze 🍃
- Version 0.1.5 (2024-12-4)
+ Version 0.1.6 (2024-12-4)
  https://github.com/phillip-england/gtml
  ---------------------------------------`
 
