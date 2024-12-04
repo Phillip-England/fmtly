@@ -24,8 +24,12 @@ github.com/phillip-england/fungi v1.0.1 h1:57r4aypUZ7BfYm70DGGzP7ho3Cg5ZXysr9Ow7
 github.com/phillip-england/fungi v1.0.1/go.mod h1:WCVeUhFvQq7C7lLS+eczqmoeeK2UXgtisZ8ZQtOCbmk=
 github.com/phillip-england/gqpp v1.0.4 h1:1patt02o70Fyi4RyXuawkV7LdTaRHfB5hXzoWRJsdHk=
 github.com/phillip-england/gqpp v1.0.4/go.mod h1:zZWzKTDAK1/U2/5mg5PDy3gaocC/UVzs4bZp+lPo6rA=
-github.com/phillip-england/purse v1.0.15 h1:QOO/veIr6psFSFfaBMVqsyfxhelp6u/D0D0sp7R6lzc=
-github.com/phillip-england/purse v1.0.15/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
+github.com/phillip-england/purse v1.0.16 h1:Wm0EnjuTIYh14A8OPTs/uSKVZNVFSRacsHFFjtuYyvE=
+github.com/phillip-england/purse v1.0.16/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
+github.com/phillip-england/purse v1.0.17 h1:y5B7IVTMfTRHQAmOx6Y1EtowbGcPs1o+13lTqokeP7I=
+github.com/phillip-england/purse v1.0.17/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
+github.com/phillip-england/purse v1.0.18 h1:QO6pYoqCkkDCr9cXJE9FZMrRQ7PjUMMrYaJ4kf/zn1E=
+github.com/phillip-england/purse v1.0.18/go.mod h1:MeBsQJohgOVLuiEMXd2CBHuS3yFWGoaxVDKYCKL3uCE=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=

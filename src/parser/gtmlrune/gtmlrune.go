@@ -2,6 +2,7 @@ package gtmlrune
 
 import (
 	"gtml/src/parser/element"
+	"gtml/src/parser/funcarg"
 	"strings"
 
 	"github.com/phillip-england/purse"
@@ -13,6 +14,7 @@ type GtmlRune interface {
 	GetType() string
 	GetDecodedData() string
 	GetLocation() string
+	GetArgs() []funcarg.FuncArg
 }
 
 func NewGtmlRune(runeStr string, location string) (GtmlRune, error) {

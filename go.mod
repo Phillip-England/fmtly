@@ -8,7 +8,7 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/phillip-england/fungi v1.0.1
 	github.com/phillip-england/gqpp v1.0.4
-	github.com/phillip-england/purse v1.0.15
+	github.com/phillip-england/purse v1.0.18
 	github.com/yuin/goldmark v1.4.15
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
 )

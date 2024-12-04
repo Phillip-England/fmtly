@@ -2,6 +2,7 @@ package gtmlrune
 
 import (
 	"fmt"
+	"gtml/src/parser/funcarg"
 	"html"
 	"strings"
 
@@ -15,6 +16,7 @@ type Prop struct {
 	Value       string
 	Type        string
 	Location    string
+	Args        []funcarg.FuncArg
 }
 
 func NewProp(data string) (*Prop, error) {
@@ -32,11 +34,12 @@ func NewProp(data string) (*Prop, error) {
 	return r, nil
 }
 
-func (r *Prop) Print()                 { fmt.Println(r.Data) }
-func (r *Prop) GetValue() string       { return r.Value }
-func (r *Prop) GetType() string        { return r.Type }
-func (r *Prop) GetDecodedData() string { return r.DecodedData }
-func (r *Prop) GetLocation() string    { return r.Location }
+func (r *Prop) Print()                     { fmt.Println(r.Data) }
+func (r *Prop) GetValue() string           { return r.Value }
+func (r *Prop) GetType() string            { return r.Type }
+func (r *Prop) GetDecodedData() string     { return r.DecodedData }
+func (r *Prop) GetLocation() string        { return r.Location }
+func (r *Prop) GetArgs() []funcarg.FuncArg { return r.Args }
 
 func (r *Prop) initValue() error {
 	index := strings.Index(r.Data, "(") + 1

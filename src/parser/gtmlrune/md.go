@@ -1,12 +1,21 @@
 package gtmlrune
 
 import (
+	"bytes"
 	"fmt"
+	"gtml/src/parser/funcarg"
 	"html"
+	"os"
 	"strings"
 
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/purse"
+	"github.com/yuin/goldmark"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
+
+	"github.com/yuin/goldmark/parser"
+	goldmarkhtml "github.com/yuin/goldmark/renderer/html"
 )
 
 type Md struct {
@@ -15,6 +24,7 @@ type Md struct {
 	Value       string
 	Type        string
 	Location    string
+	Args        []funcarg.FuncArg
 }
 
 func NewMd(data string) (*Md, error) {
@@ -24,6 +34,7 @@ func NewMd(data string) (*Md, error) {
 		Type:        KeyRuneMd,
 	}
 	err := fungi.Process(
+		func() error { return r.initSetFuncArgs() },
 		func() error { return r.initValue() },
 	)
 	if err != nil {
@@ -32,80 +43,62 @@ func NewMd(data string) (*Md, error) {
 	return r, nil
 }
 
-func (r *Md) Print()                 { fmt.Println(r.Data) }
-func (r *Md) GetValue() string       { return r.Value }
-func (r *Md) GetType() string        { return r.Type }
-func (r *Md) GetDecodedData() string { return r.DecodedData }
-func (r *Md) GetLocation() string    { return r.Location }
+func (r *Md) Print()                     { fmt.Println(r.Data) }
+func (r *Md) GetValue() string           { return r.Value }
+func (r *Md) GetType() string            { return r.Type }
+func (r *Md) GetDecodedData() string     { return r.DecodedData }
+func (r *Md) GetLocation() string        { return r.Location }
+func (r *Md) GetArgs() []funcarg.FuncArg { return r.Args }
+
+func (r *Md) initSetFuncArgs() error {
+	data := r.Data
+	index := strings.Index(data, "(")
+	argStr := data[index+1:]
+	argStr = argStr[:len(argStr)-1]
+	parts := strings.Split(argStr, ",")
+	for _, part := range parts {
+		arg, err := funcarg.NewFuncArg(part)
+		if err != nil {
+			return err
+		}
+		r.Args = append(r.Args, arg)
+	}
+	if len(r.Args) != 2 {
+		return purse.Err(`
+$md rune requires 2 args, a file path and a color theme: 
+$md("/path/to/file.md", "dracula")`)
+	}
+	return nil
+}
 
 func (r *Md) initValue() error {
-	index := strings.Index(r.Data, "(") + 1
-	part := r.Data[index:]
-	lastChar := string(part[len(part)-1])
-	if lastChar != ")" {
-		msg := purse.Fmt(`
-invalid $md rune found: %s`, r.Data)
-		return fmt.Errorf(msg)
+	mdPath := r.Args[0].GetValue()
+	theme := r.Args[1].GetValue()
+	mdFileContent, err := os.ReadFile(mdPath)
+	if err != nil {
+		return err
 	}
-	val := part[:len(part)-1]
-
-	valFirstChar := string(val[0])
-	valLastChar := string(val[len(val)-1])
-	valIsSingleQuotes := false
-	valIsDoubleQuotes := false
-	if valFirstChar == "\"" && valLastChar == "\"" {
-		valIsDoubleQuotes = true
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			highlighting.NewHighlighting(
+				highlighting.WithStyle(theme),
+				highlighting.WithFormatOptions(
+					chromahtml.WithLineNumbers(true),
+				),
+			),
+		),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+		),
+		goldmark.WithRendererOptions(
+			goldmarkhtml.WithHardWraps(),
+			goldmarkhtml.WithXHTML(),
+		),
+	)
+	var buf bytes.Buffer
+	if err := md.Convert([]byte(mdFileContent), &buf); err != nil {
+		panic(err)
 	}
-	if valFirstChar == "'" && valLastChar == "'" {
-		valIsSingleQuotes = true
-	}
-	if !valIsDoubleQuotes && !valIsSingleQuotes {
-		msg := purse.Fmt(`
-invalid $md rune found: %s
-$md must containing a single string pointing to a .md file $md("./some/file.md")
-	`, r.Data)
-		return fmt.Errorf(msg)
-	}
-
-	if valIsDoubleQuotes {
-		if strings.Count(val, "\"") > 2 {
-			msg := purse.Fmt(`
-invalid $md rune found: %s
-$md must containing a single string pointing to a .md file $md("./some/file.md")
-			`, r.Data)
-			return fmt.Errorf(msg)
-		}
-	}
-
-	if valIsSingleQuotes {
-		if strings.Count(val, "'") > 2 {
-			msg := purse.Fmt(`
-invalid $md rune found: %s
-$md must containing a single string pointing to a .md file $md("./some/file.md")
-			`, r.Data)
-			return fmt.Errorf(msg)
-		}
-	}
-
-	// whitelist := purse.GetAllLetters()
-	// if valIsSingleQuotes {
-	// 	whitelist = append(whitelist, "\"")
-	// }
-	// if valIsDoubleQuotes {
-	// 	whitelist = append(whitelist, "'")
-	// }
-	// 	if !purse.EnforeWhitelist(val, whitelist) {
-	// 		msg := purse.Fmt(`
-	// invalid $md rune found: %s
-	// $md must contain a single string wrapped in quotes such as $md("# Markdown Content")
-	// $md may only contain characters; no symbols, numbers, or spaces
-	// `, r.Data)
-	// 		return fmt.Errorf(msg)
-	// 	}
-
-	val = strings.ReplaceAll(val, "\"", "")
-	val = strings.ReplaceAll(val, "'", "")
-	// here we have the md content, just convert it and write it into the HTML :)
-	r.Value = val
+	r.Value = buf.String()
 	return nil
 }

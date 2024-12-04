@@ -2,6 +2,7 @@ package gtmlrune
 
 import (
 	"fmt"
+	"gtml/src/parser/funcarg"
 	"html"
 	"strings"
 
@@ -15,6 +16,7 @@ type Slot struct {
 	Value       string
 	Type        string
 	Location    string
+	Args        []funcarg.FuncArg
 }
 
 func NewSlot(data string) (*Slot, error) {
@@ -32,11 +34,12 @@ func NewSlot(data string) (*Slot, error) {
 	return r, nil
 }
 
-func (r *Slot) Print()                 { fmt.Println(r.Data) }
-func (r *Slot) GetValue() string       { return r.Value }
-func (r *Slot) GetType() string        { return r.Type }
-func (r *Slot) GetDecodedData() string { return r.DecodedData }
-func (r *Slot) GetLocation() string    { return r.Location }
+func (r *Slot) Print()                     { fmt.Println(r.Data) }
+func (r *Slot) GetValue() string           { return r.Value }
+func (r *Slot) GetType() string            { return r.Type }
+func (r *Slot) GetDecodedData() string     { return r.DecodedData }
+func (r *Slot) GetLocation() string        { return r.Location }
+func (r *Slot) GetArgs() []funcarg.FuncArg { return r.Args }
 
 func (r *Slot) initValue() error {
 	index := strings.Index(r.Data, "(") + 1
