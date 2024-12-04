@@ -47,7 +47,7 @@ mv gtml ./some/dir/on/your/path
   \_____|  |_|  |_|  |_|______|
  ---------------------------------------
  Make Writing HTML in Go a Breeze 🍃
- Version 0.1.0 (2024-11-26)
+ Version 0.1.5 (2024-12-4)
  https://github.com/phillip-england/gtml
  ---------------------------------------`
 
@@ -265,6 +265,12 @@ For example:
 
 ## $md()
 `$md()` is used to inject content from a `.md` file into your html. All markdown content is generated into static html during compilation.
+
+When using `$md()` you may also choose the color theme for your code blocks. Available color themes are found [here](https://github.com/alecthomas/chroma/tree/master/styles).
+
+Gtml makes use of [goldmark](https://github.com/yuin/goldmark) under the hood for parsing `.md` content.
+
+> 🚨: `$md()` only accepts two strings: `$md("/path/to/file.md", "colortheme")`
 
 For example:
 ```html
