@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/phillip-england/fungi"
 	"github.com/phillip-england/gqpp"
 	"github.com/phillip-england/purse"
@@ -190,9 +191,18 @@ func (ex *ExecutorBuild) buildComponentFuncs() ([]gtmlfunc.Func, error) {
 				return err
 			}
 			// replace $md runes with md content PRIOR to building
-			htmlStr, err := sel.Parent().Html()
-			if err != nil {
-				return err
+			nodeName := goquery.NodeName(sel)
+			var htmlStr string
+			if nodeName == "html" {
+				htmlStr, err = goquery.OuterHtml(sel)
+				if err != nil {
+					return err
+				}
+			} else {
+				htmlStr, err = sel.Parent().Html()
+				if err != nil {
+					return err
+				}
 			}
 			rns, err := gtmlrune.NewRunesFromStr(htmlStr)
 			if err != nil {

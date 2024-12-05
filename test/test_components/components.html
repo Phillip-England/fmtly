@@ -1,3 +1,17 @@
-<div _component="MdContent">
-    $md("./content/intro.md", "dracula")
-</div>
+<html _component="Layout">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" href="/static/css/output.css" />
+        <script src="/static/js/staci.js"></script>
+        <title>$prop("title")</title>
+        <st-scrollbar></st-scrollbar>
+    </head>
+    <body class="bg-black h-full">
+        <StaciHeader></StaciHeader>
+        <div class="flex h-[90px] w-full"></div>
+        <st-markdown class="custom-scrollbar text-white" st-ignore="true">
+            $md("./content/intro.md", "dracula")
+        </st-markdown>
+    </body>
+</html>
