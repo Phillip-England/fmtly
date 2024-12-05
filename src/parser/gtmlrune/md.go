@@ -78,6 +78,7 @@ func (r *Md) initValue() error {
 	if err != nil {
 		return err
 	}
+
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			highlighting.NewHighlighting(
@@ -93,12 +94,15 @@ func (r *Md) initValue() error {
 		goldmark.WithRendererOptions(
 			goldmarkhtml.WithHardWraps(),
 			goldmarkhtml.WithXHTML(),
+			goldmarkhtml.WithUnsafe(),
 		),
 	)
+
 	var buf bytes.Buffer
 	if err := md.Convert([]byte(mdFileContent), &buf); err != nil {
 		panic(err)
 	}
+
 	r.Value = buf.String()
 	return nil
 }
