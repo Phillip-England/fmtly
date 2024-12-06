@@ -245,6 +245,7 @@ func (ex *ExecutorBuild) writeComponentFuncs(funcs []gtmlfunc.Func) error {
 		imports = append(imports, "\t"+`"github.com/yuin/goldmark/parser"`)
 		imports = append(imports, "\t"+`"bytes"`)
 		imports = append(imports, "\t"+`"os"`)
+		imports = append(imports, "\t"+`"github.com/PuerkitoBio/goquery"`)
 	}
 	var importBlock string
 	if len(imports) == 1 {
@@ -265,7 +266,7 @@ import (
 	// setting up gtmlMd
 	var gtmlMd string
 	if foundMd {
-		gtmlMd = purse.Fmt(`
+		gtmlMd = purse.RemoveFirstLine(`
 func gtmlMd(mdPath string, theme string) string {
 	mdFileContent, _ := os.ReadFile(mdPath)
 	md := goldmark.New(
@@ -288,9 +289,49 @@ func gtmlMd(mdPath string, theme string) string {
 	)
 	var buf bytes.Buffer
 	_ = md.Convert([]byte(mdFileContent), &buf)
-	return buf.String()
+	str := buf.String()
+	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(str))
+
+	doc.Find("*").Each(func(i int, inner *goquery.Selection) {
+		nodeName := goquery.NodeName(inner)
+		currentStyle, _ := inner.Attr("style")
+		switch nodeName {
+		case "pre":
+			inner.SetAttr("style", currentStyle+"padding: 1rem; font-size: 0.875rem; overflow-x: auto; border-radius: 0.25rem; margin-bottom: 1rem;")
+		case "h1":
+			inner.SetAttr("style", currentStyle+"font-weight: bold; font-size: 1.875rem; padding-bottom: 1rem;")
+		case "h2":
+			inner.SetAttr("style", currentStyle+"font-size: 1.5rem; font-weight: bold; padding-bottom: 1rem; padding-top: 0.5rem; border-top-width: 1px; border-top-style: solid; border-color: #1f2937; padding-top: 1rem;")
+		case "h3":
+			inner.SetAttr("style", currentStyle+"font-size: 1.25rem; font-weight: bold; margin-top: 1.5rem; margin-bottom: 1rem;")
+		case "p":
+			inner.SetAttr("style", currentStyle+"font-size: 0.875rem; line-height: 1.5; margin-bottom: 1rem;")
+		case "ul":
+			inner.SetAttr("style", currentStyle+"padding-left: 1.5rem; margin-bottom: 1rem; list-style-type: disc;")
+		case "ol":
+			inner.SetAttr("style", currentStyle+"padding-left: 1.5rem; margin-bottom: 1rem; list-style-type: decimal;")
+		case "li":
+			inner.SetAttr("style", currentStyle+"margin-bottom: 0.5rem;")
+		case "blockquote":
+			inner.SetAttr("style", currentStyle+"margin-left: 1rem; padding-left: 1rem; border-left: 4px solid #ccc; font-style: italic; color: #555;")
+		case "code":
+			parent := inner.Parent()
+			if goquery.NodeName(parent) == "pre" {
+				return
+			}
+			inner.SetAttr("style", currentStyle+"font-family: monospace; background-color: #1f2937; padding: 0.25rem 0.5rem; border-radius: 0.25rem;")
+		case "hr":
+			inner.SetAttr("style", currentStyle+"border: none; border-top: 1px solid #ccc; margin: 2rem 0;")
+		case "a":
+			inner.SetAttr("style", currentStyle+"color: #007BFF; text-decoration: none;")
+		case "img":
+			inner.SetAttr("style", currentStyle+"max-width: 100%; height: auto; border-radius: 0.25rem; margin: 1rem 0;")
+		}
+	})
+	modifiedHTML, _ := doc.Html()
+	return modifiedHTML
 }
-		`)
+`)
 	}
 
 	// Write helper functions
