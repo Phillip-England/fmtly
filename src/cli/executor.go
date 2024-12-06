@@ -27,7 +27,7 @@ func getGtmlArt() string {
   \_____|  |_|  |_|  |_|______|
  ---------------------------------------
  Make Writing HTML in Go a Breeze 🍃
- Version 0.1.8 (2024-12-5)
+ Version 0.1.9 (2024-12-6)
  https://github.com/phillip-england/gtml
  ---------------------------------------`
 	return purse.RemoveFirstLine(art)
