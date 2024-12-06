@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"gtml/src/cli"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	_ = godotenv.Load()
 
 	cmd, err := cli.NewCommand()
 	if err != nil {

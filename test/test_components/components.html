@@ -1,9 +1,18 @@
-<div _component="PlaceholderPropInAttr">
-    <Greeting name="$prop('name')"></Greeting>
-</div>
+<html _component="Layout">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta charset="UTF-8" />
+        <title>$prop("title")</title>
+    </head>
+    <body class="bg-black h-full text-white st-scrollbar">
+        <div>
+            $slot("mdContent")
+        </div>
+    </body>
+</html>
 
-<div _component="Greeting">
-    <h1>$prop("name")</h1>
-</div>
-
-
+<Layout _component="HomePage" title="staci - lightweight, reactive signals">
+    <div class="p-4" st-ignore="true" _slot="mdContent">
+        <div _md="/static/content/intro.md" _md-theme="dracula" class="rounded border-b border-gray-800" st-ignore="true"></div>
+    </div>
+</Layout>

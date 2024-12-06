@@ -2,7 +2,6 @@ package gtmlfunc
 
 import (
 	"fmt"
-	"go/format"
 	"gtml/src/parser/call"
 	"gtml/src/parser/element"
 	"gtml/src/parser/gtmlvar"
@@ -236,7 +235,6 @@ func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []element.Element)
 				// Process each parameter in the call.
 				for _, callParam := range callParams {
 					clay := callParam
-
 					// Clean up the parameter string by removing "ATTRID" substrings.
 					clay = strings.Replace(clay, "ATTRID", "", 1)
 					clay = strings.Replace(clay, "ATTRID", " ", 1)
@@ -315,11 +313,11 @@ func (fn *GoComponentFunc) initFormatData() error {
 
 	}
 	data := purse.JoinLines(newLines)
-	code, err := format.Source([]byte(data))
-	if err != nil {
-		return err
-	}
-	data = string(code)
+	// code, err := format.Source([]byte(data))
+	// if err != nil {
+	// 	return err
+	// }
+	// data = string(code)
 	fn.Data = data
 	return nil
 }

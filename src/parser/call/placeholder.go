@@ -37,16 +37,29 @@ func (call *Placeholder) initParams() error {
 	i := strings.Index(data, "(") + 1
 	data = data[i:]
 	data = purse.ReplaceLastInstanceOf(data, ")", "")
-	if strings.HasSuffix(data, "\"") {
-		i := strings.Index(data, "\"")
-		firstHalf := data[:i]
-		firstHalf = purse.Squeeze(firstHalf)
-		secondHalf := data[i:]
-		data = firstHalf + secondHalf
-	} else {
-		data = purse.Squeeze(data)
+	breakPoints := []int{}
+	inSingleQuote := false
+	inDoubleQuote := false
+	for i, ch := range data {
+		char := string(ch)
+		if char == "\"" {
+			inDoubleQuote = !inDoubleQuote
+		}
+		if char == "'" {
+			inSingleQuote = !inSingleQuote
+		}
+		if char == "," && !inDoubleQuote && !inSingleQuote {
+			breakPoints = append(breakPoints, i)
+		}
 	}
-	parts := strings.Split(data, ",")
+	clay := data
+	parts := make([]string, 0)
+	for _, point := range breakPoints {
+		part := clay[:point]
+		parts = append(parts, part)
+		clay = strings.Replace(clay, part+", ", "", 1)
+	}
+	parts = append(parts, clay)
 	call.Params = parts
 	return nil
 }

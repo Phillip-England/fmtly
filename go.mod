@@ -16,6 +16,7 @@ require (
 require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 )
