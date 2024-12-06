@@ -263,6 +263,12 @@ func (fn *GoComponentFunc) initOrderPlaceholderCalls(siblings []element.Element)
 						writeAs := strings.Replace(callParam, "ATTRID", "", 1)
 						i := strings.Index(writeAs, "ATTRID") + len("ATTRID")
 						writeAs = writeAs[i:]
+						if writeAs == "\"true\"" || writeAs == "\"false\"" {
+							writeAs = strings.ReplaceAll(writeAs, "\"", "")
+						}
+						if writeAs == "\"\\\\true\"" || writeAs == "\"\\\\false\"" {
+							writeAs = strings.ReplaceAll(writeAs, "\\", "")
+						}
 						ordered = append(ordered, writeAs)
 					}
 				}

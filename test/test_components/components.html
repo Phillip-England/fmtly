@@ -1,17 +1,11 @@
-<html _component="Layout">
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="/static/css/output.css" />
-        <script src="/static/js/staci.js"></script>
-        <title>$prop("title")</title>
-        <st-scrollbar></st-scrollbar>
-    </head>
-    <body class="bg-black h-full">
-        <StaciHeader></StaciHeader>
-        <div class="flex h-[90px] w-full"></div>
-        <st-markdown class="custom-scrollbar text-white p-4" st-ignore="true">
-            $md("./content/intro.md", "dracula")
-        </st-markdown>
-    </body>
-</html>
+<div _component="PlaceholderPropInAttr">
+    <GreetIf name="$prop('name')" should-greet='true'></GreetIf>
+</div>
+
+<div _component="GreetIf">
+    <div _if="shouldGreet">
+        <h1>Hello, $prop("name")!</h1>
+    </div>
+</div>
+
+
