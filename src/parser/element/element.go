@@ -49,7 +49,7 @@ func GetFullElementList() []string {
 func GetChildElementList() []string {
 	// KeyElementSlot must go last
 	// other elements take priority over KeyElementSlot
-	return []string{KeyElementFor, KeyElementIf, KeyElementElse, KeyElementPlaceholder, KeyElementSlot}
+	return []string{KeyElementFor, KeyElementIf, KeyElementElse, KeyElementPlaceholder, KeyElementMd, KeyElementSlot}
 }
 
 func NewElement(htmlStr string, compNames []string) (Element, error) {
@@ -89,6 +89,12 @@ func NewElement(htmlStr string, compNames []string) (Element, error) {
 			return nil, err
 		}
 		return elm, nil
+	case KeyElementMd:
+		elm, err := NewMd(htmlStr, sel, compNames)
+		if err != nil {
+			return nil, err
+		}
+		return elm, nil
 	case KeyElementSlot:
 		elm, err := NewSlot(htmlStr, sel, compNames)
 		if err != nil {
@@ -96,6 +102,7 @@ func NewElement(htmlStr string, compNames []string) (Element, error) {
 		}
 		return elm, nil
 	}
+
 	return nil, fmt.Errorf("provided selection is not a valid element: %s", htmlStr)
 }
 

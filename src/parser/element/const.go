@@ -7,4 +7,5 @@ const (
 	KeyElementElse        = "_else"
 	KeyElementPlaceholder = "_placeholder"
 	KeyElementSlot        = "_slot"
+	KeyElementMd          = "_md"
 )

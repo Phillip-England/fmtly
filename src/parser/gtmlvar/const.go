@@ -6,8 +6,9 @@ const (
 	KeyVarGoElse        = "VARGOELSE"
 	KeyVarGoPlaceholder = "VARGOPLACEHOLDER"
 	KeyVarGoSlot        = "VARGOSLOT"
+	KeyVarGoMd          = "VARGOMD"
 )
 
 func GetFullVarList() []string {
-	return []string{KeyVarGoFor, KeyVarGoIf, KeyVarGoElse, KeyVarGoPlaceholder, KeyVarGoSlot}
+	return []string{KeyVarGoFor, KeyVarGoIf, KeyVarGoElse, KeyVarGoPlaceholder, KeyVarGoSlot, KeyVarGoMd}
 }

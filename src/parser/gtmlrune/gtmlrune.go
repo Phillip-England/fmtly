@@ -25,13 +25,6 @@ func NewGtmlRune(runeStr string, location string) (GtmlRune, error) {
 		}
 		return r, nil
 	}
-	if strings.HasPrefix(runeStr, KeyRuneMd) {
-		r, err := NewMd(runeStr)
-		if err != nil {
-			return nil, err
-		}
-		return r, nil
-	}
 	if strings.HasPrefix(runeStr, KeyRuneSlot) {
 		r, err := NewSlot(runeStr)
 		if err != nil {

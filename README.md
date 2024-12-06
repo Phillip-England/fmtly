@@ -39,17 +39,17 @@ mv gtml ./some/dir/on/your/path
 
 ## Usage
 ```bash
-   _____ _______ __  __ _      
-  / ____|__   __|  \/  | |     
- | |  __   | |  | \  / | |     
- | | |_ |  | |  | |\/| | |     
- | |__| |  | |  | |  | | |____ 
+   _____ _______ __  __ _
+  / ____|__   __|  \/  | |
+ | |  __   | |  | \  / | |
+ | | |_ |  | |  | |\/| | |
+ | |__| |  | |  | |  | | |____
   \_____|  |_|  |_|  |_|______|
  ---------------------------------------
  Make Writing HTML in Go a Breeze 🍃
- Version 0.1.6 (2024-12-4)
+ Version 0.1.7 (2024-12-5)
  https://github.com/phillip-england/gtml
- ---------------------------------------`
+ ---------------------------------------
 
 Usage: 
   gtml [OPTIONS]... [INPUT DIR] [OUTPUT FILE] [PACKAGE NAME]
@@ -70,6 +70,7 @@ In gtml, we make use of html attributes to determine a components structure. Her
 - _if
 - _else
 - _slot
+- _md
 
 ## _component
 When gtml is scanning `.html` files, it is searching for `_component` elements. When it finds a `_component`, it will generate a function in go which will output the  `_component`'s html.
@@ -178,6 +179,18 @@ For example:
 </GuestLayout>
 ```
 
+## _md
+`_md` elements are used to render a markdown file into html. You can also provide a theme in `_md-theme`. [Here](https://github.com/alecthomas/chroma/tree/master/styles) is a list of the available themes.
+
+gtml uses [goldmark](https://github.com/yuin/goldmark-highlighting) under the hood to parse `.md` files. 
+
+input:
+```html
+<div _component="BlogPost">
+    <div _md="/path/to/file.md" _md-theme="dracula"></div>
+</div>
+```
+
 ## Runes Define Data
 In gtml, we make use of `runes` to manage the way data flows throughout our components. Certain `runes` accept string values while others expect raw values. Here is a quick list of the available runes in gtml:
 
@@ -185,26 +198,6 @@ In gtml, we make use of `runes` to manage the way data flows throughout our comp
 - $val()
 - $slot()
 - $pipe()
-- $md()
-
-## How To Properly Use a Rune
-Runes have a few restrictions in how they can be utilized within your components. Plainly put, **if** a `rune` is placed within your html, **and** it has a sibling html element, **then** you must ensure the `rune` is wrapped in direct parent itself. Not doing so will cause the rune to get lost during compilation. These types of runes are called `free floating runes`.
-
-Here is an example of a `free floating rune`:
-```html
-<div _component="LostRune">
-    <p>I am a sibling element</p>
-    $md("./content/intro.md")
-</div>
-```
-
-To resolve this issue, simple wrap the `rune` in a parent element:
-```html
-<div _component="FoundRune">
-    <p>I am a sibling element</p>
-    <p>$md("./content/intro.md")</p>
-</div>
-```
 
 ## $prop()
 `$prop()` is used to define a `prop` within our `_component`. A `prop` is a value which is usable by sibling and child elements. The value passed into `$prop()` will end up in the arguments of our output function.
@@ -261,24 +254,6 @@ For example:
     <h1>This age was piped in!</h1> 
     <p>$prop("age")</p>
 </div>
-```
-
-## $md()
-`$md()` is used to inject content from a `.md` file into your html. All markdown content is generated into static html during compilation.
-
-When using `$md()` you may also choose the color theme for your code blocks. Available color themes are found [here](https://github.com/alecthomas/chroma/tree/master/styles).
-
-Gtml makes use of [goldmark](https://github.com/yuin/goldmark) under the hood for parsing `.md` content.
-
-> 🚨: `$md()` only accepts two strings: `$md("/path/to/file.md", "colortheme")`
-
-For example:
-```html
-<div _component="MdContent">
-    <h1>My Blog</h1>
-    <article>$md("./content/intro.md")</article>
-</div>
-
 ```
 
 ## Placeholders

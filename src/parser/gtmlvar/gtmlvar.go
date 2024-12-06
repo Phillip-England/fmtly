@@ -50,6 +50,12 @@ func NewVar(elm element.Element) (Var, error) {
 			return nil, err
 		}
 		return v, nil
+	case element.KeyElementMd:
+		v, err := NewGoMd(elm)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
 	case element.KeyElementSlot:
 		v, err := NewGoSlot(elm)
 		if err != nil {
@@ -87,7 +93,7 @@ func GetElementAsBuilderSeries(elm element.Element, builderName string) (string,
 			return err
 		}
 		varType := newVar.GetType()
-		if purse.MustEqualOneOf(varType, KeyVarGoElse, KeyVarGoFor, KeyVarGoIf, KeyVarGoPlaceholder, KeyVarGoSlot) {
+		if purse.MustEqualOneOf(varType, KeyVarGoElse, KeyVarGoFor, KeyVarGoIf, KeyVarGoPlaceholder, KeyVarGoMd, KeyVarGoSlot) {
 			if varType == KeyVarGoPlaceholder {
 				call := fmt.Sprintf("%s.WriteString(%s())", builderName, newVar.GetVarName())
 				clay = strings.Replace(clay, childHtml, call, 1)
@@ -120,12 +126,6 @@ func GetElementAsBuilderSeries(elm element.Element, builderName string) (string,
 		if rn.GetType() == gtmlrune.KeyRuneSlot {
 			call := fmt.Sprintf("%s.WriteString(%s)", builderName, rn.GetValue())
 			clay = strings.Replace(clay, rn.GetDecodedData(), call, 1)
-		}
-		if rn.GetType() == gtmlrune.KeyRuneMd {
-			return "", fmt.Errorf(purse.Fmt(`
-discovered a $md rune while building out our component funcs,
-all $md runes should be transformed into markdown html prior to building
-rune: %s`, rn.GetDecodedData()))
 		}
 	}
 

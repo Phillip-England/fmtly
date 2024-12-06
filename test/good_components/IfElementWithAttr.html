@@ -1,0 +1,11 @@
+<div _component="PlaceholderPropInAttr">
+    <GreetIf name="$prop('name')" should-greet='true'></GreetIf>
+</div>
+
+<div _component="GreetIf">
+    <div _if="shouldGreet">
+        <h1>Hello, $prop("name")!</h1>
+    </div>
+</div>
+
+
