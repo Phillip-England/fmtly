@@ -2,12 +2,23 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta charset="UTF-8" />
+        <link rel="stylesheet" href="/static/css/output.css" />
+        <script src="/static/js/staci.js"></script>
         <title>$prop("title")</title>
+        <st-scrollbar></st-scrollbar>
     </head>
     <body class="bg-black h-full text-white st-scrollbar">
+        <StaciHeader></StaciHeader>
+        <div class="flex h-[90px] w-full"></div>
         <div>
             $slot("mdContent")
         </div>
+        <div class="p-4">
+            <a href="/v/0" class="flex cursor-pointer p-4 flex-row rounded  items-center justify-center bg-dracula-pink text-black">Read the Docs</a>
+        </div>
+        <footer class="p-4 text-sm italic border-t border-gray-800">
+            <p>"M-M-Mama says alligators are so ornery 'cause they got all them teeth and no toothbrush. 🐊" - Adam Sandler, *The Waterboy*</p>
+        </footer>
     </body>
 </html>
 
@@ -16,3 +27,31 @@
         <div _md="/static/content/intro.md" _md-theme="dracula" class="rounded border-b border-gray-800" st-ignore="true"></div>
     </div>
 </Layout>
+
+
+<header _component="StaciHeader" class="p-4 flex fixed w-full flex-row justify-between border-b border-gray-800 text-white bg-black h-[90px]">
+    <div class="flex">
+        <div class="flex w-10 items-center justify-center">
+            <img src="/static/img/logo-dark.svg" class="flex h-full">
+        </div>
+    </div>
+	<div class="flex items-center justify-center">
+        <div>
+            <svg class="w-8 h-8 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h14"/>
+            </svg>
+        </div>
+          
+    </div>
+</header>
+
+<section _component="PageTurn" class="flex flex-row justify-between p-4">
+    <a _if="showPrev" class="px-4 py-2 border rounded border-gray-800 text-sm w-[33%] flex items-center justify-center" href="$prop('prevHref')">
+        <h2 class="font-bold text-dracula-yellow">$prop("prevTitle")</h2>
+    </a>
+    <div _else="showPrev"></div>
+    <a _if="showNext" class="px-4 py-2 border rounded border-gray-800 text-sm w-[33%] flex items-center justify-center" href="$prop('nextHref')">
+        <h2 class="font-bold text-dracula-yellow">$prop("nextTitle")</h2>
+    </a>
+    <div _else="showNext"></div>
+</section>

@@ -27,7 +27,7 @@ func getGtmlArt() string {
   \_____|  |_|  |_|  |_|______|
  ---------------------------------------
  Make Writing HTML in Go a Breeze 🍃
- Version 0.1.9 (2024-12-6)
+ Version 0.1.10 (2024-12-6)
  https://github.com/phillip-england/gtml
  ---------------------------------------`
 	return purse.RemoveFirstLine(art)
@@ -260,6 +260,7 @@ func (ex *ExecutorBuild) writeComponentFuncs(funcs []gtmlfunc.Func) error {
 		imports = append(imports, "\t"+`"bytes"`)
 		imports = append(imports, "\t"+`"os"`)
 		imports = append(imports, "\t"+`"github.com/PuerkitoBio/goquery"`)
+		imports = append(imports, "\t"+`"fmt"`)
 	}
 	var importBlock string
 	if len(imports) == 1 {
@@ -282,7 +283,14 @@ import (
 	if foundMd {
 		gtmlMd = purse.RemoveFirstLine(`
 func gtmlMd(mdPath string, theme string) string {
-	mdFileContent, _ := os.ReadFile(mdPath)
+    if len(mdPath) == 0 {
+        fmt.Println("_md elements require a valid path")
+    }
+    firstChar := string(mdPath[0])
+    if firstChar != "." {
+        mdPath = "."+mdPath
+    }
+ 	mdFileContent, _ := os.ReadFile(mdPath)
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			highlighting.NewHighlighting(

@@ -37,29 +37,29 @@ func (call *Placeholder) initParams() error {
 	i := strings.Index(data, "(") + 1
 	data = data[i:]
 	data = purse.ReplaceLastInstanceOf(data, ")", "")
-	breakPoints := []int{}
-	inSingleQuote := false
-	inDoubleQuote := false
+	inSingle := false
+	inDouble := false
+	lastFound := 0
+	parts := make([]string, 0)
 	for i, ch := range data {
 		char := string(ch)
-		if char == "\"" {
-			inDoubleQuote = !inDoubleQuote
+		if char == `"` {
+			inDouble = !inDouble
 		}
-		if char == "'" {
-			inSingleQuote = !inSingleQuote
+		if char == `'` {
+			inSingle = !inSingle
 		}
-		if char == "," && !inDoubleQuote && !inSingleQuote {
-			breakPoints = append(breakPoints, i)
+		if char == " " && !inDouble && !inSingle {
+			parts = append(parts, data[lastFound:i-1])
+			lastFound = i - 1
 		}
 	}
-	clay := data
-	parts := make([]string, 0)
-	for _, point := range breakPoints {
-		part := clay[:point]
-		parts = append(parts, part)
-		clay = strings.Replace(clay, part+", ", "", 1)
+	parts = append(parts, data[lastFound:])
+	for i, part := range parts {
+		if strings.HasPrefix(part, ", ") {
+			parts[i] = strings.Replace(part, ", ", "", 1)
+		}
 	}
-	parts = append(parts, clay)
 	call.Params = parts
 	return nil
 }

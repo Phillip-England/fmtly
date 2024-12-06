@@ -296,40 +296,41 @@ func WalkAllElementNodesWithoutChildren(elm Element, fn func(sel *goquery.Select
 
 // think func will need testing and improvement
 func ExtractComponentStringsFromFile(fStr string) ([]string, error) {
-	compStrs := make([]string, 0)
+
+	isCompLine := func(line string) bool {
+		hasBrackets := strings.Contains(line, "<") && strings.Contains(line, ">")
+		hasComponentKeyword := strings.Contains(line, KeyElementComponent)
+		sq := purse.Squeeze(line)
+		isOpenTag := true
+		if strings.HasPrefix(sq, "</") {
+			isOpenTag = false
+		}
+		if hasBrackets && hasComponentKeyword && isOpenTag {
+			return true
+		}
+		return false
+	}
+
 	lines := purse.MakeLines(fStr)
-	lookingFor := ""
-	inComponent := false
+	compStrs := make([]string, 0)
 	currentComp := make([]string, 0)
-	for _, line := range lines {
+	for i, line := range lines {
+		// push the line
 		line = purse.TrimLeadingSpaces(line)
-		if inComponent {
-			currentComp = append(currentComp, line)
-			if line == lookingFor {
-				inComponent = false
-				compStrs = append(compStrs, strings.Join(currentComp, "\n"))
-				currentComp = make([]string, 0)
-			}
-		} else {
-			hasOpenBracket := strings.Contains(line, "<")
-			hasCloseBracket := strings.Contains(line, ">")
-			hasComponentKeyword := strings.Contains(line, KeyElementComponent)
-			doubleQuoteCount := strings.Count(line, "\"")
-			singleQuoteCount := strings.Count(line, "'")
-			hasTwoQuotes := false
-			if doubleQuoteCount >= 2 || singleQuoteCount >= 2 {
-				hasTwoQuotes = true
-			}
-			if hasOpenBracket && hasCloseBracket && hasTwoQuotes && hasComponentKeyword {
-				firstSpaceIndex := strings.Index(line, " ")
-				firstPart := line[:firstSpaceIndex]
-				firstPart = strings.Replace(firstPart, "<", "", 1)
-				lookingFor = "</" + firstPart + ">"
-				inComponent = true
-				currentComp = append(currentComp, line)
-			}
+		currentComp = append(currentComp, line)
+		// on last line
+		if i == len(lines)-1 {
+			compStrs = append(compStrs, strings.Join(currentComp, "\n"))
+			continue
+		}
+		// if next line is a components line, push out
+		nextLine := lines[i+1]
+		if isCompLine(nextLine) {
+			compStrs = append(compStrs, strings.Join(currentComp, "\n"))
+			currentComp = []string{}
 		}
 	}
+
 	return compStrs, nil
 }
 
