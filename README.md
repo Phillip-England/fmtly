@@ -274,7 +274,7 @@ For example, this `LoginForm` uses `CustomButton` as a `placeholder`
 ```
 
 ### Placeholder Attributes
-You may pass data into a `placeholder` using it's attributes. These attributes must corrospond to the target `_component`'s `props`. 
+You may pass data into a `placeholder` using it's attributes. These attributes must correspond to the target `_component`'s `props`. 
 
 > 🚨: when passing values into `placeholder` attributes, you must refer to the attributes in kebab-casing. This will be patched in future version. For example, below we do `$prop("firstName")` to define `firstName`, but when we pass values into the `_element` we use `first-name` instead.
 
